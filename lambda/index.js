@@ -11,6 +11,8 @@ export const handler = async (event = {}) => {
 
 		if (!songId) throw new HttpError(400, 'No song specified');
 
+		// TODO: add tone as an anchor and check on ad (url.hash.substring(0, url.hash.indexOf("?"));)
+
 		const lyrics =
 			(await readCache(songId)) || (await getSongFromPage(SOURCE_URL + songId));
 
