@@ -1,0 +1,10 @@
+{
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.840.0",
+    "@aws-sdk/client-ssm": "^3.840.0",
+    "@aws-sdk/lib-dynamodb": "^3.840.0",
+    "cheerio": "^1.1.0",
+    "prettier": "^3.6.2"
+  }
+}
