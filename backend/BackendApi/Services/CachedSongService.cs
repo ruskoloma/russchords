@@ -34,7 +34,8 @@ public class CachedSongService : ICachedSongService
         var dto = new CachedSongDto
         {
             Id = id,
-            Content = response.Item["content"].S
+            Content =  response.Item["content"].S,
+            Name =  response.Item["name"].S
         };
 
         return dto;
