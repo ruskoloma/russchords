@@ -17,6 +17,10 @@ export interface Key {
 	type: 'N' | 'S' | 'F'; // Natural, Sharp, Flat
 }
 
+export const ALL_KEYS = ['C', 'C#', 'Db', 'D', 'D#', 'Eb', 'E', 'F', 'F#', 'Gb', 'G', 'G#', 'Ab', 'A', 'A#', 'Bb', 'H'];
+
+export const ALL_ACTUAL_KEYS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab', 'A', 'Bb', 'H'];
+
 // All supported keys
 export const KEYS: Key[] = [
 	{ name: 'Ab', value: 0, type: 'F' },
@@ -245,11 +249,11 @@ export function parseSongText(rawText: string): Line[] {
 }
 
 // Finds a Key by its name
-export function getKeyByName(name: string): Key | undefined {
+export function getKeyByName(name: string) {
 	if (name.endsWith('m')) {
 		name = name.slice(0, -1);
 	}
-	return KEYS.find((k) => k.name === name);
+	return KEYS.find((k) => k.name === name) as Key;
 }
 
 // Gets chord root part
@@ -311,4 +315,14 @@ export function transposeChordToken(token: ChordToken, delta: number, targetKey:
 // Renders chord line to string
 export function renderChordLine(tokens: ChordToken[]): string {
 	return tokens.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces)).join('');
+}
+
+export function getOriginalKey(parsedLines: Line[]): string | undefined {
+	for (let i = parsedLines.length - 1; i >= 0; i--) {
+		const line = parsedLines[i];
+		if (line.type === 'chords' && line.tokens.length > 0) {
+			const lastChord = line.tokens[line.tokens.length - 1].chord;
+			return getChordRoot(lastChord);
+		}
+	}
 }
