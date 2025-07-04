@@ -3,7 +3,8 @@
 export type Line =
 	| { type: 'header'; content: string }
 	| { type: 'chords'; tokens: ChordToken[] }
-	| { type: 'text'; content: string };
+	| { type: 'text'; content: string }
+	| { type: 'empty' };
 
 export interface ChordToken {
 	chord: string;
@@ -229,6 +230,9 @@ export function parseSongText(rawText: string): Line[] {
 	const lines = rawText.split(/\r?\n/);
 
 	return lines.map((line) => {
+		if (line.trim() === '') {
+			return { type: 'empty' };
+		}
 		if (isHeaderLine(line)) {
 			return {
 				type: 'header',
@@ -272,7 +276,7 @@ export function getDelta(oldIndex: number, newIndex: number): number {
 // Determines the new key
 export function getNewKey(oldKey: string, delta: number, targetKey: Key): Key {
 	const old = getKeyByName(oldKey);
-	if (!old) throw new Error(`Unknown old key: ${oldKey}`);
+	if (!old) throw new Error(`Unknown old key: ${oldKey}, target key ${targetKey}`);
 
 	let keyValue = old.value + delta;
 

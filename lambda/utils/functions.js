@@ -36,5 +36,11 @@ export async function getSongFromPage(url) {
 
 	const html = await res.text();
 	const $ = cheerio.load(html);
-	return $('#music_text').text().trim() || null;
+
+	const name = $('h2').text().trim() || 'Untitled';
+	const content = $('#music_text').text().trim();
+
+	if (!content) return null;
+
+	return { name, content };
 }

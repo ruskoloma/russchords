@@ -11,19 +11,22 @@ export const handler = async (event = {}) => {
 
 		if (!songId) throw new HttpError(400, 'No song specified');
 
-		// TODO: add tone as an anchor and check on ad (url.hash.substring(0, url.hash.indexOf("?"));)
+		let song =
+			(await readCache(songId)) ||
+			(await getSongFromPage(SOURCE_URL + songId));
 
-		const lyrics =
-			(await readCache(songId)) || (await getSongFromPage(SOURCE_URL + songId));
-
-		if (!lyrics) throw new HttpError(404, 'Not found');
+		if (!song) throw new HttpError(404, 'Not found');
 
 		console.log(`Song ID: ${songId}`);
-		console.log(`Lyrics: ${lyrics}`);
+		console.log(`Song Name: ${song.name}`);
+		console.log(`Lyrics: ${song.content}`);
 
-		await writeCache(songId, lyrics);
+		await writeCache(songId, song);
 
-		return jsonResp(200, { lyrics });
+		return jsonResp(200, {
+			name: song.name,
+			content: song.content,
+		});
 	} catch (err) {
 		console.error(err);
 

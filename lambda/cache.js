@@ -15,12 +15,13 @@ const ddbClient = new DynamoDBClient({
 
 const dynamoDb = DynamoDBDocumentClient.from(ddbClient);
 
-export async function writeCache(songId, text) {
+export async function writeCache(songId, song) {
 	const params = {
 		TableName: TABLE_NAME,
 		Item: {
 			id: songId,
-			content: text,
+			name: song.name,
+			content: song.content,
 			createdAt: new Date().toISOString(),
 			expiresAt: EXPIRES_AT,
 		},
@@ -50,7 +51,10 @@ export async function readCache(songId) {
 			return null;
 		}
 		console.log(`Successfully retrieved song with id: ${songId}`);
-		return result.Item.content;
+		return {
+			name: result.Item.name,
+			content: result.Item.content,
+		};
 	} catch (error) {
 		console.error(`Error retrieving song with id: ${songId}`, error);
 		throw error;

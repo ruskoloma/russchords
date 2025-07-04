@@ -1,13 +1,13 @@
 import { useLoaderData } from 'react-router-dom';
 import type { CachedSongDto } from '../../types';
-import { SongComponent } from '../../components/Viewer/Viewer.tsx';
+import { Viewer } from '../../components/Viewer/Viewer.tsx';
 
 export function CachedSongPage() {
-	const song = useLoaderData() as CachedSongDto;
+	const songDto = useLoaderData<CachedSongDto>();
 
 	return (
 		<>
-			<SongComponent />
+			<Viewer musicText={songDto.content} />
 		</>
 	);
 }

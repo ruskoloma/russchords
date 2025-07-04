@@ -4,12 +4,12 @@ import './index.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components';
 import { HomePage, CachedSongPage } from './pages';
-import type { CachedSongDto } from './types';
+import { cachedSongLoader } from './pages/CachedSongPage/cachedSongLoader.ts';
 
 const router = createBrowserRouter([
 	{
 		path: '/',
-		element: <Layout />, // глобальный Layout
+		element: <Layout />,
 		children: [
 			{
 				index: true,
@@ -17,24 +17,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'song/cached/:id',
-				loader: async ({ params }): Promise<CachedSongDto> => {
-					console.log("I'm here!");
-
-					const fetchUrl = `${import.meta.env.VITE_API_URL}/api/cachedsong/${params.id}`;
-
-					console.log('fetchUrl: ', fetchUrl);
-					const res = await fetch(fetchUrl);
-
-					if (!res.ok) {
-						throw new Response('Not found', { status: 404 });
-					}
-
-					const test = await res.json();
-
-					console.log('res.json(): ', test);
-
-					return test;
-				},
+				loader: cachedSongLoader,
 				element: <CachedSongPage />,
 			},
 		],
