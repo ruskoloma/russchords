@@ -21,7 +21,9 @@ export async function writeCache(songId, song) {
 		Item: {
 			id: songId,
 			name: song.name,
+			artist: song.artist,
 			content: song.content,
+			original_url: song.original_url,
 			createdAt: new Date().toISOString(),
 			expiresAt: EXPIRES_AT,
 		},
@@ -53,7 +55,9 @@ export async function readCache(songId) {
 		console.log(`Successfully retrieved song with id: ${songId}`);
 		return {
 			name: result.Item.name,
+			artist: result.Item.artist,
 			content: result.Item.content,
+			original_url: result.Item.original_url,
 		};
 	} catch (error) {
 		console.error(`Error retrieving song with id: ${songId}`, error);

@@ -11,21 +11,36 @@ export const handler = async (event = {}) => {
 
 		if (!songId) throw new HttpError(400, 'No song specified');
 
-		let song =
-			(await readCache(songId)) ||
-			(await getSongFromPage(SOURCE_URL + songId));
+		const fetchUrl = SOURCE_URL + songId;
 
-		if (!song) throw new HttpError(404, 'Not found');
+		const cached = await readCache(songId);
+
+		let song;
+
+		if (cached) {
+			song = cached;
+			console.log(`Song loaded from cache: ${songId}`);
+		} else {
+			song = await getSongFromPage(fetchUrl);
+			if (!song) throw new HttpError(404, 'Not found');
+
+			console.log(`Song loaded from source: ${songId}`);
+
+			await writeCache(songId, {
+				...song,
+				original_url: fetchUrl,
+			});
+		}
 
 		console.log(`Song ID: ${songId}`);
 		console.log(`Song Name: ${song.name}`);
-		console.log(`Lyrics: ${song.content}`);
-
-		await writeCache(songId, song);
+		console.log(`Artist: ${song.artist}`);
 
 		return jsonResp(200, {
 			name: song.name,
+			artist: song.artist,
 			content: song.content,
+			original_url: fetchUrl,
 		});
 	} catch (err) {
 		console.error(err);
