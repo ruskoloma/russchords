@@ -1,53 +1,53 @@
-import { URL } from 'node:url';
 import { HttpError } from './utils/classes.js';
 import { getSongFromPage, jsonResp } from './utils/functions.js';
 import { readCache, writeCache } from './cache.js';
 import { SOURCE_URL } from './utils/constants.js';
 
 export const handler = async (event = {}) => {
-	try {
-		const url = new URL(event.url);
-		const songId = url.pathname.slice(1);
+  try {
 
-		if (!songId) throw new HttpError(400, 'No song specified');
+    const path = event.rawPath || '';
+    const songId = path.startsWith('/') ? path.slice(1) : path;
 
-		const fetchUrl = SOURCE_URL + songId;
+    if (!songId) throw new HttpError(400, 'No song specified');
 
-		const cached = await readCache(songId);
+    const fetchUrl = SOURCE_URL + songId;
 
-		let song;
+    const cached = await readCache(songId);
 
-		if (cached) {
-			song = cached;
-			console.log(`Song loaded from cache: ${songId}`);
-		} else {
-			song = await getSongFromPage(fetchUrl);
-			if (!song) throw new HttpError(404, 'Not found');
+    let song;
 
-			console.log(`Song loaded from source: ${songId}`);
+    if (cached) {
+      song = cached;
+      console.log(`Song loaded from cache: ${songId}`);
+    } else {
+      song = await getSongFromPage(fetchUrl);
+      if (!song) throw new HttpError(404, 'Not found');
 
-			await writeCache(songId, {
-				...song,
-				original_url: fetchUrl,
-			});
-		}
+      console.log(`Song loaded from source: ${songId}`);
 
-		console.log(`Song ID: ${songId}`);
-		console.log(`Song Name: ${song.name}`);
-		console.log(`Artist: ${song.artist}`);
+      await writeCache(songId, {
+        ...song,
+        original_url: fetchUrl,
+      });
+    }
 
-		return jsonResp(200, {
-			name: song.name,
-			artist: song.artist,
-			content: song.content,
-			original_url: fetchUrl,
-		});
-	} catch (err) {
-		console.error(err);
+    console.log(`Song ID: ${songId}`);
+    console.log(`Song Name: ${song.name}`);
+    console.log(`Artist: ${song.artist}`);
 
-		const status = err instanceof HttpError ? err.statusCode : 500;
-		const msg = err instanceof HttpError ? err.message : 'Internal error';
+    return jsonResp(200, {
+      name: song.name,
+      artist: song.artist,
+      content: song.content,
+      original_url: fetchUrl,
+    });
+  } catch (err) {
+    console.error(err);
 
-		return jsonResp(status, { error: msg });
-	}
+    const status = err instanceof HttpError ? err.statusCode : 500;
+    const msg = err instanceof HttpError ? err.message : 'Internal error';
+
+    return jsonResp(status, { error: msg });
+  }
 };
