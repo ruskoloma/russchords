@@ -31,11 +31,15 @@ public class CachedSongService : ICachedSongService
         if (response.Item == null || response.Item.Count == 0)
             return null;
 
+        var item = response.Item;
+
         var dto = new CachedSongDto
         {
             Id = id,
-            Content =  response.Item["content"].S,
-            Name =  response.Item["name"].S
+            Name = item.ContainsKey("name") ? item["name"].S : string.Empty,
+            Artist = item.ContainsKey("artist") ? item["artist"].S : string.Empty,
+            Content = item.ContainsKey("content") ? item["content"].S : string.Empty,
+            OriginalUrl = item.ContainsKey("original_url") ? item["original_url"].S : string.Empty
         };
 
         return dto;
