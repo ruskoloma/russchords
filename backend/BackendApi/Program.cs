@@ -60,6 +60,7 @@ builder.Services.AddTransient<IPlaylistService, PlaylistService>();
 builder.Services.AddTransient<IPlaylistSongService, PlaylistSongService>();
 builder.Services.AddTransient<IPlaylistMemberService, PlaylistMemberService>();
 builder.Services.AddTransient<ICachedSongService, CachedSongService>();
+builder.Services.AddTransient<IStarredService, StarredService>();
 
 builder.Services.AddAWSService<Amazon.DynamoDBv2.IAmazonDynamoDB>();
 

@@ -12,5 +12,4 @@ public interface ISongService
     Task<SongDto> ForkCachedSongAsync(int cachedSongId, string userId);
     Task<SongDto> ForkSongAsync(int songId, string userId);
     Task<List<SongDto>> GetAllByUserAsync(string userId);
-    Task<List<SongDto>> GetAllStarredByUserAsync(string userId);
 }

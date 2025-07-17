@@ -17,6 +17,11 @@ public class SongController : ControllerBase
         _service = service;
     }
 
+    private string GetUserId()
+    {
+        return User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
+    }
+
     [HttpGet]
     [Authorize]
     public async Task<IActionResult> GetAll()
@@ -37,9 +42,7 @@ public class SongController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Create(SongDto dto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        dto.AuthorId = userId;
-
+        dto.AuthorId = GetUserId();
         var created = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
@@ -48,8 +51,7 @@ public class SongController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Update(int id, SongDto dto)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        await _service.UpdateAsync(id, dto, userId);
+        await _service.UpdateAsync(id, dto, GetUserId());
         return NoContent();
     }
 
@@ -57,8 +59,7 @@ public class SongController : ControllerBase
     [Authorize]
     public async Task<IActionResult> Delete(int id)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        await _service.DeleteAsync(id, userId);
+        await _service.DeleteAsync(id, GetUserId());
         return NoContent();
     }
 
@@ -66,8 +67,7 @@ public class SongController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ForkCached(int cachedSongId)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        var created = await _service.ForkCachedSongAsync(cachedSongId, userId);
+        var created = await _service.ForkCachedSongAsync(cachedSongId, GetUserId());
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -75,8 +75,7 @@ public class SongController : ControllerBase
     [Authorize]
     public async Task<IActionResult> ForkSong(int songId)
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        var created = await _service.ForkSongAsync(songId, userId);
+        var created = await _service.ForkSongAsync(songId, GetUserId());
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
@@ -84,17 +83,7 @@ public class SongController : ControllerBase
     [Authorize]
     public async Task<IActionResult> GetMySongs()
     {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        var songs = await _service.GetAllByUserAsync(userId);
-        return Ok(songs);
-    }
-
-    [HttpGet("my/starred")]
-    [Authorize]
-    public async Task<IActionResult> GetMyStarredSongs()
-    {
-        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? throw new Exception("User ID not found");
-        var songs = await _service.GetAllStarredByUserAsync(userId);
+        var songs = await _service.GetAllByUserAsync(GetUserId());
         return Ok(songs);
     }
 }

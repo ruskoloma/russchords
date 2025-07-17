@@ -130,16 +130,4 @@ public class SongService : ISongService
 
         return _mapper.Map<List<SongDto>>(entities);
     }
-
-    public async Task<List<SongDto>> GetAllStarredByUserAsync(string userId)
-    {
-        var entities = await _context.SongStars
-            .Include(x => x.Song)
-            .Where(x => x.StarredBy == userId)
-            .Select(x => x.Song)
-            .OrderByDescending(x => x.UpdatedAt)
-            .ToListAsync();
-
-        return _mapper.Map<List<SongDto>>(entities);
-    }
 }
