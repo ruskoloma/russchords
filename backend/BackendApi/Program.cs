@@ -108,8 +108,6 @@ using (var scope = app.Services.CreateScope())
     context.Database.EnsureCreated();
 }
 
-// app.UseHttpsRedirection();
-
 app.UseRouting();
 app.UseCors();
 
