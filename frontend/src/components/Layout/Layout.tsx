@@ -1,11 +1,15 @@
 import * as React from 'react';
-import { Outlet } from 'react-router-dom';
-import { AppShell, Box, Burger, Group, NavLink } from '@mantine/core';
+import { Link, Outlet } from 'react-router-dom';
+import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
-import { IconHome2 } from '@tabler/icons-react';
+import { IconHome2, IconLogout, IconUser } from '@tabler/icons-react';
+import { useAuth } from 'react-oidc-context';
+import { useAuthActions } from '../../hooks/auth.ts';
 
 export const Layout: React.FC = () => {
+	const { isAuthenticated, user } = useAuth();
+	const { login, logout } = useAuthActions();
 	const [opened, { toggle }] = useDisclosure();
 
 	return (
@@ -26,7 +30,24 @@ export const Layout: React.FC = () => {
 			</AppShell.Header>
 
 			<AppShell.Navbar p="md">
-				<NavLink label="Home" leftSection={<IconHome2 size={16} stroke={1.5} />} />
+				<Stack h={'100%'}>
+					<Box>
+						<NavLink label="Home" component={Link} to="/" leftSection={<IconHome2 size={16} stroke={1.5} />} />
+					</Box>
+
+					<Box flex={'2 0 auto'}></Box>
+
+					<Box>
+						{isAuthenticated ? (
+							<>
+								<NavLink onClick={logout} leftSection={<IconLogout size={16} stroke={1.5} />} label="Logout" />
+								<NavLink leftSection={<IconUser size={16} stroke={1.5} />} label={'Hi, ' + user?.profile?.nickname} />
+							</>
+						) : (
+							<NavLink onClick={login} leftSection={<IconUser size={16} stroke={1.5} />} label="Login" />
+						)}
+					</Box>
+				</Stack>
 			</AppShell.Navbar>
 
 			<AppShell.Main>
