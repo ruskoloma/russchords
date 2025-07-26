@@ -4,7 +4,7 @@ import './index.css';
 import '@mantine/core/styles.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components';
-import { AuthPage, CachedSongPage, HomePage } from './pages';
+import { CachedSongPage, HomePage } from './pages';
 import { cachedSongLoader } from './pages/CachedSongPage/cachedSongLoader.ts';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
@@ -17,10 +17,6 @@ const router = createBrowserRouter([
 			{
 				index: true,
 				element: <HomePage />,
-			},
-			{
-				path: '/auth',
-				element: <AuthPage />,
 			},
 			{
 				path: 'song/cached/:id',
