@@ -1,0 +1,11 @@
+server {
+  listen 443 ssl;
+  server_name ${DOMAIN};
+
+  include /config/nginx/ssl.conf;
+
+  location / {
+    proxy_pass http://${PROXY_PASS_HOST};
+    include /config/nginx/proxy.conf;
+  }
+}
