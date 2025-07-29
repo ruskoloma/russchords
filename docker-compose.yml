@@ -8,10 +8,18 @@ services:
       - "8080:8080"
     depends_on:
       - db
+      - proxy-forward
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Database=${POSTGRES_DB}
+      - HTTP_PROXY=http://proxy-forward:8888
+      - HTTPS_PROXY=http://proxy-forward:8888
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_REGION=us-west-2
+      - Cognito__Authority=${Cognito__Authority}
+      - Cognito__ClientId=${Cognito__ClientId}
     networks:
       - app-network
 
@@ -26,6 +34,38 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  proxy-forward:
+    image: rloomans/tinyproxy:latest
+    container_name: proxy-forward
+    ports:
+      - "8888:8888"
+    networks:
+      - app-network
+
+
+  swag:
+    image: linuxserver/swag
+    container_name: swag
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - URL=localhost
+      - DOMAIN=localhost
+      - PROXY_PASS_HOST=backend:8080
+      - VALIDATION=http
+      - EMAIL=email@example.com
+      - ONLY_SUBDOMAINS=false
+      - STAGING=true
+      - DISABLE_LETSENCRYPT=true
+    volumes:
+      - ./swag/config:/config
+    depends_on:
+      - backend
     networks:
       - app-network
 
