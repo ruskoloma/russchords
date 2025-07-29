@@ -8,6 +8,8 @@ import { CachedSongPage, HomePage } from './pages';
 import { cachedSongLoader } from './pages/CachedSongPage/cachedSongLoader.ts';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
+import { MySongsPage } from './pages/MySongsPage/MySongsPage.tsx';
+import { mySongsLoader } from './pages/MySongsPage/mySongsLoader.ts';
 
 const router = createBrowserRouter([
 	{
@@ -22,6 +24,11 @@ const router = createBrowserRouter([
 				path: 'song/cached/:id',
 				loader: cachedSongLoader,
 				element: <CachedSongPage />,
+			},
+			{
+				path: 'my-songs',
+				loader: mySongsLoader,
+				element: <MySongsPage />,
 			},
 		],
 	},

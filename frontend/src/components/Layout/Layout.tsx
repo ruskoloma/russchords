@@ -3,7 +3,7 @@ import { Link, Outlet } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
-import { IconHome2, IconLogout, IconUser } from '@tabler/icons-react';
+import { IconHome2, IconListLetters, IconLogout, IconUser } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
 
@@ -33,6 +33,12 @@ export const Layout: React.FC = () => {
 				<Stack h={'100%'}>
 					<Box>
 						<NavLink label="Home" component={Link} to="/" leftSection={<IconHome2 size={16} stroke={1.5} />} />
+						<NavLink
+							label="My Songs"
+							component={Link}
+							to="/my-songs"
+							leftSection={<IconListLetters size={16} stroke={1.5} />}
+						/>
 					</Box>
 
 					<Box flex={'2 0 auto'}></Box>

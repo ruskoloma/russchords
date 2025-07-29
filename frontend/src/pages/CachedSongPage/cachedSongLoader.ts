@@ -1,8 +1,9 @@
 import type { LoaderFunction } from 'react-router-dom';
 import type { CachedSongDto } from '../../types';
+import { API_URL } from '../../constants/api.ts';
 
 export const cachedSongLoader: LoaderFunction = async ({ params }) => {
-	const fetchUrl = `${import.meta.env.VITE_API_URL}/api/cachedsong/${params.id}`;
+	const fetchUrl = `${API_URL}/api/cachedsong/${params.id}`;
 	const res = await fetch(fetchUrl);
 
 	if (!res.ok) {
