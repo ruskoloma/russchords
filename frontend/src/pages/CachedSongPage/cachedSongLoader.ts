@@ -1,14 +1,14 @@
-import type { LoaderFunction } from 'react-router-dom';
+import { type LoaderFunction } from 'react-router-dom';
 import type { CachedSongDto } from '../../types';
-import { API_URL } from '../../constants/api.ts';
+import { myFetch } from '../../helpers/api';
 
 export const cachedSongLoader: LoaderFunction = async ({ params }) => {
-	const fetchUrl = `${API_URL}/api/cachedsong/${params.id}`;
-	const res = await fetch(fetchUrl);
-
-	if (!res.ok) {
+	try {
+		const client = await myFetch();
+		const res = await client.get<CachedSongDto>(`/api/cachedsong/${params.id}`);
+		return res.data;
+	} catch (err) {
+		console.error(err);
 		throw new Response('Not found', { status: 404 });
 	}
-
-	return res.json() as Promise<CachedSongDto>;
 };

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import {
+	ALL_ACTUAL_KEYS,
 	ALL_KEYS,
 	type ChordToken,
 	getDelta,
@@ -56,13 +57,13 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 
 	const handleKeyDown = () => {
 		const currentKey = getKeyByName(key);
-		const newKey = KEYS.reverse().find((k) => k.value == currentKey.value - 1);
+		const newKey = KEYS.reverse().find((k) => k.value == currentKey.value - 1 && ALL_ACTUAL_KEYS.includes(k.name));
 		return newKey ? setKey(newKey.name) : setKey(KEYS.at(-1)!.name);
 	};
 
 	const handleKeyUp = () => {
 		const currentKey = getKeyByName(key);
-		const newKey = KEYS.find((k) => k.value == currentKey.value + 1);
+		const newKey = KEYS.find((k) => k.value == currentKey.value + 1 && ALL_ACTUAL_KEYS.includes(k.name));
 		return newKey ? setKey(newKey.name) : setKey(KEYS[0].name!);
 	};
 

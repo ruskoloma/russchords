@@ -1,23 +1,24 @@
-import { API_URL } from '../../constants/api.ts';
-import { redirect, type LoaderFunction } from 'react-router-dom';
+import { type LoaderFunction, redirect } from 'react-router-dom';
 import type { SongDto } from '../../types';
-import { userManager } from '../../AuthProvider.tsx';
+import { myFetch } from '../../helpers/api';
+import axios from 'axios';
 
 export const mySongsLoader: LoaderFunction = async () => {
-	const user = await userManager.getUser();
+	try {
+		const client = await myFetch();
+		const res = await client.get<SongDto[]>('/api/song/my');
+		return res.data;
+	} catch (err) {
+		if (axios.isAxiosError(err)) {
+			const status = err.response?.status;
 
-	if (!user) {
-		return redirect('/login');
+			if (status === 401) {
+				return redirect('/login');
+			}
+			if (status === 404) {
+				throw new Response('Not found', { status: 404 });
+			}
+		}
+		throw err;
 	}
-	const res = await fetch(`${API_URL}/api/Song/my`, {
-		headers: {
-			Authorization: `Bearer ${user.id_token}`,
-		},
-	});
-
-	if (!res.ok) {
-		throw new Response('Failed to fetch my songs', { status: res.status });
-	}
-
-	return res.json() as Promise<SongDto[]>;
 };
