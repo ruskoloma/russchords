@@ -1,2 +1,3 @@
-export * from './CachedSong';
-export * from './Song';
+export * from './cachedSong';
+export * from './song';
+export * from './playlist';
