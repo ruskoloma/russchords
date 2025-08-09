@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Link, Outlet } from 'react-router-dom';
+import { NavLink as ReactNavLink, Outlet } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
-import { IconHome2, IconListLetters, IconLogout, IconUser } from '@tabler/icons-react';
+import { IconHome2, IconListLetters, IconLogout, IconStar, IconUser } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
 
@@ -32,12 +32,26 @@ export const Layout: React.FC = () => {
 			<AppShell.Navbar p="md">
 				<Stack h={'100%'}>
 					<Box>
-						<NavLink label="Home" component={Link} to="/" leftSection={<IconHome2 size={16} stroke={1.5} />} />
+						<NavLink
+							label="Home"
+							active={location.pathname === '/'}
+							component={ReactNavLink}
+							to="/"
+							leftSection={<IconHome2 size={16} stroke={1.5} />}
+						/>
 						<NavLink
 							label="My Songs"
-							component={Link}
+							active={location.pathname === 'my-songs'}
+							component={ReactNavLink}
 							to="/my-songs"
 							leftSection={<IconListLetters size={16} stroke={1.5} />}
+						/>
+						<NavLink
+							label="Starred"
+							active={location.pathname === 'starred'}
+							component={ReactNavLink}
+							to="/starred"
+							leftSection={<IconStar size={16} stroke={1.5} />}
 						/>
 					</Box>
 

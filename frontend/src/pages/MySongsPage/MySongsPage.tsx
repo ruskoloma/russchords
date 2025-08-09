@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import { TextInput, Button, Group, Stack } from '@mantine/core';
+import { TextInput, Button, Group, Stack, ActionIcon } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import type { SongDto } from '../../types';
 import { useDeleteSongs, useAddSongsToPlaylist } from '../../hooks/song';
+import { IconStar } from '@tabler/icons-react';
+import { useStarSongs } from '../../hooks/starred.ts';
 
 export const MySongsPage: React.FC = () => {
 	const loaded = useLoaderData() as SongDto[];
@@ -53,6 +55,7 @@ export const MySongsPage: React.FC = () => {
 
 	const { deleteSongs, isDeleting } = useDeleteSongs();
 	const { addToPlaylist, isAdding } = useAddSongsToPlaylist();
+	const { starSongs, isStarring } = useStarSongs();
 
 	const onDeleteSelected = () => {
 		modals.openConfirmModal({
@@ -64,6 +67,22 @@ export const MySongsPage: React.FC = () => {
 				const ids = selected.map((r) => r.id);
 				const deletedIds = await deleteSongs(ids);
 				setData((prev) => prev.filter((r) => !deletedIds.includes(r.id)));
+				setSelected([]);
+			},
+		});
+	};
+
+	const onStarSelected = () => {
+		if (selected.length === 0) return;
+
+		modals.openConfirmModal({
+			title: 'Add to starred',
+			children: <p>Star {selected.length} song(s)?</p>,
+			labels: { confirm: 'Star', cancel: 'Cancel' },
+			confirmProps: { color: 'yellow', loading: isStarring },
+			onConfirm: async () => {
+				const ids = selected.map((r) => r.id);
+				await starSongs(ids);
 				setSelected([]);
 			},
 		});
@@ -105,6 +124,18 @@ export const MySongsPage: React.FC = () => {
 					>
 						Delete selected ({selected.length})
 					</Button>
+					<ActionIcon
+						disabled={selected.length === 0 || isStarring}
+						variant={'filled'}
+						color="yellow"
+						onClick={onStarSelected}
+						loading={isStarring}
+						aria-label={'Star'}
+						w={'3rem'}
+						h={36}
+					>
+						<IconStar size={20} />
+					</ActionIcon>
 				</Group>
 			</Group>
 
@@ -132,6 +163,7 @@ export const MySongsPage: React.FC = () => {
 				]}
 				noRecordsText={debouncedQuery ? 'No matches' : 'No songs'}
 				onRowClick={(row) => navigate(`/song/${row.record.id}`)}
+				minHeight={'500px'}
 			/>
 		</Stack>
 	);

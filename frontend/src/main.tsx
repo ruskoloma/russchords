@@ -5,7 +5,15 @@ import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components';
-import { CachedSongPage, HomePage, songLoader, cachedSongLoader, SongPage } from './pages';
+import {
+	CachedSongPage,
+	HomePage,
+	songLoader,
+	cachedSongLoader,
+	SongPage,
+	starredPageLoader,
+	StarredPage,
+} from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
 import { MySongsPage } from './pages/MySongsPage/MySongsPage.tsx';
@@ -37,6 +45,11 @@ const router = createBrowserRouter([
 				path: 'my-songs',
 				loader: mySongsLoader,
 				element: <MySongsPage />,
+			},
+			{
+				path: 'starred',
+				loader: starredPageLoader,
+				element: <StarredPage />,
 			},
 		],
 	},
