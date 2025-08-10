@@ -8,7 +8,7 @@ namespace BackendApi.Services.Interfaces
         Task<PlaylistDto?> GetByIdAsync(int id, string? userId);
         Task<MyPlaylistDto?> GetPlaylistFullAsync(int id, string? userId);
         Task<PlaylistDto> CreateAsync(CreatePlaylistDto dto, string userId);
-        Task UpdateAsync(int id, PlaylistDto dto, string userId);
+        Task UpdateAsync(int id, UpdatePlaylistDto dto, string userId);
         Task DeleteAsync(int id, string userId);
         Task AddSongAsync(int playlistId, int songId, string userId);
         Task RemoveSongAsync(int playlistId, int songId, string userId);

@@ -70,12 +70,13 @@ public class PlaylistService : IPlaylistService
         return _mapper.Map<PlaylistDto>(entity);
     }
 
-    public async Task UpdateAsync(int id, PlaylistDto dto, string userId)
+    public async Task UpdateAsync(int id, UpdatePlaylistDto dto, string userId)
     {
         var entity = await _context.Playlists.FirstOrDefaultAsync(p => p.Id == id && p.OwnerId == userId);
         if (entity == null) throw new Exception("Not found or not owned");
 
-        _mapper.Map(dto, entity);
+        if (dto.Title != null) entity.Title = dto.Title;
+        if (dto.Description != null) entity.Description = dto.Description;
         entity.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }

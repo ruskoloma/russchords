@@ -71,7 +71,7 @@ public class PlaylistController : ControllerBase
     }
 
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, PlaylistDto dto)
+    public async Task<IActionResult> Update(int id, UpdatePlaylistDto dto)
     {
         var userId = GetUserIdRequired();
         await _playlists.UpdateAsync(id, dto, userId);
