@@ -1,5 +1,3 @@
-// Types
-
 export type Line =
 	| { type: 'header'; content: string }
 	| { type: 'chords'; tokens: ChordToken[] }

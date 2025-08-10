@@ -1,6 +1,6 @@
 import useSWRMutation from 'swr/mutation';
 import useSWR from 'swr';
-import type { LiteSong } from '../types';
+import type { LiteSong, UpdateSongDto } from '../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import { useMyFetch } from './api';
@@ -154,5 +154,32 @@ export function useMyLightSongs(enabled: boolean = true) {
 		error,
 		isLoading,
 		refresh: () => mutate(),
+	};
+}
+
+export function useUpdateSong(opts: { onSuccess?: (id: number) => void } = {}) {
+	const client = useMyFetch();
+
+	const { trigger, isMutating, error } = useSWRMutation(
+		'UPDATE_SONG',
+		async (_: string, { arg }: { arg: { id: number; dto: UpdateSongDto } }) => {
+			await client.put(`/api/song/${arg.id}`, arg.dto);
+			return arg.id;
+		},
+		{
+			onSuccess: (id) => {
+				showNotification({ title: 'Saved', message: 'Song updated successfully.', color: 'green' });
+				opts.onSuccess?.(id);
+			},
+			onError: (err) => {
+				showNotification({ title: 'Update failed', message: String(err), color: 'red' });
+			},
+		},
+	);
+
+	return {
+		updateSong: (id: number, dto: UpdateSongDto) => trigger({ id, dto }),
+		isUpdating: isMutating,
+		error,
 	};
 }

@@ -18,6 +18,8 @@ import {
 	starredPageLoader,
 	MySongsPage,
 	mySongsLoader,
+	EditSongPage,
+	editSongPageLoader,
 } from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
@@ -49,6 +51,11 @@ const router = createBrowserRouter([
 				path: 'my-songs',
 				loader: mySongsLoader,
 				element: <MySongsPage />,
+			},
+			{
+				path: 'song/edit/:id',
+				loader: editSongPageLoader,
+				element: <EditSongPage />,
 			},
 			{
 				path: 'starred',

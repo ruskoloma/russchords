@@ -9,3 +9,11 @@ export interface SongDto {
 	authorId: string;
 	rootNote?: string;
 }
+
+export interface UpdateSongDto {
+	name?: string;
+	artist?: string | null;
+	description?: string | null;
+	content?: string;
+	rootNote?: string | null;
+}

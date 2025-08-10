@@ -1,4 +1,4 @@
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useNavigate } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../components/Viewer/Viewer';
 import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
@@ -14,6 +14,7 @@ export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
 
 	const auth = useAuth();
+	const navigate = useNavigate();
 	const isAuthenticated = Boolean(auth?.isAuthenticated);
 	const isOwner = useIsSongOwner(songDto.authorId);
 
@@ -23,6 +24,7 @@ export function SongPage() {
 	const { deleteSongs, isDeleting } = useDeleteSongs();
 
 	const handleDeleteSong = () => deleteSongs([songDto.id]);
+	const handleEditSong = () => navigate(`/song/edit/${songDto.id}`);
 
 	const { playlists: myPlaylists } = useMyPlaylistsWithDetails(isAuthenticated);
 	const options = useMemo(
@@ -93,10 +95,16 @@ export function SongPage() {
 
 			<Viewer
 				musicText={songDto.content}
+				defaultKey={songDto.rootNote}
 				menuItems={[
 					isAuthenticated && (
 						<Menu.Item key="clone" disabled={isCloning} onClick={() => cloneSong(songDto.id)}>
 							Clone
+						</Menu.Item>
+					),
+					isOwner && (
+						<Menu.Item key="edit" onClick={handleEditSong}>
+							Edit
 						</Menu.Item>
 					),
 					isOwner && (
