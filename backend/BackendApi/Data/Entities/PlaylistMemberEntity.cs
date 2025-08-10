@@ -11,4 +11,5 @@ public class PlaylistMemberEntity
     public DateTime UpdatedAt { get; set; }
 
     public PlaylistEntity Playlist { get; set; }
+    public bool IsPinned { get; set; }
 }

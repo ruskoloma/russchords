@@ -35,8 +35,10 @@ public class PlaylistSongService : IPlaylistSongService
         var entity = _mapper.Map<PlaylistSongEntity>(dto);
         entity.CreatedAt = DateTime.UtcNow;
         entity.UpdatedAt = DateTime.UtcNow;
+
         _context.PlaylistSongs.Add(entity);
         await _context.SaveChangesAsync();
+
         return _mapper.Map<PlaylistSongDto>(entity);
     }
 
@@ -44,6 +46,7 @@ public class PlaylistSongService : IPlaylistSongService
     {
         var entity = await _context.PlaylistSongs.FindAsync(id);
         if (entity == null) throw new Exception("Not found");
+
         _context.PlaylistSongs.Remove(entity);
         await _context.SaveChangesAsync();
     }

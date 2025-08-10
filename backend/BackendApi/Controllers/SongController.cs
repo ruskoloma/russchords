@@ -63,7 +63,7 @@ public class SongController : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("fork/cached/{cachedSongId}")]
+    [HttpPost("fork/{cachedSongId}")]
     [Authorize]
     public async Task<IActionResult> ForkCached(int cachedSongId)
     {
@@ -71,7 +71,7 @@ public class SongController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
-    [HttpPost("fork/song/{songId}")]
+    [HttpPost("clone/{songId}")]
     [Authorize]
     public async Task<IActionResult> ForkSong(int songId)
     {

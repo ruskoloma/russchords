@@ -30,6 +30,13 @@ public class PlaylistMemberService : IPlaylistMemberService
         return entity == null ? null : _mapper.Map<PlaylistMemberDto>(entity);
     }
 
+    public async Task<PlaylistMemberDto?> GetByCompositeAsync(int playlistId, string userId)
+    {
+        var entity = await _context.PlaylistMembers
+            .FirstOrDefaultAsync(x => x.PlaylistId == playlistId && x.MemberId == userId);
+        return entity == null ? null : _mapper.Map<PlaylistMemberDto>(entity);
+    }
+
     public async Task<PlaylistMemberDto> CreateAsync(PlaylistMemberDto dto)
     {
         var entity = _mapper.Map<PlaylistMemberEntity>(dto);
@@ -45,6 +52,32 @@ public class PlaylistMemberService : IPlaylistMemberService
         var entity = await _context.PlaylistMembers.FindAsync(id);
         if (entity == null) throw new Exception("Not found");
         _context.PlaylistMembers.Remove(entity);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task SetPinnedAsync(int playlistId, string userId, bool value)
+    {
+        var entity = await _context.PlaylistMembers
+            .FirstOrDefaultAsync(x => x.PlaylistId == playlistId && x.MemberId == userId);
+
+        if (entity == null)
+        {
+            entity = new PlaylistMemberEntity
+            {
+                PlaylistId = playlistId,
+                MemberId = userId,
+                IsPinned = value,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            _context.PlaylistMembers.Add(entity);
+        }
+        else
+        {
+            entity.IsPinned = value;
+            entity.UpdatedAt = DateTime.UtcNow;
+        }
+
         await _context.SaveChangesAsync();
     }
 }

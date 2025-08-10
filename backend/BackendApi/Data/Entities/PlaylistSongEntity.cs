@@ -7,6 +7,8 @@ public class PlaylistSongEntity
     public int Id { get; set; }
     public int SongId { get; set; }
     public int PlaylistId { get; set; }
+    public int? Order { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 

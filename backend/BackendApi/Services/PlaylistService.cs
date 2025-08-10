@@ -5,6 +5,8 @@ using BackendApi.Models.Dtos;
 using BackendApi.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
+namespace BackendApi.Services;
+
 public class PlaylistService : IPlaylistService
 {
     private readonly ApplicationDbContext _context;
@@ -18,17 +20,24 @@ public class PlaylistService : IPlaylistService
 
     public async Task<List<PlaylistDto>> GetAllAsync(string userId)
     {
-        var playlists = await _context.Playlists
-            .Where(p => p.OwnerId == userId)
+        var playlists = await _context.PlaylistMembers
+            .Where(pm => pm.MemberId == userId)
+            .Join(
+                _context.Playlists,
+                pm => pm.PlaylistId,
+                p => p.Id,
+                (pm, p) => p
+            )
+            .Distinct()
             .ToListAsync();
 
         return _mapper.Map<List<PlaylistDto>>(playlists);
     }
 
-    public async Task<PlaylistDto?> GetByIdAsync(int id, string userId)
+    public async Task<PlaylistDto?> GetByIdAsync(int id, string? userId)
     {
         var playlist = await _context.Playlists
-            .FirstOrDefaultAsync(p => p.Id == id && p.OwnerId == userId);
+            .FirstOrDefaultAsync(p => p.Id == id);
 
         return playlist == null ? null : _mapper.Map<PlaylistDto>(playlist);
     }
@@ -47,13 +56,24 @@ public class PlaylistService : IPlaylistService
         _context.Playlists.Add(entity);
         await _context.SaveChangesAsync();
 
+        var ownerMember = new PlaylistMemberEntity
+        {
+            PlaylistId = entity.Id,
+            MemberId = userId,
+            IsPinned = false,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+        _context.PlaylistMembers.Add(ownerMember);
+        await _context.SaveChangesAsync();
+
         return _mapper.Map<PlaylistDto>(entity);
     }
 
     public async Task UpdateAsync(int id, PlaylistDto dto, string userId)
     {
         var entity = await _context.Playlists.FirstOrDefaultAsync(p => p.Id == id && p.OwnerId == userId);
-        if (entity == null) throw new Exception("Not found");
+        if (entity == null) throw new Exception("Not found or not owned");
 
         _mapper.Map(dto, entity);
         entity.UpdatedAt = DateTime.UtcNow;
@@ -63,7 +83,7 @@ public class PlaylistService : IPlaylistService
     public async Task DeleteAsync(int id, string userId)
     {
         var entity = await _context.Playlists.FirstOrDefaultAsync(p => p.Id == id && p.OwnerId == userId);
-        if (entity == null) throw new Exception("Not found");
+        if (entity == null) throw new Exception("Not found or not owned");
 
         _context.Playlists.Remove(entity);
         await _context.SaveChangesAsync();
@@ -101,5 +121,27 @@ public class PlaylistService : IPlaylistService
             _context.PlaylistSongs.Remove(entry);
             await _context.SaveChangesAsync();
         }
+    }
+    public async Task<List<MyPlaylistMemberDto>> GetMyPlaylistsWithPinAsync(string userId)
+    {
+        var query =
+            from m in _context.PlaylistMembers
+            where m.MemberId == userId
+            join p in _context.Playlists on m.PlaylistId equals p.Id
+            select new MyPlaylistMemberDto
+            {
+                PlaylistId = p.Id,
+                OwnerId = p.OwnerId,
+                Title = p.Title,
+                Description = p.Description,
+                IsPinned = m.IsPinned
+            };
+
+        var result = await query
+            .OrderByDescending(x => x.IsPinned)
+            .ThenBy(x => x.Title)
+            .ToListAsync();
+
+        return result;
     }
 }

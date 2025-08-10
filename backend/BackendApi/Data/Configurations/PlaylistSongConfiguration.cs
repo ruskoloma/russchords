@@ -12,6 +12,9 @@ public class PlaylistSongConfiguration : IEntityTypeConfiguration<PlaylistSongEn
         builder.HasKey(x => x.Id);
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();
+        
+        builder.Property(x => x.Order)
+            .IsRequired(false);
 
         builder.HasOne(x => x.Song)
             .WithMany(s => s.PlaylistSongs)
