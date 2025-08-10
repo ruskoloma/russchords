@@ -7,16 +7,22 @@ export interface PlaylistDto {
 	description?: string | null;
 }
 
-export interface PlaylistMemberDto {
+export interface LiteSong {
 	id: number;
-	playlistId: number;
-	memberId: string;
+	name: string;
+	artist?: string | null;
+	sourceUrl?: string | null;
+	rootNote?: string | null;
+	order?: number | null;
 }
 
-export interface PlaylistSongDto {
-	id: number;
-	songId: number;
+export interface MyPlaylistDto {
 	playlistId: number;
+	ownerId: string;
+	title: string;
+	description?: string | null;
+	isPinned: boolean;
+	songs: LiteSong[];
 }
 
 export interface CreatePlaylistDto {

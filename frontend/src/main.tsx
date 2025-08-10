@@ -6,21 +6,25 @@ import 'mantine-datatable/styles.layer.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { Layout } from './components';
 import {
+	cachedSongLoader,
 	CachedSongPage,
 	HomePage,
+	myPlaylistsPageLoader,
+	PlaylistPage,
+	playlistPageLoader,
 	songLoader,
-	cachedSongLoader,
 	SongPage,
-	starredPageLoader,
 	StarredPage,
+	starredPageLoader,
+	MySongsPage,
+	mySongsLoader,
 } from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
-import { MySongsPage } from './pages/MySongsPage/MySongsPage.tsx';
-import { mySongsLoader } from './pages/MySongsPage/mySongsLoader.ts';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
+import MyPlaylistsPage from './pages/MyPlaylistsPage/MyPlaylistsPage.tsx';
 
 const router = createBrowserRouter([
 	{
@@ -50,6 +54,16 @@ const router = createBrowserRouter([
 				path: 'starred',
 				loader: starredPageLoader,
 				element: <StarredPage />,
+			},
+			{
+				path: 'my-playlists',
+				loader: myPlaylistsPageLoader,
+				element: <MyPlaylistsPage />,
+			},
+			{
+				path: 'playlist/:id',
+				loader: playlistPageLoader,
+				element: <PlaylistPage />,
 			},
 		],
 	},

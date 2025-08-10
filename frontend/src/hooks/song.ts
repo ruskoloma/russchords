@@ -72,7 +72,7 @@ export function useForkSong(params: { navigateOnSuccess?: boolean } = { navigate
 	const { trigger, isMutating, error } = useSWRMutation(
 		'FORK_SONG',
 		async (_: string, { arg: songId }: { arg: string }) => {
-			const res = await client.post<{ id: number }>(`/api/song/fork/cached/${songId}`);
+			const res = await client.post<{ id: number }>(`/api/song/fork/${songId}`);
 			return res.data.id;
 		},
 		{
@@ -101,7 +101,7 @@ export function useCloneSong(params: { navigateOnSuccess?: boolean } = { navigat
 	const { trigger, isMutating, error } = useSWRMutation(
 		'CLONE_SONG',
 		async (_: string, { arg: songId }: { arg: number }) => {
-			const res = await client.post<{ id: number }>(`/api/song/fork/song/${songId}`);
+			const res = await client.post<{ id: number }>(`/api/song/clone/${songId}`);
 			return res.data.id;
 		},
 		{

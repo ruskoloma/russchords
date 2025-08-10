@@ -1,12 +1,12 @@
 import { type LoaderFunction, redirect } from 'react-router-dom';
 import axios from 'axios';
 import { myFetch } from '../../helpers/api';
-import type { PlaylistWithSongs } from '../../types';
+import type { MyPlaylistDto } from '../../types';
 
 export const playlistPageLoader: LoaderFunction = async ({ params }) => {
 	try {
 		const client = await myFetch();
-		const res = await client.get<PlaylistWithSongs>(`/api/playlist/${params.id}`);
+		const res = await client.get<MyPlaylistDto>(`/api/playlist/${params.id}`);
 		return res.data;
 	} catch (err) {
 		if (axios.isAxiosError(err)) {

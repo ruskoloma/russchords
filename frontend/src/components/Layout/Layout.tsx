@@ -3,7 +3,7 @@ import { NavLink as ReactNavLink, Outlet } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
-import { IconHome2, IconListLetters, IconLogout, IconStar, IconUser } from '@tabler/icons-react';
+import { IconHome2, IconListLetters, IconLogout, IconPlaylist, IconStar, IconUser } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
 
@@ -52,6 +52,13 @@ export const Layout: React.FC = () => {
 							component={ReactNavLink}
 							to="/starred"
 							leftSection={<IconStar size={16} stroke={1.5} />}
+						/>
+						<NavLink
+							label="Playlists"
+							active={location.pathname.includes('playlist')}
+							component={ReactNavLink}
+							to="/my-playlists"
+							leftSection={<IconPlaylist size={16} stroke={1.5} />}
 						/>
 					</Box>
 
