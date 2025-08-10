@@ -79,6 +79,14 @@ public class SongController : ControllerBase
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 
+    [HttpGet("my/light")]
+    [Authorize]
+    public async Task<IActionResult> GetMySongsLight()
+    {
+        var songs = await _service.GetAllLightByUserAsync(GetUserId());
+        return Ok(songs);
+    }
+
     [HttpGet("my")]
     [Authorize]
     public async Task<IActionResult> GetMySongs()

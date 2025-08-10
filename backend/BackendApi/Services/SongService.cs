@@ -130,4 +130,21 @@ public class SongService : ISongService
 
         return _mapper.Map<List<SongDto>>(entities);
     }
+
+    public async Task<List<LiteSongDto>> GetAllLightByUserAsync(string userId)
+    {
+        var query = _context.Songs
+            .Where(x => x.AuthorId == userId)
+            .OrderByDescending(x => x.UpdatedAt)
+            .Select(s => new LiteSongDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Artist = s.Artist,
+                SourceUrl = s.SourceUrl,
+                RootNote = s.RootNote
+            });
+
+        return await query.ToListAsync();
+    }
 }
