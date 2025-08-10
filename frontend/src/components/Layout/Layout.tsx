@@ -39,27 +39,31 @@ export const Layout: React.FC = () => {
 							to="/"
 							leftSection={<IconHome2 size={16} stroke={1.5} />}
 						/>
-						<NavLink
-							label="My Songs"
-							active={location.pathname === 'my-songs'}
-							component={ReactNavLink}
-							to="/my-songs"
-							leftSection={<IconListLetters size={16} stroke={1.5} />}
-						/>
-						<NavLink
-							label="Starred"
-							active={location.pathname === 'starred'}
-							component={ReactNavLink}
-							to="/starred"
-							leftSection={<IconStar size={16} stroke={1.5} />}
-						/>
-						<NavLink
-							label="Playlists"
-							active={location.pathname === 'my-playlists'}
-							component={ReactNavLink}
-							to="/my-playlists"
-							leftSection={<IconPlaylist size={16} stroke={1.5} />}
-						/>
+						{isAuthenticated && (
+							<>
+								<NavLink
+									label="My Songs"
+									active={location.pathname === 'my-songs'}
+									component={ReactNavLink}
+									to="/my-songs"
+									leftSection={<IconListLetters size={16} stroke={1.5} />}
+								/>
+								<NavLink
+									label="Starred"
+									active={location.pathname === 'starred'}
+									component={ReactNavLink}
+									to="/starred"
+									leftSection={<IconStar size={16} stroke={1.5} />}
+								/>
+								<NavLink
+									label="Playlists"
+									active={location.pathname === 'my-playlists'}
+									component={ReactNavLink}
+									to="/my-playlists"
+									leftSection={<IconPlaylist size={16} stroke={1.5} />}
+								/>
+							</>
+						)}
 					</Box>
 
 					<Box flex={'2 0 auto'}></Box>
