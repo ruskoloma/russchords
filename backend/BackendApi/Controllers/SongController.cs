@@ -49,7 +49,7 @@ public class SongController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize]
-    public async Task<IActionResult> Update(int id, SongDto dto)
+    public async Task<IActionResult> Update(int id, UpdateSongDto dto)
     {
         await _service.UpdateAsync(id, dto, GetUserId());
         return NoContent();

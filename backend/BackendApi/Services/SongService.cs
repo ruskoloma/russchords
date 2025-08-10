@@ -42,7 +42,7 @@ public class SongService : ISongService
         return _mapper.Map<SongDto>(entity);
     }
 
-    public async Task UpdateAsync(int id, SongDto dto, string userId)
+    public async Task UpdateAsync(int id, UpdateSongDto dto, string userId)
     {
         var entity = await _context.Songs.FindAsync(id);
         if (entity == null)
@@ -51,7 +51,11 @@ public class SongService : ISongService
         if (entity.AuthorId != userId)
             throw new Exception("You are not the owner of this song");
 
-        _mapper.Map(dto, entity);
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Content != null) entity.Content = dto.Content;
+        entity.Artist = dto.Artist;
+        entity.RootNote = dto.RootNote;
+
         entity.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
     }
