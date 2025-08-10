@@ -1,7 +1,10 @@
 import useSWRMutation from 'swr/mutation';
+import useSWR from 'swr';
+import type { LiteSong } from '../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import { useMyFetch } from './api';
+import { useAuth } from 'react-oidc-context';
 
 export function useDeleteSongs(params: { navigateOnSuccess?: boolean } = { navigateOnSuccess: false }) {
 	const { navigateOnSuccess } = params;
@@ -124,5 +127,32 @@ export function useCloneSong(params: { navigateOnSuccess?: boolean } = { navigat
 		cloneSong: (songId: number) => trigger(songId),
 		isCloning: isMutating,
 		error,
+	};
+}
+
+export function useIsSongOwner(ownerId?: string) {
+	const auth = useAuth();
+	const me = auth.user?.profile?.sub;
+	return Boolean(ownerId && me && ownerId === me);
+}
+
+export function useMyLightSongs(enabled: boolean = true) {
+	const client = useMyFetch();
+	const key = enabled ? '/api/song/my/light' : null;
+
+	const { data, error, isLoading, mutate } = useSWR(
+		key,
+		async (k: string) => {
+			const res = await client.get<LiteSong[]>(k);
+			return res.data;
+		},
+		{ revalidateOnFocus: false },
+	);
+
+	return {
+		songs: data ?? [],
+		error,
+		isLoading,
+		refresh: () => mutate(),
 	};
 }

@@ -2,17 +2,16 @@ import useSWR, { useSWRConfig } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { showNotification } from '@mantine/notifications';
 import { useMyFetch } from './api';
-import type { CreatePlaylistDto, MyPlaylistDto, PlaylistDto } from '../types';
+import type { CreatePlaylistDto, MyPlaylistDto, PlaylistDto, UpdatePlaylistDto } from '../types';
 import { useAuth } from 'react-oidc-context';
 
-export function useMyPlaylistsWithDetails() {
+export function useMyPlaylistsWithDetails(enabled: boolean = true) {
 	const client = useMyFetch();
 	const fetcher = (url: string) => client.get<MyPlaylistDto[]>(url).then((r) => r.data);
-
-	const { data, error, isLoading, mutate } = useSWR<MyPlaylistDto[]>('/api/playlist/my', fetcher, {
+	const key = enabled ? '/api/playlist/my' : null;
+	const { data, error, isLoading, mutate } = useSWR<MyPlaylistDto[]>(key, fetcher, {
 		revalidateOnFocus: false,
 	});
-
 	return { playlists: data ?? [], error, isLoading, refresh: () => mutate() };
 }
 
@@ -61,7 +60,7 @@ export function useUpdatePlaylist() {
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'UPDATE_PLAYLIST',
-		async (_: string, { arg }: { arg: { id: number; dto: Partial<PlaylistDto> } }) => {
+		async (_: string, { arg }: { arg: { id: number; dto: UpdatePlaylistDto } }) => {
 			await client.put(`/api/playlist/${arg.id}`, arg.dto);
 			return arg.id;
 		},
@@ -76,7 +75,7 @@ export function useUpdatePlaylist() {
 	);
 
 	return {
-		updatePlaylist: (id: number, dto: Partial<PlaylistDto>) => trigger({ id, dto }),
+		updatePlaylist: (id: number, dto: UpdatePlaylistDto) => trigger({ id, dto }),
 		isUpdating: isMutating,
 		error,
 	};
@@ -220,11 +219,8 @@ export function useAddPlaylistToMy() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'ADD_PLAYLIST_TO_MY',
 		async (_: string, { arg: playlistId }: { arg: number }) => {
-			const me =
-				(auth.user?.profile as any)?.sub ||
-				(auth.user?.profile as any)?.nameid ||
-				(auth.user?.profile as any)?.['cognito:username'] ||
-				(auth.user?.profile as any)?.id;
+			const me = auth.user?.profile?.sub;
+
 			if (!me) {
 				throw new Error('Not authorized');
 			}
@@ -252,6 +248,5 @@ export function useAddPlaylistToMy() {
 export function useIsPlaylistOwner(ownerId?: string) {
 	const auth = useAuth();
 	const me = auth.user?.profile?.sub;
-
 	return Boolean(ownerId && me && ownerId === me);
 }

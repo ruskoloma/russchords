@@ -4,13 +4,18 @@ import { showNotification } from '@mantine/notifications';
 import { useMyFetch } from './api';
 import { useEffect, useState } from 'react';
 import type { SongDto } from '../types';
+import { useAuth } from 'react-oidc-context';
 
 export function useMyStarred() {
 	const client = useMyFetch();
+	const auth = useAuth();
+
+	const key = auth?.isAuthenticated ? '/api/starred/my' : null;
+
 	const { data, error, isLoading, mutate } = useSWR(
-		'/api/starred/my',
-		async (key: string) => {
-			const res = await client.get<Array<SongDto>>(key);
+		key,
+		async (k: string) => {
+			const res = await client.get<Array<SongDto>>(k);
 			return res.data;
 		},
 		{ revalidateOnFocus: false },

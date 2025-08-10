@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import { ActionIcon, Group, Stack } from '@mantine/core';
-import { IconStar } from '@tabler/icons-react';
+import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import type { SongDto } from '../../types';
 import { useStarSongs, useUnstarSong } from '../../hooks/starred';
 
@@ -78,7 +78,7 @@ export const StarredPage: React.FC = () => {
 							return (
 								<Group justify="center" gap="xs">
 									<ActionIcon
-										variant={isStarred ? 'filled' : 'outline'}
+										variant={'subtle'}
 										color="yellow"
 										onClick={(event) => {
 											event.stopPropagation();
@@ -87,7 +87,7 @@ export const StarredPage: React.FC = () => {
 										disabled={isPending}
 										aria-label={isStarred ? 'Unstar' : 'Star'}
 									>
-										<IconStar size={18} />
+										{isStarred ? <IconStarFilled size={18} /> : <IconStar size={18} />}
 									</ActionIcon>
 								</Group>
 							);

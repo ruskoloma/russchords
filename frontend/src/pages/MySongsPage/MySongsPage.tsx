@@ -1,25 +1,25 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import { TextInput, Button, Group, Stack, ActionIcon } from '@mantine/core';
+import { ActionIcon, Button, Group, Stack, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
-import type { SongDto } from '../../types';
-import { useDeleteSongs, useAddSongsToPlaylist } from '../../hooks/song';
+import type { LiteSong } from '../../types';
+import { useDeleteSongs } from '../../hooks/song';
 import { IconStar } from '@tabler/icons-react';
 import { useStarSongs } from '../../hooks/starred.ts';
 
 export const MySongsPage: React.FC = () => {
-	const loaded = useLoaderData() as SongDto[];
+	const loaded = useLoaderData() as LiteSong[];
 	const navigate = useNavigate();
 
-	const [data, setData] = useState<SongDto[]>(loaded ?? []);
+	const [data, setData] = useState<LiteSong[]>(loaded ?? []);
 	useEffect(() => setData(loaded ?? []), [loaded]);
 
 	const [query, setQuery] = useState('');
 	const [debouncedQuery] = useDebouncedValue(query, 250);
 
-	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<SongDto>>({
+	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<LiteSong>>({
 		columnAccessor: 'name',
 		direction: 'asc',
 	});
@@ -27,7 +27,7 @@ export const MySongsPage: React.FC = () => {
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 
-	const [selected, setSelected] = useState<SongDto[]>([]);
+	const [selected, setSelected] = useState<LiteSong[]>([]);
 
 	const filtered = useMemo(() => {
 		if (!debouncedQuery.trim()) return data;
@@ -37,7 +37,7 @@ export const MySongsPage: React.FC = () => {
 
 	const sorted = useMemo(() => {
 		const { columnAccessor, direction } = sortStatus;
-		const key = columnAccessor as keyof SongDto;
+		const key = columnAccessor as keyof LiteSong;
 		return [...filtered].sort((a, b) => {
 			const av = a[key] ?? '';
 			const bv = b[key] ?? '';
@@ -54,7 +54,6 @@ export const MySongsPage: React.FC = () => {
 	useEffect(() => setPage(1), [debouncedQuery, pageSize]);
 
 	const { deleteSongs, isDeleting } = useDeleteSongs();
-	const { addToPlaylist, isAdding } = useAddSongsToPlaylist();
 	const { starSongs, isStarring } = useStarSongs();
 
 	const onDeleteSelected = () => {
@@ -88,15 +87,6 @@ export const MySongsPage: React.FC = () => {
 		});
 	};
 
-	const onAddToPlaylist = async () => {
-		if (selected.length === 0) return;
-		const playlistId = prompt('Enter playlist ID');
-		if (!playlistId) return;
-		const ids = selected.map((r) => r.id);
-		await addToPlaylist(playlistId, ids);
-		setSelected([]);
-	};
-
 	return (
 		<Stack gap="md">
 			<Group justify="space-between" wrap="wrap">
@@ -107,14 +97,6 @@ export const MySongsPage: React.FC = () => {
 					w={320}
 				/>
 				<Group>
-					<Button
-						variant="default"
-						disabled={selected.length === 0 || isAdding}
-						onClick={onAddToPlaylist}
-						loading={isAdding}
-					>
-						Add to playlist
-					</Button>
 					<Button
 						variant="light"
 						color="red"
@@ -139,7 +121,7 @@ export const MySongsPage: React.FC = () => {
 				</Group>
 			</Group>
 
-			<DataTable<SongDto>
+			<DataTable<LiteSong>
 				striped
 				idAccessor="id"
 				records={paginated}

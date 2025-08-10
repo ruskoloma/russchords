@@ -55,7 +55,7 @@ export const Layout: React.FC = () => {
 						/>
 						<NavLink
 							label="Playlists"
-							active={location.pathname.includes('playlist')}
+							active={location.pathname === 'my-playlists'}
 							component={ReactNavLink}
 							to="/my-playlists"
 							leftSection={<IconPlaylist size={16} stroke={1.5} />}

@@ -1,12 +1,12 @@
 import { type LoaderFunction, redirect } from 'react-router-dom';
-import type { SongDto } from '../../types';
+import type { LiteSong } from '../../types';
 import { myFetch } from '../../helpers/api';
 import axios from 'axios';
 
 export const mySongsLoader: LoaderFunction = async () => {
 	try {
 		const client = await myFetch();
-		const res = await client.get<SongDto[]>('/api/song/my');
+		const res = await client.get<LiteSong[]>('/api/song/my/light');
 		return res.data;
 	} catch (err) {
 		if (axios.isAxiosError(err)) {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput } from '@mantine/core';
+import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, MultiSelect } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import {
 	IconChecks,
@@ -19,7 +19,9 @@ import {
 	useSavePlaylistOrder,
 	useSetPlaylistPinned,
 	useUpdatePlaylist,
+	useAddSongToPlaylist,
 } from '../../hooks/playlists';
+import { useMyLightSongs } from '../../hooks/song';
 import type { LiteSong, MyPlaylistDto } from '../../types';
 import { useAuth } from 'react-oidc-context';
 
@@ -43,6 +45,52 @@ export const PlaylistPage: React.FC = () => {
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
 	const { saveOrder, isSaving } = useSavePlaylistOrder();
 	const { setPinned: setPinnedReq, isSetting } = useSetPlaylistPinned();
+
+	const { songs: mySongs, isLoading: isLoadingMySongs } = useMyLightSongs(isAuthenticated);
+
+	const mySongOptions = useMemo(
+		() =>
+			mySongs.map((s) => ({
+				value: String(s.id),
+				label: s.artist ? `${s.name} — ${s.artist}` : s.name,
+			})),
+		[mySongs],
+	);
+
+	const selectedIdsFromPlaylist = useMemo(
+		() => songs.filter((s) => mySongs.some((ms) => ms.id === s.id)).map((s) => String(s.id)),
+		[songs, mySongs],
+	);
+
+	const [selectedIds, setSelectedIds] = useState<string[]>(selectedIdsFromPlaylist);
+	useEffect(() => setSelectedIds(selectedIdsFromPlaylist), [selectedIdsFromPlaylist]);
+
+	const { addSongToPlaylist, isAdding: isAddingSong } = useAddSongToPlaylist();
+
+	const onChangeSelected = async (values: string[]) => {
+		const prev = new Set(selectedIds);
+		const next = new Set(values);
+
+		const toAdd = [...next].filter((id) => !prev.has(id));
+		const toRemove = [...prev].filter((id) => !next.has(id));
+
+		for (const idStr of toAdd) {
+			const id = parseInt(idStr, 10);
+
+			await addSongToPlaylist(initial.playlistId, id);
+			const added = mySongs.find((s) => s.id === id);
+			if (added) setSongs((prevSongs) => [...prevSongs, added]);
+		}
+
+		for (const idStr of toRemove) {
+			const id = parseInt(idStr, 10);
+
+			await removeSongFromPlaylist(initial.playlistId, id);
+			setSongs((prevSongs) => prevSongs.filter((s) => s.id !== id));
+		}
+
+		setSelectedIds(values);
+	};
 
 	const onDragEnd = (result: DropResult) => {
 		const { source, destination } = result;
@@ -90,9 +138,8 @@ export const PlaylistPage: React.FC = () => {
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
 				setSongs((prev) => prev.filter((s) => s.id !== songId));
-				try {
-					await removeSongFromPlaylist(initial.playlistId, songId);
-				} catch {}
+
+				await removeSongFromPlaylist(initial.playlistId, songId);
 			},
 		});
 	};
@@ -148,6 +195,23 @@ export const PlaylistPage: React.FC = () => {
 				<Group justify="space-between" align="center">
 					<Text fw={700}>Songs</Text>
 					<Group>
+						{isAuthenticated && isOwner && (
+							<>
+								<MultiSelect
+									placeholder="Add/remove my songs..."
+									data={mySongOptions}
+									value={selectedIds}
+									onChange={onChangeSelected}
+									searchable
+									disabled={isLoadingMySongs || isAddingSong || isRemoving}
+									w={320}
+									className="hide-multiselect-tags"
+								/>
+								<Button variant="default" onClick={onSaveOrder} loading={isSaving}>
+									Save order
+								</Button>
+							</>
+						)}
 						{isAuthenticated && (
 							<Button
 								variant="default"
@@ -161,11 +225,6 @@ export const PlaylistPage: React.FC = () => {
 						{isAuthenticated && !isOwner && (
 							<Button variant="filled" onClick={() => addToMy(initial.playlistId)} loading={isAdding}>
 								Add to my
-							</Button>
-						)}
-						{isAuthenticated && isOwner && (
-							<Button variant="default" onClick={onSaveOrder} loading={isSaving}>
-								Save order
 							</Button>
 						)}
 					</Group>

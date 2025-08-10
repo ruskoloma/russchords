@@ -1,5 +1,3 @@
-import type { SongDto } from './song.ts';
-
 export interface PlaylistDto {
 	id: number;
 	ownerId: string;
@@ -30,11 +28,7 @@ export interface CreatePlaylistDto {
 	description?: string | null;
 }
 
-export interface PlaylistWithSongs extends PlaylistDto {
-	songs: SongDto[];
-}
-
-export interface PlaylistSummary extends PlaylistDto {
-	songs?: SongDto[];
-	totalSongsCount?: number;
+export interface UpdatePlaylistDto {
+	title?: string | null;
+	description?: string | null;
 }

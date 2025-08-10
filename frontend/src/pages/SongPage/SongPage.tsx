@@ -1,14 +1,21 @@
 import { useLoaderData } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../components/Viewer/Viewer';
-import { ActionIcon, Box, Divider, Group, Menu, Text } from '@mantine/core';
+import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
 import { CardHC } from '../../components/CardHC/CardHC';
-import { useCloneSong, useDeleteSongs } from '../../hooks/song';
+import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../hooks/song';
 import { useStarredState } from '../../hooks/starred';
-import { IconStar } from '@tabler/icons-react';
+import { IconStar, IconStarFilled } from '@tabler/icons-react';
+import { useAuth } from 'react-oidc-context';
+import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../hooks/playlists';
+import { useEffect, useMemo, useState } from 'react';
 
 export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
+
+	const auth = useAuth();
+	const isAuthenticated = Boolean(auth?.isAuthenticated);
+	const isOwner = useIsSongOwner(songDto.authorId);
 
 	const { isStarred, isLoading, unstarSong, starSong } = useStarredState(songDto.id);
 
@@ -16,6 +23,33 @@ export function SongPage() {
 	const { deleteSongs, isDeleting } = useDeleteSongs();
 
 	const handleDeleteSong = () => deleteSongs([songDto.id]);
+
+	const { playlists: myPlaylists } = useMyPlaylistsWithDetails(isAuthenticated);
+	const options = useMemo(
+		() => myPlaylists.map((p) => ({ value: String(p.playlistId), label: p.title })),
+		[myPlaylists],
+	);
+	const initiallySelected = useMemo(
+		() => myPlaylists.filter((p) => (p.songs ?? []).some((s) => s.id === songDto.id)).map((p) => String(p.playlistId)),
+		[myPlaylists, songDto.id],
+	);
+	const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(initiallySelected);
+	useEffect(() => setSelectedPlaylists(initiallySelected), [initiallySelected]);
+	const { addSongToPlaylist, isAdding } = useAddSongToPlaylist();
+	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
+	const onChangePlaylists = async (values: string[]) => {
+		const prev = new Set(selectedPlaylists);
+		const next = new Set(values);
+		const toAdd = [...next].filter((id) => !prev.has(id));
+		const toRemove = [...prev].filter((id) => !next.has(id));
+		for (const id of toAdd) {
+			await addSongToPlaylist(parseInt(id, 10), songDto.id);
+		}
+		for (const id of toRemove) {
+			await removeSongFromPlaylist(parseInt(id, 10), songDto.id);
+		}
+		setSelectedPlaylists(values);
+	};
 
 	return (
 		<>
@@ -26,19 +60,33 @@ export function SongPage() {
 					</Text>
 					<Text size="md">{songDto.artist}</Text>
 				</Box>
-				<Box>
-					<ActionIcon
-						variant={isStarred ? 'filled' : 'outline'}
-						color="yellow"
-						onClick={isStarred ? unstarSong : starSong}
-						disabled={isLoading}
-						aria-label={isStarred ? 'Unstar' : 'Star'}
-						w={36}
-						h={36}
-					>
-						<IconStar size={20} />
-					</ActionIcon>
-				</Box>
+				<Group>
+					{isAuthenticated && (
+						<MultiSelect
+							data={options}
+							value={selectedPlaylists}
+							onChange={onChangePlaylists}
+							searchable
+							w={280}
+							disabled={isAdding || isRemoving}
+							placeholder="Add to playlists..."
+							className="hide-multiselect-tags"
+						/>
+					)}
+					{isAuthenticated && (
+						<ActionIcon
+							variant={'subtle'}
+							color="yellow"
+							onClick={isStarred ? unstarSong : starSong}
+							disabled={isLoading}
+							aria-label={isStarred ? 'Unstar' : 'Star'}
+							w={36}
+							h={36}
+						>
+							{isStarred ? <IconStarFilled size={24} /> : <IconStar size={24} />}
+						</ActionIcon>
+					)}
+				</Group>
 			</Group>
 
 			<Divider my="sm" />
@@ -46,13 +94,17 @@ export function SongPage() {
 			<Viewer
 				musicText={songDto.content}
 				menuItems={[
-					<Menu.Item key="clone" disabled={isCloning} onClick={() => cloneSong(songDto.id)}>
-						Clone
-					</Menu.Item>,
-					<Menu.Item key="delete" color="red" disabled={isDeleting} onClick={handleDeleteSong}>
-						Delete
-					</Menu.Item>,
-				]}
+					isAuthenticated && (
+						<Menu.Item key="clone" disabled={isCloning} onClick={() => cloneSong(songDto.id)}>
+							Clone
+						</Menu.Item>
+					),
+					isOwner && (
+						<Menu.Item key="delete" color="red" disabled={isDeleting} onClick={handleDeleteSong}>
+							Delete
+						</Menu.Item>
+					),
+				].filter(Boolean)}
 			/>
 
 			<Divider />
