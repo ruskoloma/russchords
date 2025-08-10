@@ -122,19 +122,35 @@ public class PlaylistService : IPlaylistService
             await _context.SaveChangesAsync();
         }
     }
-    public async Task<List<MyPlaylistMemberDto>> GetMyPlaylistsWithPinAsync(string userId)
+
+    public async Task<List<MyPlaylistDto>> GetMyPlaylistsWithDetailsAsync(string userId)
     {
         var query =
             from m in _context.PlaylistMembers
             where m.MemberId == userId
             join p in _context.Playlists on m.PlaylistId equals p.Id
-            select new MyPlaylistMemberDto
+            select new MyPlaylistDto
             {
                 PlaylistId = p.Id,
                 OwnerId = p.OwnerId,
                 Title = p.Title,
                 Description = p.Description,
-                IsPinned = m.IsPinned
+                IsPinned = m.IsPinned,
+                Songs = (
+                    from ps in _context.PlaylistSongs
+                    where ps.PlaylistId == p.Id
+                    join s in _context.Songs on ps.SongId equals s.Id
+                    orderby (ps.Order == null), ps.Order, s.Name
+                    select new LiteSongDto
+                    {
+                        Id = s.Id,
+                        Name = s.Name,
+                        Artist = s.Artist,
+                        SourceUrl = s.SourceUrl,
+                        RootNote = s.RootNote,
+                        Order = ps.Order
+                    }
+                ).ToList()
             };
 
         var result = await query
@@ -143,5 +159,78 @@ public class PlaylistService : IPlaylistService
             .ToListAsync();
 
         return result;
+    }
+
+    public async Task ReorderSongsAsync(int playlistId, string userId, IReadOnlyList<int> songIds)
+    {
+        var playlist = await _context.Playlists.FirstOrDefaultAsync(p => p.Id == playlistId && p.OwnerId == userId);
+        if (playlist == null) throw new Exception("Playlist not found or not owned by user");
+
+        var items = await _context.PlaylistSongs
+            .Where(ps => ps.PlaylistId == playlistId)
+            .ToListAsync();
+
+        var indexById = new Dictionary<int, int>();
+        for (int i = 0; i < songIds.Count; i++)
+        {
+            indexById[songIds[i]] = i + 1;
+        }
+
+        var now = DateTime.UtcNow;
+        foreach (var ps in items)
+        {
+            if (indexById.TryGetValue(ps.SongId, out var order))
+            {
+                ps.Order = order;
+                ps.UpdatedAt = now;
+            }
+            else
+            {
+                ps.Order = null;
+                ps.UpdatedAt = now;
+            }
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<MyPlaylistDto?> GetPlaylistFullAsync(int id, string? userId)
+    {
+        var playlist = await _context.Playlists.FirstOrDefaultAsync(p => p.Id == id);
+        if (playlist == null) return null;
+
+        bool isPinned = false;
+        if (!string.IsNullOrEmpty(userId))
+        {
+            isPinned = await _context.PlaylistMembers
+                .AnyAsync(m => m.PlaylistId == id && m.MemberId == userId && m.IsPinned);
+        }
+
+        var songsQuery =
+            from ps in _context.PlaylistSongs
+            where ps.PlaylistId == id
+            join s in _context.Songs on ps.SongId equals s.Id
+            orderby (ps.Order == null), ps.Order, s.Name
+            select new LiteSongDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Artist = s.Artist,
+                SourceUrl = s.SourceUrl,
+                RootNote = s.RootNote,
+                Order = ps.Order
+            };
+
+        var songs = await songsQuery.ToListAsync();
+
+        return new MyPlaylistDto
+        {
+            PlaylistId = playlist.Id,
+            OwnerId = playlist.OwnerId,
+            Title = playlist.Title,
+            Description = playlist.Description,
+            IsPinned = isPinned,
+            Songs = songs
+        };
     }
 }

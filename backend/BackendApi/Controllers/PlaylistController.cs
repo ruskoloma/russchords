@@ -46,10 +46,10 @@ public class PlaylistController : ControllerBase
     public async Task<IActionResult> GetAllUserPlaylists()
     {
         var userId = GetUserIdRequired();
-        var result = await _playlists.GetMyPlaylistsWithPinAsync(userId);
+        var result = await _playlists.GetMyPlaylistsWithDetailsAsync(userId);
         return Ok(result);
     }
-    
+
     [AllowAnonymous]
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
@@ -58,7 +58,7 @@ public class PlaylistController : ControllerBase
             ? User.FindFirstValue(ClaimTypes.NameIdentifier)
             : null;
 
-        var result = await _playlists.GetByIdAsync(id, userId);
+        var result = await _playlists.GetPlaylistFullAsync(id, userId);
         return result == null ? NotFound() : Ok(result);
     }
 
@@ -156,7 +156,6 @@ public class PlaylistController : ControllerBase
     public async Task<IActionResult> CreateMember(PlaylistMemberDto dto)
     {
         if (dto.MemberId != GetUserIdRequired()) return Forbid();
-
         var created = await _members.CreateAsync(dto);
         return CreatedAtAction(nameof(GetMember), new { id = created.Id }, created);
     }
@@ -165,6 +164,14 @@ public class PlaylistController : ControllerBase
     public async Task<IActionResult> DeleteMember(int id)
     {
         await _members.DeleteAsync(id);
+        return NoContent();
+    }
+
+    [HttpPost("{playlistId}/reorder")]
+    public async Task<IActionResult> Reorder(int playlistId, [FromBody] PlaylistSongOrderDto dto)
+    {
+        var userId = GetUserIdRequired();
+        await _playlists.ReorderSongsAsync(playlistId, userId, dto.SongIds);
         return NoContent();
     }
 
