@@ -1,35 +1,41 @@
 server {
-  listen 80;
-  server_name _;
-  return 301 https://$host$request_uri;
+    listen 80;
+    server_name _;
+    return 301 https://$host$request_uri;
 }
 
 server {
-  listen 443 ssl;
-  server_name api.${DOMAIN};
+    listen 443 ssl;
+    server_name api.${DOMAIN};
 
-  access_log /dev/stdout;
-  error_log  /dev/stderr warn;
+    resolver 10.0.0.2 valid=10s;
 
-  include /config/nginx/ssl.conf;
+    access_log /dev/stdout;
+    error_log /dev/stderr warn;
 
-  location / {
-    proxy_pass http://api.${PROXY_PASS_DOMAIN};
-    include /config/nginx/proxy.conf;
-  }
+    include /config/nginx/ssl.conf;
+
+    location / {
+        set $upstream_host "api.${PROXY_PASS_DOMAIN}";
+        proxy_pass http://$upstream_host;
+        include /config/nginx/proxy.conf;
+    }
 }
 
 server {
-  listen 443 ssl;
-  server_name jenkins.${DOMAIN};
+    listen 443 ssl;
+    server_name jenkins.${DOMAIN};
 
-  access_log /dev/stdout;
-  error_log  /dev/stderr warn;
+    resolver 10.0.0.2 valid=10s;
 
-  include /config/nginx/ssl.conf;
+    access_log /dev/stdout;
+    error_log /dev/stderr warn;
 
-  location / {
-    proxy_pass http://jenkins.${PROXY_PASS_DOMAIN};
-    include /config/nginx/proxy.conf;
-  }
+    include /config/nginx/ssl.conf;
+
+    location / {
+        set $upstream_host "jenkins.${PROXY_PASS_DOMAIN}";
+        proxy_pass http://$upstream_host;
+        include /config/nginx/proxy.conf;
+    }
 }
