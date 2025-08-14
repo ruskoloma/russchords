@@ -49,11 +49,10 @@ if [[ -z "$ASSOC_ID" || "$ASSOC_INST_ID" != "$INSTANCE_ID" ]]; then
     --allow-reassociation >/dev/null
 fi
 
-PUBLIC_IP=$(aws ec2 describe-addresses --region "$REGION" \
-  --allocation-ids "$EIP_ALLOC_ID" \
-  --query "Addresses[0].PublicIp" --output text)
-[[ "$PUBLIC_IP" == "None" ]] && PUBLIC_IP=""
-echo "[bootstrap] EIP now attached, PublicIp=${PUBLIC_IP}"
+PRIVATE_IP=$(aws ec2 describe-instances --region "$REGION" --instance-ids "$INSTANCE_ID" \
+  --query "Reservations[0].Instances[0].PrivateIpAddress" --output text)
+[[ "$PRIVATE_IP" == "None" ]] && PRIVATE_IP=""
+echo "[bootstrap] ENI privateIp=${PRIVATE_IP}"
 
 ZONE_ID=$(aws route53 list-hosted-zones-by-name \
   --dns-name "${ZONE_NAME}." \
@@ -66,7 +65,7 @@ fi
 CHANGE_JSON=$(mktemp)
 cat > "$CHANGE_JSON" <<EOF
 {
-  "Comment": "Bootstrap UPSERT ${CLUSTER_RECORD_NAME}.${ZONE_NAME} -> ${PUBLIC_IP}",
+  "Comment": "Bootstrap UPSERT ${CLUSTER_RECORD_NAME}.${ZONE_NAME} -> ${PRIVATE_IP}",
   "Changes": [
     {
       "Action": "UPSERT",
@@ -75,7 +74,7 @@ cat > "$CHANGE_JSON" <<EOF
         "Type": "A",
         "TTL": ${TTL},
         "ResourceRecords": [
-          { "Value": "${PUBLIC_IP}" }
+          { "Value": "${PRIVATE_IP}" }
         ]
       }
     }
@@ -88,4 +87,4 @@ aws route53 change-resource-record-sets \
   --hosted-zone-id "$ZONE_ID" \
   --change-batch "file://$CHANGE_JSON" >/dev/null
 
-echo "[bootstrap] Route53 record '${CLUSTER_RECORD_NAME}.${ZONE_NAME}' -> ${PUBLIC_IP} [TTL=${TTL}]"
+echo "[bootstrap] Route53 record '${CLUSTER_RECORD_NAME}.${ZONE_NAME}' -> ${PRIVATE_IP} [TTL=${TTL}]"
