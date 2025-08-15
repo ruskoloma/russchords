@@ -1,16 +1,24 @@
 import * as React from 'react';
-import { NavLink as ReactNavLink, Outlet } from 'react-router-dom';
+import { NavLink as ReactNavLink, Outlet, useLocation } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
 import { IconHome2, IconListLetters, IconLogout, IconPlaylist, IconStar, IconUser } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
+import { useEffect } from 'react';
 
 export const Layout: React.FC = () => {
 	const { isAuthenticated, user } = useAuth();
 	const { login, logout } = useAuthActions();
 	const [opened, { toggle }] = useDisclosure();
+	const location = useLocation();
+
+	useEffect(() => {
+		if (isAuthenticated && (window.location.search.includes('code=') || window.location.search.includes('state='))) {
+			window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
+		}
+	}, [isAuthenticated]);
 
 	return (
 		<AppShell
@@ -57,7 +65,7 @@ export const Layout: React.FC = () => {
 								/>
 								<NavLink
 									label="Playlists"
-									active={location.pathname === 'my-playlists'}
+									active={location.pathname.includes('playlist')}
 									component={ReactNavLink}
 									to="/my-playlists"
 									leftSection={<IconPlaylist size={16} stroke={1.5} />}

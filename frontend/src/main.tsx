@@ -20,6 +20,7 @@ import {
 	mySongsLoader,
 	EditSongPage,
 	editSongPageLoader,
+	SilentRedirect,
 } from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
@@ -71,6 +72,10 @@ const router = createBrowserRouter([
 				path: 'playlist/:id',
 				loader: playlistPageLoader,
 				element: <PlaylistPage />,
+			},
+			{
+				path: '/auth/silent-redirect',
+				element: <SilentRedirect />,
 			},
 		],
 	},
