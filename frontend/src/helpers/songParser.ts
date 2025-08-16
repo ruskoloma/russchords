@@ -284,12 +284,11 @@ export function parseSongText(rawText: string): Line[] {
 	});
 }
 
-// Finds a Key by its name
-export function getKeyByName(name: string) {
-	if (name.endsWith('m')) {
-		name = name.slice(0, -1);
-	}
-	return KEYS.find((k) => k.name === name) as Key;
+// Finds a Key by its name (robust to chord modifiers like Eb2, Em7, Bb/D)
+export function getKeyByName(name: string): Key {
+	const root = getChordRoot(name);
+	const normalized = root === 'B' ? 'H' : root;
+	return KEYS.find((k) => k.name === normalized) as Key;
 }
 
 // Gets chord root part

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
 import { KEYS, fillMissingChords } from '../../helpers/songParser';
+import { parseChordPro } from '../../helpers/chordPro';
 import { useCreateSong } from '../../hooks/song';
 import { NoWrapTextarea } from '../../components';
 
@@ -12,6 +13,20 @@ export const CreateSongPage = () => {
 	const [artist, setArtist] = useState('');
 	const [content, setContent] = useState('');
 	const [rootNote, setRootNote] = useState<string | null>(null);
+
+	const fileInputRef = useRef<HTMLInputElement | null>(null);
+	const onPickFile = () => fileInputRef.current?.click();
+	const onImportFile: React.ChangeEventHandler<HTMLInputElement> = async (e) => {
+		const f = e.target.files?.[0];
+		if (!f) return;
+		const text = await f.text();
+		const parsed = parseChordPro(text, f.name);
+		if (parsed.name) setName(parsed.name);
+		if (parsed.artist) setArtist(parsed.artist);
+		if (parsed.rootNote !== undefined) setRootNote(parsed.rootNote);
+		setContent(parsed.content);
+		e.target.value = '';
+	};
 
 	const { createSong, isCreating } = useCreateSong({ onSuccess: (id) => navigate(`/song/${id}`) });
 
@@ -37,9 +52,21 @@ export const CreateSongPage = () => {
 				<Text fw={700} size="xl">
 					Create song
 				</Text>
-				<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
-					Fill chords
-				</Button>
+				<Group>
+					<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
+						Fill chords
+					</Button>
+					<Button variant="light" onClick={onPickFile}>
+						Import ChordPro
+					</Button>
+				</Group>
+				<input
+					ref={fileInputRef}
+					type="file"
+					accept=".pro,.cho,.chordpro,.crd,.chopro,.txt"
+					style={{ display: 'none' }}
+					onChange={onImportFile}
+				/>
 			</Group>
 
 			<Card withBorder shadow="sm">

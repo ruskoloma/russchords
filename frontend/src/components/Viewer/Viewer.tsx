@@ -39,8 +39,11 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 	const [key, setKey] = useState(defaultKey || originalKey || 'C');
 	const [fontSize, setFontSize] = useState(16);
 
+	console.log('key: ', key);
+
 	const toKey = getKeyByName(key)!;
 
+	console.log('originalKey: ', originalKey);
 	const delta = originalKey ? getDelta(getKeyByName(originalKey).value, getKeyByName(key).value) : 0;
 
 	const handleChangeHideChords = () => {
