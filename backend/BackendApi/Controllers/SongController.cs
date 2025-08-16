@@ -40,10 +40,9 @@ public class SongController : ControllerBase
 
     [HttpPost]
     [Authorize]
-    public async Task<IActionResult> Create(SongDto dto)
+    public async Task<IActionResult> Create([FromBody] CreateSongDto dto)
     {
-        dto.AuthorId = GetUserId();
-        var created = await _service.CreateAsync(dto);
+        var created = await _service.CreateAsync(dto, GetUserId());
         return CreatedAtAction(nameof(Get), new { id = created.Id }, created);
     }
 

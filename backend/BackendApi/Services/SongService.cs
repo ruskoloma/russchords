@@ -32,13 +32,22 @@ public class SongService : ISongService
         return entity == null ? null : _mapper.Map<SongDto>(entity);
     }
 
-    public async Task<SongDto> CreateAsync(SongDto dto)
+    public async Task<SongDto> CreateAsync(CreateSongDto dto, string authorId)
     {
-        var entity = _mapper.Map<SongEntity>(dto);
-        entity.CreatedAt = DateTime.UtcNow;
-        entity.UpdatedAt = DateTime.UtcNow;
+        var entity = new SongEntity
+        {
+            Name = dto.Name,
+            Content = dto.Content,
+            Artist = dto.Artist,
+            RootNote = dto.RootNote,
+            AuthorId = authorId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
         _context.Songs.Add(entity);
         await _context.SaveChangesAsync();
+
         return _mapper.Map<SongDto>(entity);
     }
 
