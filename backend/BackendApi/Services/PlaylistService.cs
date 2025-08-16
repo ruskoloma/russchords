@@ -137,6 +137,7 @@ public class PlaylistService : IPlaylistService
                 Title = p.Title,
                 Description = p.Description,
                 IsPinned = m.IsPinned,
+                MemberRecordId = m.Id,
                 Songs = (
                     from ps in _context.PlaylistSongs
                     where ps.PlaylistId == p.Id
@@ -200,12 +201,15 @@ public class PlaylistService : IPlaylistService
         var playlist = await _context.Playlists.FirstOrDefaultAsync(p => p.Id == id);
         if (playlist == null) return null;
 
-        bool isPinned = false;
-        if (!string.IsNullOrEmpty(userId))
-        {
-            isPinned = await _context.PlaylistMembers
-                .AnyAsync(m => m.PlaylistId == id && m.MemberId == userId && m.IsPinned);
-        }
+        var membership = string.IsNullOrEmpty(userId)
+            ? null
+            : await _context.PlaylistMembers
+                .Where(m => m.PlaylistId == id && m.MemberId == userId)
+                .Select(m => new { m.Id, m.IsPinned })
+                .FirstOrDefaultAsync();
+
+        bool isPinned = membership?.IsPinned ?? false;
+        int memberRecordId = membership?.Id ?? 0;
 
         var songsQuery =
             from ps in _context.PlaylistSongs
@@ -231,7 +235,8 @@ public class PlaylistService : IPlaylistService
             Title = playlist.Title,
             Description = playlist.Description,
             IsPinned = isPinned,
-            Songs = songs
+            Songs = songs,
+            MemberRecordId = memberRecordId,
         };
     }
 }

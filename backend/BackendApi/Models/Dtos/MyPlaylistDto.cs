@@ -2,6 +2,7 @@ namespace BackendApi.Models.Dtos;
 
 public class MyPlaylistDto
 {
+    public int MemberRecordId { get; set; }
     public int PlaylistId { get; set; }
     public string OwnerId { get; set; } = null!;
     public string Title { get; set; } = null!;
