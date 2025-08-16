@@ -29,7 +29,7 @@ export function CachedSongPage() {
 				]}
 			/>
 			<Divider />
-			<CardHC url={songDto.original_url} name={songDto.name} artist={songDto.artist} />
+			fix <CardHC url={songDto.originalUrl} name={songDto.name} artist={songDto.artist} />
 		</>
 	);
 }

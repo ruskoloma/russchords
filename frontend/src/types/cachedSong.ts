@@ -2,6 +2,6 @@ export interface CachedSongDto {
 	id: string;
 	content: string;
 	name: string;
-	original_url: string;
+	originalUrl: string;
 	artist?: string;
 }
