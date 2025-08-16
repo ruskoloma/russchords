@@ -375,7 +375,6 @@ export function getOriginalKey(parsedLines: Line[]): string | undefined {
 	}
 }
 
-/** Главная функция: автозаполнение аккордов по первому куплету/припеву */
 export function fillMissingChords(raw: string): string {
 	// Normalize to \n for processing
 	const normalized = raw.replace(/\r\n/g, '\n');

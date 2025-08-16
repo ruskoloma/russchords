@@ -65,14 +65,6 @@ export const EditSongPage = () => {
 						autosize
 						minRows={16}
 						spellCheck={false}
-						// style={{
-						// 	input: {
-						// 		whiteSpace: 'nowrap',
-						// 		overflowX: 'auto',
-						// 		width: '100%',
-						// 		maxWidth: '100%',
-						// 	},
-						// }}
 					/>
 					<Group justify="flex-end">
 						<Button variant="light" color="gray" onClick={onCancel}>
