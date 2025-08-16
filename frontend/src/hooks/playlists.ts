@@ -245,6 +245,34 @@ export function useAddPlaylistToMy() {
 	};
 }
 
+export function useRemovePlaylistFromMy() {
+	const client = useMyFetch();
+	const { mutate } = useSWRConfig();
+
+	const { trigger, isMutating, error } = useSWRMutation(
+		'REMOVE_PLAYLIST_FROM_MY',
+		async (_: string, { arg: membershipId }: { arg: number }) => {
+			await client.delete(`/api/playlist/members/${membershipId}`);
+			return membershipId;
+		},
+		{
+			onSuccess: async () => {
+				showNotification({ title: 'Removed', message: 'Playlist removed from your list.', color: 'green' });
+				await mutate('/api/playlist/my');
+			},
+			onError: (err) => {
+				showNotification({ title: 'Remove failed', message: String(err), color: 'red' });
+			},
+		},
+	);
+
+	return {
+		removeFromMy: (membershipId: number) => trigger(membershipId),
+		isRemovingFromMy: isMutating,
+		error,
+	};
+}
+
 export function useIsPlaylistOwner(ownerId?: string) {
 	const auth = useAuth();
 	const me = auth.user?.profile?.sub;

@@ -4,22 +4,22 @@ import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import { ActionIcon, Button, Group, Stack, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
-import type { LiteSong } from '../../types';
+import type { LiteSongDto } from '../../types';
 import { useDeleteSongs } from '../../hooks/song';
 import { IconStar } from '@tabler/icons-react';
 import { useStarSongs } from '../../hooks/starred.ts';
 
 export const MySongsPage: React.FC = () => {
-	const loaded = useLoaderData() as LiteSong[];
+	const loaded = useLoaderData() as LiteSongDto[];
 	const navigate = useNavigate();
 
-	const [data, setData] = useState<LiteSong[]>(loaded ?? []);
+	const [data, setData] = useState<LiteSongDto[]>(loaded ?? []);
 	useEffect(() => setData(loaded ?? []), [loaded]);
 
 	const [query, setQuery] = useState('');
 	const [debouncedQuery] = useDebouncedValue(query, 250);
 
-	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<LiteSong>>({
+	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<LiteSongDto>>({
 		columnAccessor: 'name',
 		direction: 'asc',
 	});
@@ -27,7 +27,7 @@ export const MySongsPage: React.FC = () => {
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(10);
 
-	const [selected, setSelected] = useState<LiteSong[]>([]);
+	const [selected, setSelected] = useState<LiteSongDto[]>([]);
 
 	const filtered = useMemo(() => {
 		if (!debouncedQuery.trim()) return data;
@@ -37,7 +37,7 @@ export const MySongsPage: React.FC = () => {
 
 	const sorted = useMemo(() => {
 		const { columnAccessor, direction } = sortStatus;
-		const key = columnAccessor as keyof LiteSong;
+		const key = columnAccessor as keyof LiteSongDto;
 		return [...filtered].sort((a, b) => {
 			const av = a[key] ?? '';
 			const bv = b[key] ?? '';
@@ -121,7 +121,7 @@ export const MySongsPage: React.FC = () => {
 				</Group>
 			</Group>
 
-			<DataTable<LiteSong>
+			<DataTable<LiteSongDto>
 				striped
 				idAccessor="id"
 				records={paginated}

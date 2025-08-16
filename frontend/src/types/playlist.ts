@@ -5,7 +5,7 @@ export interface PlaylistDto {
 	description?: string | null;
 }
 
-export interface LiteSong {
+export interface LiteSongDto {
 	id: number;
 	name: string;
 	artist?: string | null;
@@ -20,7 +20,8 @@ export interface MyPlaylistDto {
 	title: string;
 	description?: string | null;
 	isPinned: boolean;
-	songs: LiteSong[];
+	songs: LiteSongDto[];
+	memberRecordId: number;
 }
 
 export interface CreatePlaylistDto {

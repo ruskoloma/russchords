@@ -1,6 +1,6 @@
 import useSWRMutation from 'swr/mutation';
 import useSWR from 'swr';
-import type { LiteSong, UpdateSongDto } from '../types';
+import type { LiteSongDto, UpdateSongDto } from '../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import { useMyFetch } from './api';
@@ -143,7 +143,7 @@ export function useMyLightSongs(enabled: boolean = true) {
 	const { data, error, isLoading, mutate } = useSWR(
 		key,
 		async (k: string) => {
-			const res = await client.get<LiteSong[]>(k);
+			const res = await client.get<LiteSongDto[]>(k);
 			return res.data;
 		},
 		{ revalidateOnFocus: false },

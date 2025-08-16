@@ -20,9 +20,11 @@ import {
 	useSetPlaylistPinned,
 	useUpdatePlaylist,
 	useAddSongToPlaylist,
+	useMyPlaylistsWithDetails,
+	useRemovePlaylistFromMy,
 } from '../../hooks/playlists';
 import { useMyLightSongs } from '../../hooks/song';
-import type { LiteSong, MyPlaylistDto } from '../../types';
+import type { LiteSongDto, MyPlaylistDto } from '../../types';
 import { useAuth } from 'react-oidc-context';
 
 export const PlaylistPage: React.FC = () => {
@@ -33,13 +35,26 @@ export const PlaylistPage: React.FC = () => {
 	const [description, setDescription] = useState(initial.description ?? '');
 	const [editing, setEditing] = useState(false);
 
-	const [songs, setSongs] = useState<LiteSong[]>(initial.songs ?? []);
+	const [songs, setSongs] = useState<LiteSongDto[]>(initial.songs ?? []);
 	useEffect(() => setSongs(initial.songs ?? []), [initial.songs]);
 
 	const [pinned, setPinned] = useState<boolean>(initial.isPinned);
 	const isOwner = useIsPlaylistOwner(initial.ownerId);
 	const { isAuthenticated } = useAuth();
 	const { addToMy, isAdding } = useAddPlaylistToMy();
+
+	const { playlists } = useMyPlaylistsWithDetails(isAuthenticated);
+	const isInMy = useMemo(
+		() => playlists.some((p) => p.playlistId === initial.playlistId),
+		[playlists, initial.playlistId],
+	);
+
+	const myMembershipId = useMemo(
+		() => playlists.find((p) => p.playlistId === initial.playlistId)?.memberRecordId ?? null,
+		[playlists, initial.playlistId],
+	);
+
+	const { removeFromMy, isRemovingFromMy } = useRemovePlaylistFromMy();
 
 	const { updatePlaylist, isUpdating } = useUpdatePlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
@@ -225,11 +240,23 @@ export const PlaylistPage: React.FC = () => {
 								{pinned ? 'Unpin' : 'Pin'}
 							</Button>
 						)}
-						{isAuthenticated && !isOwner && (
-							<Button variant="filled" onClick={() => addToMy(initial.playlistId)} loading={isAdding}>
-								Add to my
-							</Button>
-						)}
+						{isAuthenticated &&
+							!isOwner &&
+							(isInMy ? (
+								<Button
+									variant="light"
+									color="red"
+									onClick={() => myMembershipId != null && removeFromMy(myMembershipId)}
+									disabled={myMembershipId == null}
+									loading={isRemovingFromMy}
+								>
+									Remove from my
+								</Button>
+							) : (
+								<Button variant="filled" onClick={() => addToMy(initial.playlistId)} loading={isAdding}>
+									Add to my
+								</Button>
+							))}
 					</Group>
 				</Group>
 

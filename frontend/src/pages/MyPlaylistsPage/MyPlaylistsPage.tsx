@@ -2,7 +2,7 @@ import { useLoaderData, useNavigate } from 'react-router-dom';
 import { Box, Button, Card, Divider, Group, Select, SimpleGrid, Stack, Text, Textarea, TextInput } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useMemo, useState } from 'react';
-import type { LiteSong, MyPlaylistDto } from '../../types';
+import type { LiteSongDto, MyPlaylistDto } from '../../types';
 import { useCreatePlaylist } from '../../hooks/playlists';
 import { IconPin, IconPlaylistAdd } from '@tabler/icons-react';
 
@@ -107,7 +107,7 @@ export default function MyPlaylistsPage() {
 
 			<SimpleGrid cols={{ base: 1, sm: 2, md: 3 }}>
 				{playlists.map((pl) => {
-					const firstFive: LiteSong[] = (pl.songs ?? []).slice(0, 5);
+					const firstFive: LiteSongDto[] = (pl.songs ?? []).slice(0, 5);
 					return (
 						<Card
 							key={pl.playlistId}
