@@ -63,7 +63,10 @@ export const PlaylistPage: React.FC = () => {
 	);
 
 	const [selectedIds, setSelectedIds] = useState<string[]>(selectedIdsFromPlaylist);
-	useEffect(() => setSelectedIds(selectedIdsFromPlaylist), [selectedIdsFromPlaylist]);
+	useEffect(() => {
+		if (!isAuthenticated) return;
+		setSelectedIds(selectedIdsFromPlaylist);
+	}, [selectedIdsFromPlaylist, isAuthenticated]);
 
 	const { addSongToPlaylist, isAdding: isAddingSong } = useAddSongToPlaylist();
 

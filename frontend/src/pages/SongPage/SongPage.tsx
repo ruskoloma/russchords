@@ -36,7 +36,12 @@ export function SongPage() {
 		[myPlaylists, songDto.id],
 	);
 	const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(initiallySelected);
-	useEffect(() => setSelectedPlaylists(initiallySelected), [initiallySelected]);
+
+	useEffect(() => {
+		if (!isAuthenticated) return;
+		setSelectedPlaylists(initiallySelected);
+	}, [initiallySelected, isAuthenticated]);
+
 	const { addSongToPlaylist, isAdding } = useAddSongToPlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
 	const onChangePlaylists = async (values: string[]) => {
