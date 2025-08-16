@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
 import type { SongDto } from '../../types';
-import { KEYS } from '../../helpers/songParser';
+import { KEYS, fillMissingChords } from '../../helpers/songParser';
 import { useUpdateSong } from '../../hooks/song';
 import { NoWrapTextarea } from '../../components';
 
@@ -34,9 +34,14 @@ export const EditSongPage = () => {
 
 	return (
 		<Stack gap="md">
-			<Text fw={700} size="xl">
-				Edit song
-			</Text>
+			<Group justify="space-between" align="center">
+				<Text fw={700} size="xl">
+					Edit song
+				</Text>
+				<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
+					Fill chords
+				</Button>
+			</Group>
 
 			<Card withBorder shadow="sm">
 				<Stack gap="md">

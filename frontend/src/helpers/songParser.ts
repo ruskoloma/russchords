@@ -10,6 +10,32 @@ export interface ChordToken {
 	leading: number; // spaces before chord
 }
 
+export type SectionType = 'verse' | 'chorus' | 'other';
+
+export const VERSE_ANCHORS: string[] = [
+	'куплет:',
+	'заспів:',
+	'вірш:',
+	'strofa:',
+	'strophe:',
+	'zwrotka:',
+	'verse:',
+	'verso:',
+	'couplet:',
+];
+
+export const CHORUS_ANCHORS: string[] = [
+	'припев:',
+	'приспів:',
+	'chorus:',
+	'refrain:',
+	'refren:',
+	'coro:',
+	'cor:',
+	'refrão:',
+	'hook:',
+];
+
 export interface Key {
 	name: string;
 	value: number;
@@ -185,6 +211,14 @@ export function isHeaderLine(input: string): boolean {
 	return HEADER_ANCHORS.some((anchor) => text.includes(anchor));
 }
 
+export function getHeaderType(input: string): SectionType | null {
+	const text = input.trim().toLowerCase();
+	if (!isHeaderLine(input)) return null;
+	if (VERSE_ANCHORS.some((a) => text.includes(a))) return 'verse';
+	if (CHORUS_ANCHORS.some((a) => text.includes(a))) return 'chorus';
+	return 'other';
+}
+
 // Parses chord line into tokens preserving leading spaces
 export function parseChordLineWithSpaces(line: string): ChordToken[] {
 	const tokens: ChordToken[] = [];
@@ -327,4 +361,130 @@ export function getOriginalKey(parsedLines: Line[]): string | undefined {
 			return getChordRoot(lastChord);
 		}
 	}
+}
+
+/** Главная функция: автозаполнение аккордов по первому куплету/припеву */
+export function fillMissingChords(raw: string): string {
+	// Normalize to \n for processing
+	const normalized = raw.replace(/\r\n/g, '\n');
+	const lines = normalized.split('\n');
+
+	// --- Pass 1: build templates for first verse/chorus sections that actually contain chords
+	type Template = string[];
+	let verseTemplate: Template | null = null;
+	let chorusTemplate: Template | null = null;
+
+	let currentType: SectionType | null = null;
+	let capturingType: SectionType | null = null;
+	let pendingChord: string | null = null;
+	let tempCollector: string[] = [];
+	let seenAnyChordInSection = false;
+
+	const flushCapture = () => {
+		if (!capturingType) return;
+		if (tempCollector.length > 0) {
+			if (capturingType === 'verse' && !verseTemplate) verseTemplate = [...tempCollector];
+			if (capturingType === 'chorus' && !chorusTemplate) chorusTemplate = [...tempCollector];
+		}
+		// reset
+		tempCollector = [];
+		pendingChord = null;
+		capturingType = null;
+		seenAnyChordInSection = false;
+	};
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		if (isHeaderLine(line)) {
+			// new section begins; close previous capture if any
+			flushCapture();
+			currentType = getHeaderType(line);
+			// start capture only if we don't yet have a template for that type
+			if (currentType === 'verse' && !verseTemplate) capturingType = 'verse';
+			else if (currentType === 'chorus' && !chorusTemplate) capturingType = 'chorus';
+			else capturingType = null;
+			pendingChord = null;
+			continue;
+		}
+
+		if (!capturingType) continue;
+
+		if (isChordLine(line)) {
+			// store the exact rendered chord line preserving spaces
+			const rendered = renderChordLine(parseChordLineWithSpaces(line));
+			pendingChord = rendered;
+			seenAnyChordInSection = true;
+			continue;
+		}
+
+		// Non-empty lyric line directly after a chord line => pair it
+		if (pendingChord && line.trim() !== '') {
+			tempCollector.push(pendingChord);
+			pendingChord = null;
+			continue;
+		}
+	}
+	// handle end of file capture
+	flushCapture();
+
+	// Only accept templates from sections that actually had chords
+	// (already enforced because pairs are added only when a chord preceded a lyric).
+
+	// --- Pass 2: rebuild output inserting chords into later empty sections
+	const out: string[] = [];
+	let sectionType: SectionType | null = null;
+	let sectionStartIndex: number | null = null;
+
+	const flushSection = (endExclusive: number) => {
+		if (sectionStartIndex === null) return;
+		const body = lines.slice(sectionStartIndex, endExclusive);
+		if (sectionType !== 'verse' && sectionType !== 'chorus') {
+			out.push(...body);
+			sectionStartIndex = null;
+			sectionType = null;
+			return;
+		}
+		// check if section already contains at least one chord line
+		const hasChord = body.some((l) => isChordLine(l));
+		if (hasChord) {
+			out.push(...body);
+		} else {
+			const template = sectionType === 'verse' ? verseTemplate : chorusTemplate;
+			if (!template || template.length === 0) {
+				out.push(...body);
+			} else {
+				let ti = 0;
+				for (const l of body) {
+					if (l.trim() === '' || isChordLine(l)) {
+						out.push(l);
+						continue;
+					}
+					if (ti < template.length) {
+						out.push(template[ti++]);
+					}
+					out.push(l);
+				}
+			}
+		}
+		sectionStartIndex = null;
+		sectionType = null;
+	};
+
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		if (isHeaderLine(line)) {
+			// Before starting a new section, flush the previous one
+			if (sectionStartIndex !== null) flushSection(i);
+			out.push(line); // keep header as-is
+			sectionType = getHeaderType(line);
+			sectionStartIndex = i + 1; // section body begins after header
+		} else if (sectionStartIndex === null) {
+			// Outside of a recognized section
+			out.push(line);
+		}
+	}
+	// flush tail
+	if (sectionStartIndex !== null) flushSection(lines.length);
+
+	return out.join('\n');
 }
