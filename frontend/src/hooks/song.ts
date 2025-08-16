@@ -1,6 +1,6 @@
 import useSWRMutation from 'swr/mutation';
 import useSWR from 'swr';
-import type { LiteSongDto, UpdateSongDto, CreateSongDto } from '../types';
+import type { CreateSongDto, LiteSongDto, UpdateSongDto } from '../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import { useMyFetch } from './api';

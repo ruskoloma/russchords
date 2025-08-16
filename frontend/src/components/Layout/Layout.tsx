@@ -1,12 +1,20 @@
 import * as React from 'react';
+import { useEffect } from 'react';
 import { NavLink as ReactNavLink, Outlet, useLocation } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
-import { IconHome2, IconListLetters, IconLogout, IconPlaylist, IconStar, IconUser } from '@tabler/icons-react';
+import {
+	IconHome2,
+	IconListLetters,
+	IconLogout,
+	IconPlaylist,
+	IconSearch,
+	IconStar,
+	IconUser,
+} from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
-import { useEffect } from 'react';
 
 export const Layout: React.FC = () => {
 	const { isAuthenticated, user } = useAuth();
@@ -76,6 +84,13 @@ export const Layout: React.FC = () => {
 								/>
 							</>
 						)}
+						<NavLink
+							label="Search"
+							active={location.pathname.includes('search')}
+							component={ReactNavLink}
+							to="/search"
+							leftSection={<IconSearch size={16} stroke={1.5} />}
+						/>
 					</Box>
 
 					<Box flex={'2 0 auto'}></Box>

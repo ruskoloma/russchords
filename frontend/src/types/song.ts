@@ -17,3 +17,10 @@ export interface UpdateSongDto {
 	content?: string;
 	rootNote?: string | null;
 }
+
+export interface CreateSongDto {
+	name: string;
+	content: string;
+	artist?: string | null;
+	rootNote?: string | null;
+}

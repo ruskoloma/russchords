@@ -378,7 +378,6 @@ export function fillMissingChords(raw: string): string {
 	let capturingType: SectionType | null = null;
 	let pendingChord: string | null = null;
 	let tempCollector: string[] = [];
-	let seenAnyChordInSection = false;
 
 	const flushCapture = () => {
 		if (!capturingType) return;
@@ -390,7 +389,6 @@ export function fillMissingChords(raw: string): string {
 		tempCollector = [];
 		pendingChord = null;
 		capturingType = null;
-		seenAnyChordInSection = false;
 	};
 
 	for (let i = 0; i < lines.length; i++) {
@@ -413,7 +411,6 @@ export function fillMissingChords(raw: string): string {
 			// store the exact rendered chord line preserving spaces
 			const rendered = renderChordLine(parseChordLineWithSpaces(line));
 			pendingChord = rendered;
-			seenAnyChordInSection = true;
 			continue;
 		}
 
