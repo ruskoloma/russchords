@@ -5,6 +5,7 @@ import { showNotification } from '@mantine/notifications';
 import { IconSearch } from '@tabler/icons-react';
 import { type SearchItem, type SearchResponse, searchSite } from '../../hooks/search';
 import { PAGE_SIZE, parserDomain } from '../../constants/search.ts';
+import { MrBeanLoader } from '../../components';
 
 export const SearchPage = () => {
 	const [q, setQ] = useState('');
@@ -69,11 +70,10 @@ export const SearchPage = () => {
 				return;
 			}
 		} catch (e: unknown) {
+			setRedirectingLink(null);
 			const msg = e instanceof Error ? e.message : 'Unknown error';
 			console.error('[onTitleClick] redirect failed:', e);
 			showNotification({ title: 'Failed to open', message: msg, color: 'red' });
-		} finally {
-			setRedirectingLink(null);
 		}
 	};
 
@@ -87,6 +87,10 @@ export const SearchPage = () => {
 		const newStart = (page - 1) * PAGE_SIZE + 1;
 		setStartIndex(newStart);
 	};
+
+	if (redirectingLink !== null) {
+		return <MrBeanLoader />;
+	}
 
 	return (
 		<Stack gap="md">

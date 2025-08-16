@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { NavLink as ReactNavLink, Outlet, useLocation } from 'react-router-dom';
-import { AppShell, Box, Burger, Group, NavLink, Stack } from '@mantine/core';
+import { AppShell, Box, Burger, Group, NavLink, Stack, Text } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
 import {
@@ -63,7 +63,7 @@ export const Layout: React.FC = () => {
 							<>
 								<NavLink
 									label="My Songs"
-									active={location.pathname === 'my-songs'}
+									active={location.pathname.includes('song')}
 									component={ReactNavLink}
 									to="/my-songs"
 									leftSection={<IconListLetters size={16} stroke={1.5} />}
@@ -99,7 +99,10 @@ export const Layout: React.FC = () => {
 						{isAuthenticated ? (
 							<>
 								<NavLink onClick={logout} leftSection={<IconLogout size={16} stroke={1.5} />} label="Logout" />
-								<NavLink leftSection={<IconUser size={16} stroke={1.5} />} label={'Hi, ' + user?.profile?.nickname} />
+								<Group gap={12} py={8} px={12}>
+									<IconUser size={16} stroke={1.5} />
+									<Text size={'14px'}>{'Hi, ' + user?.profile?.nickname}</Text>
+								</Group>
 							</>
 						) : (
 							<NavLink onClick={login} leftSection={<IconUser size={16} stroke={1.5} />} label="Login" />

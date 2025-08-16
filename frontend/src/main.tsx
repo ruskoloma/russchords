@@ -4,25 +4,25 @@ import './index.css';
 import '@mantine/core/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { Layout } from './components';
+import { ErrorPage, Layout, NotFound } from './components';
 import {
 	cachedSongLoader,
 	CachedSongPage,
+	CreateSongPage,
+	EditSongPage,
+	editSongPageLoader,
 	HomePage,
 	myPlaylistsPageLoader,
+	mySongsLoader,
+	MySongsPage,
 	PlaylistPage,
 	playlistPageLoader,
+	SearchPage,
+	SilentRedirect,
 	songLoader,
 	SongPage,
 	StarredPage,
 	starredPageLoader,
-	MySongsPage,
-	mySongsLoader,
-	EditSongPage,
-	editSongPageLoader,
-	SilentRedirect,
-	CreateSongPage,
-	SearchPage,
 } from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
@@ -35,6 +35,7 @@ const router = createBrowserRouter([
 	{
 		path: '/',
 		element: <Layout />,
+		errorElement: <ErrorPage />,
 		children: [
 			{
 				index: true,
@@ -86,6 +87,10 @@ const router = createBrowserRouter([
 			{
 				path: '/search',
 				element: <SearchPage />,
+			},
+			{
+				path: '*',
+				element: <NotFound />,
 			},
 		],
 	},
