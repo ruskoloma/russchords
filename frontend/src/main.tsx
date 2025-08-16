@@ -21,6 +21,7 @@ import {
 	EditSongPage,
 	editSongPageLoader,
 	SilentRedirect,
+	CreateSongPage,
 } from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
 				path: 'song/edit/:id',
 				loader: editSongPageLoader,
 				element: <EditSongPage />,
+			},
+			{
+				path: 'song/create',
+				element: <CreateSongPage />,
 			},
 			{
 				path: 'starred',

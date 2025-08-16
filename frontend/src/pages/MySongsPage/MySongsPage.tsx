@@ -97,6 +97,7 @@ export const MySongsPage: React.FC = () => {
 					w={320}
 				/>
 				<Group>
+					<Button onClick={() => navigate('/song/create')}>New Song</Button>
 					<Button
 						variant="light"
 						color="red"

@@ -6,4 +6,5 @@ export * from './StarredPage';
 export * from './PlaylistPage';
 export * from './MyPlaylistsPage';
 export * from './EditSongPage';
+export * from './CreateSongPage';
 export * from './Auth';

@@ -1,6 +1,6 @@
 import useSWRMutation from 'swr/mutation';
 import useSWR from 'swr';
-import type { LiteSongDto, UpdateSongDto } from '../types';
+import type { LiteSongDto, UpdateSongDto, CreateSongDto } from '../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate } from 'react-router-dom';
 import { useMyFetch } from './api';
@@ -180,6 +180,33 @@ export function useUpdateSong(opts: { onSuccess?: (id: number) => void } = {}) {
 	return {
 		updateSong: (id: number, dto: UpdateSongDto) => trigger({ id, dto }),
 		isUpdating: isMutating,
+		error,
+	};
+}
+
+export function useCreateSong(opts: { onSuccess?: (id: number) => void } = {}) {
+	const client = useMyFetch();
+
+	const { trigger, isMutating, error } = useSWRMutation(
+		'CREATE_SONG',
+		async (_: string, { arg }: { arg: CreateSongDto }) => {
+			const res = await client.post<{ id: number }>(`/api/song`, arg);
+			return res.data.id;
+		},
+		{
+			onSuccess: (id) => {
+				showNotification({ title: 'Created', message: 'Song created successfully.', color: 'green' });
+				opts.onSuccess?.(id);
+			},
+			onError: (err) => {
+				showNotification({ title: 'Create failed', message: String(err), color: 'red' });
+			},
+		},
+	);
+
+	return {
+		createSong: (dto: CreateSongDto) => trigger(dto),
+		isCreating: isMutating,
 		error,
 	};
 }
