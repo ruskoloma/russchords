@@ -314,18 +314,31 @@ export function getNewKey(oldKey: string, delta: number, targetKey: Key): Key {
 	if (keyValue > 11) keyValue -= 12;
 	if (keyValue < 0) keyValue += 12;
 
-	if ([0, 2, 5, 7, 10].includes(keyValue)) {
-		for (const k of KEYS) {
-			if (k.value === keyValue && k.type === 'S') return k;
+	// Enharmonic buckets (can be written as sharp or flat)
+	const ENHARMONIC_VALUES = [0, 2, 5, 7, 10];
+	if (ENHARMONIC_VALUES.includes(keyValue)) {
+		// Prefer the spelling that matches the target key's accidental style
+		if (targetKey.type === 'S') {
+			const sharp = KEYS.find((k) => k.value === keyValue && k.type === 'S');
+			if (sharp) return sharp;
 		}
-		for (const k of KEYS) {
-			if (k.value === keyValue && k.type === 'F') return k;
+		if (targetKey.type === 'F') {
+			const flat = KEYS.find((k) => k.value === keyValue && k.type === 'F');
+			if (flat) return flat;
 		}
+		// Fallbacks: try natural if it exists, then sharp, then flat
+		const natural = KEYS.find((k) => k.value === keyValue && k.type === 'N');
+		if (natural) return natural;
+		const anySharp = KEYS.find((k) => k.value === keyValue && k.type === 'S');
+		if (anySharp) return anySharp;
+		const anyFlat = KEYS.find((k) => k.value === keyValue && k.type === 'F');
+		if (anyFlat) return anyFlat;
 	} else {
-		for (const k of KEYS) {
-			if (k.value === keyValue) return k;
-		}
+		// Unique spelling (natural values)
+		const unique = KEYS.find((k) => k.value === keyValue);
+		if (unique) return unique;
 	}
+
 	throw new Error('Key not found');
 }
 
