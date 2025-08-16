@@ -293,7 +293,7 @@ export const PlaylistPage: React.FC = () => {
 																{song.name}
 															</Text>
 														</Group>
-														<Group wrap="nowrap" gap="sm" align="center" style={{ minWidth: 0, flex: 1.6 }}>
+														<Group wrap="nowrap" gap="sm" align="center" style={{ minWidth: 0, flex: '0.5 1' }}>
 															<Text
 																c="dimmed"
 																size="sm"
