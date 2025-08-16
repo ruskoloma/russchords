@@ -1,10 +1,22 @@
 import { useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
+import { ActionIcon, Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
 import type { SongDto } from '../../types';
-import { KEYS, fillMissingChords } from '../../helpers/songParser';
+import {
+	ALL_ACTUAL_KEYS,
+	ALL_KEYS,
+	KEYS,
+	parseSongText,
+	getOriginalKey,
+	getKeyByName,
+	getDelta,
+	transposeChordToken,
+	renderChordLine,
+	fillMissingChords,
+} from '../../helpers/songParser';
 import { useUpdateSong } from '../../hooks/song';
 import { NoWrapTextarea } from '../../components';
+import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
 
 export const EditSongPage = () => {
 	const song = useLoaderData() as SongDto;
@@ -14,6 +26,27 @@ export const EditSongPage = () => {
 	const [artist, setArtist] = useState(song.artist ?? '');
 	const [content, setContent] = useState(song.content);
 	const [rootNote, setRootNote] = useState<string | null>(song.rootNote ?? null);
+
+	const [workKey, setWorkKey] = useState<string>(getOriginalKey(parseSongText(song.content)) ?? song.rootNote ?? 'C');
+
+	const transposeWholeText = (raw: string, delta: number, targetKeyName: string): string => {
+		const targetKey = getKeyByName(targetKeyName);
+		const parsed = parseSongText(raw);
+		const out: string[] = [];
+		for (const line of parsed) {
+			if (line.type === 'chords') {
+				const newTokens = line.tokens.map((t) => transposeChordToken(t, delta, targetKey));
+				out.push(renderChordLine(newTokens));
+			} else if (line.type === 'header') {
+				out.push(line.content);
+			} else if (line.type === 'text') {
+				out.push(line.content);
+			} else {
+				out.push('');
+			}
+		}
+		return out.join('\n');
+	};
 
 	const { updateSong, isUpdating } = useUpdateSong({ onSuccess: () => navigate(`/song/${song.id}`) });
 
@@ -32,15 +65,59 @@ export const EditSongPage = () => {
 		navigate(`/song/${song.id}`);
 	};
 
+	const handleKeySelect = (value: string | null) => {
+		if (!value) return;
+		const from = getKeyByName(workKey);
+		const to = getKeyByName(value);
+		const delta = getDelta(from.value, to.value);
+		setContent((prev) => transposeWholeText(prev, delta, value));
+		setWorkKey(value);
+	};
+
+	const handleTransposeDown = () => {
+		const current = getKeyByName(workKey);
+		const next =
+			[...KEYS].reverse().find((k) => k.value === current.value - 1 && ALL_ACTUAL_KEYS.includes(k.name)) ||
+			KEYS.at(-1)!;
+		const delta = getDelta(current.value, next.value);
+		setContent((prev) => transposeWholeText(prev, delta, next.name));
+		setWorkKey(next.name);
+	};
+
+	const handleTransposeUp = () => {
+		const current = getKeyByName(workKey);
+		const next = KEYS.find((k) => k.value === current.value + 1 && ALL_ACTUAL_KEYS.includes(k.name)) || KEYS[0];
+		const delta = getDelta(current.value, next.value);
+		setContent((prev) => transposeWholeText(prev, delta, next.name));
+		setWorkKey(next.name);
+	};
+
 	return (
 		<Stack gap="md">
 			<Group justify="space-between" align="center">
 				<Text fw={700} size="xl">
 					Edit song
 				</Text>
-				<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
-					Fill chords
-				</Button>
+				<Group gap="0.5em" align="center">
+					<ActionIcon onClick={handleTransposeDown} aria-label="Key down">
+						<IconArrowDown />
+					</ActionIcon>
+					<Select
+						aria-label="Editing key"
+						placeholder="Select key"
+						data={ALL_KEYS}
+						value={workKey}
+						onChange={handleKeySelect}
+						w="7em"
+						searchable
+					/>
+					<ActionIcon onClick={handleTransposeUp} aria-label="Key up">
+						<IconArrowUp />
+					</ActionIcon>
+					<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
+						Fill chords
+					</Button>
+				</Group>
 			</Group>
 
 			<Card withBorder shadow="sm">

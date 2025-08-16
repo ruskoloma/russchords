@@ -366,11 +366,11 @@ export function renderChordLine(tokens: ChordToken[]): string {
 }
 
 export function getOriginalKey(parsedLines: Line[]): string | undefined {
-	for (let i = parsedLines.length - 1; i >= 0; i--) {
+	for (let i = 0; i < parsedLines.length; i++) {
 		const line = parsedLines[i];
 		if (line.type === 'chords' && line.tokens.length > 0) {
-			const lastChord = line.tokens[line.tokens.length - 1].chord;
-			return getChordRoot(lastChord);
+			const firstChord = line.tokens[0].chord;
+			return getChordRoot(firstChord);
 		}
 	}
 }
