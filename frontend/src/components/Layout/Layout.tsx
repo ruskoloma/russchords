@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 export const Layout: React.FC = () => {
 	const { isAuthenticated, user } = useAuth();
 	const { login, logout } = useAuthActions();
-	const [opened, { toggle }] = useDisclosure();
+	const [opened, { toggle, close }] = useDisclosure();
 	const location = useLocation();
 
 	useEffect(() => {
@@ -19,6 +19,10 @@ export const Layout: React.FC = () => {
 			window.history.replaceState({}, document.title, window.location.pathname + window.location.hash);
 		}
 	}, [isAuthenticated]);
+
+	React.useEffect(() => {
+		close();
+	}, [location.pathname, close]);
 
 	return (
 		<AppShell

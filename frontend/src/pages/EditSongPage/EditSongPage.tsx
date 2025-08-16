@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Select, Stack, Text, Textarea, TextInput } from '@mantine/core';
+import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
 import type { SongDto } from '../../types';
 import { KEYS } from '../../helpers/songParser';
 import { useUpdateSong } from '../../hooks/song';
+import { NoWrapTextarea } from '../../components';
 
 export const EditSongPage = () => {
 	const song = useLoaderData() as SongDto;
@@ -52,13 +53,21 @@ export const EditSongPage = () => {
 						nothingFoundMessage="No keys"
 						checkIconPosition="right"
 					/>
-					<Textarea
+					<NoWrapTextarea
 						label="Content"
 						value={content}
 						onChange={(e) => setContent(e.currentTarget.value)}
 						autosize
 						minRows={16}
 						spellCheck={false}
+						// style={{
+						// 	input: {
+						// 		whiteSpace: 'nowrap',
+						// 		overflowX: 'auto',
+						// 		width: '100%',
+						// 		maxWidth: '100%',
+						// 	},
+						// }}
 					/>
 					<Group justify="flex-end">
 						<Button variant="light" color="gray" onClick={onCancel}>

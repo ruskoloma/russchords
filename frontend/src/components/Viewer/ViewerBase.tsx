@@ -15,7 +15,16 @@ export const ViewerBase: React.FC<ViewerBaseProps> = ({
 	fontSize = 16,
 }) => {
 	return (
-		<Box component="pre" ff="text" fz={fontSize}>
+		<Box
+			component="pre"
+			ff="text"
+			fz={fontSize}
+			style={{
+				maxWidth: '100%',
+				overflowX: 'auto',
+			}}
+			pb={'1rem'}
+		>
 			{content.map((line, i) => {
 				if (line.type === 'chords') {
 					if (hideChords) {

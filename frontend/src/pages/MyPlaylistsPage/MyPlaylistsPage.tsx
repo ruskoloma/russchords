@@ -48,7 +48,12 @@ export default function MyPlaylistsPage() {
 
 		modals.open({
 			title: 'Create playlist',
-			centered: true,
+			centered: false,
+			styles: {
+				content: {
+					marginTop: '10vh',
+				},
+			},
 			children: (
 				<Stack gap="sm">
 					<TextInput
