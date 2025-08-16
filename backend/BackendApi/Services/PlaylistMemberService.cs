@@ -39,6 +39,13 @@ public class PlaylistMemberService : IPlaylistMemberService
 
     public async Task<PlaylistMemberDto> CreateAsync(PlaylistMemberDto dto)
     {
+        var existing = await _context.PlaylistMembers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.PlaylistId == dto.PlaylistId && x.MemberId == dto.MemberId);
+        if (existing != null)
+        {
+            return _mapper.Map<PlaylistMemberDto>(existing);
+        }
         var entity = _mapper.Map<PlaylistMemberEntity>(dto);
         entity.CreatedAt = DateTime.UtcNow;
         entity.UpdatedAt = DateTime.UtcNow;
