@@ -157,6 +157,27 @@ export function useMyLightSongs(enabled: boolean = true) {
 	};
 }
 
+export function useMyForksByOriginalId(originalId?: number | string, enabled: boolean = true) {
+	const client = useMyFetch();
+	const key = enabled && originalId != null ? `/api/song/my/forks/${originalId}` : null;
+
+	const { data, error, isLoading, mutate } = useSWR(
+		key,
+		async (k: string) => {
+			const res = await client.get<LiteSongDto[]>(k);
+			return res.data;
+		},
+		{ revalidateOnFocus: false },
+	);
+
+	return {
+		forks: data ?? [],
+		error,
+		isLoading,
+		refresh: () => mutate(),
+	};
+}
+
 export function useUpdateSong(opts: { onSuccess?: (id: number) => void } = {}) {
 	const client = useMyFetch();
 
