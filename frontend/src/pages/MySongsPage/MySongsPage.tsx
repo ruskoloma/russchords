@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import { ActionIcon, Button, Group, Stack, TextInput } from '@mantine/core';
+import { ActionIcon, Button, Group, Stack, Text, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import type { LiteSongDto } from '../../types';
@@ -136,17 +136,35 @@ export const MySongsPage: React.FC = () => {
 				onPageChange={setPage}
 				recordsPerPage={pageSize}
 				onRecordsPerPageChange={setPageSize}
-				recordsPerPageOptions={[10, 20, 50, 100]}
+				recordsPerPageOptions={[15, 25, 50, 100]}
 				paginationText={({ from, to, totalRecords }) => `${from}–${to} of ${totalRecords}`}
 				selectedRecords={selected}
 				onSelectedRecordsChange={setSelected}
 				columns={[
-					{ accessor: 'name', title: 'Name', sortable: true, render: (r) => r.name ?? '—' },
-					{ accessor: 'artist', title: 'Artist', sortable: true, render: (r) => r.artist ?? '—' },
+					{
+						accessor: 'name',
+						title: 'Name',
+						sortable: true,
+						render: (r) => (
+							<Text truncate maw={'50vw'}>
+								{r.name ?? '—'}
+							</Text>
+						),
+					},
+					{
+						accessor: 'artist',
+						title: 'Artist',
+						sortable: true,
+						render: (r) => (
+							<Text truncate maw={'30vw'}>
+								{r.artist ?? '—'}
+							</Text>
+						),
+					},
 				]}
 				noRecordsText={debouncedQuery ? 'No matches' : 'No songs'}
 				onRowClick={(row) => navigate(`/song/${row.record.id}`)}
-				minHeight={'500px'}
+				minHeight={'600px'}
 			/>
 		</Stack>
 	);

@@ -6,6 +6,7 @@ import 'mantine-datatable/styles.layer.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ErrorPage, Layout, NotFound } from './components';
 import {
+	AuthCallback,
 	cachedSongLoader,
 	CachedSongPage,
 	CreateSongPage,
@@ -91,6 +92,10 @@ const router = createBrowserRouter([
 			{
 				path: '*',
 				element: <NotFound />,
+			},
+			{
+				path: '/auth/callback',
+				element: <AuthCallback />,
 			},
 		],
 	},

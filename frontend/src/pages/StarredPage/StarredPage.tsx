@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import { ActionIcon, Group, Stack } from '@mantine/core';
+import { ActionIcon, Stack, Text } from '@mantine/core';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import type { SongDto } from '../../types';
 import { useStarSongs, useUnstarSong } from '../../hooks/starred';
@@ -65,31 +65,37 @@ export const StarredPage: React.FC = () => {
 				sortStatus={sortStatus}
 				onSortStatusChange={setSortStatus}
 				columns={[
-					{ accessor: 'name', title: 'Name', sortable: true, render: (r) => r.name ?? '—' },
-					{ accessor: 'artist', title: 'Artist', sortable: true, render: (r) => r.artist ?? '—' },
+					{
+						accessor: 'name',
+						title: 'Name',
+						sortable: true,
+						render: (r) => (
+							<Text truncate maw={'90%'}>
+								{r.name ?? '—'}
+							</Text>
+						),
+					},
 					{
 						accessor: 'star',
 						title: '',
-						width: 80,
+						width: 50,
 						textAlign: 'center',
 						render: (r) => {
 							const isStarred = overrides[r.id] ?? true;
 							const isPending = pending.has(r.id);
 							return (
-								<Group justify="center" gap="xs">
-									<ActionIcon
-										variant={'subtle'}
-										color="yellow"
-										onClick={(event) => {
-											event.stopPropagation();
-											return toggleStar(r);
-										}}
-										disabled={isPending}
-										aria-label={isStarred ? 'Unstar' : 'Star'}
-									>
-										{isStarred ? <IconStarFilled size={18} /> : <IconStar size={18} />}
-									</ActionIcon>
-								</Group>
+								<ActionIcon
+									variant={'subtle'}
+									color="yellow"
+									onClick={(event) => {
+										event.stopPropagation();
+										return toggleStar(r);
+									}}
+									disabled={isPending}
+									aria-label={isStarred ? 'Unstar' : 'Star'}
+								>
+									{isStarred ? <IconStarFilled size={18} /> : <IconStar size={18} />}
+								</ActionIcon>
 							);
 						},
 					},

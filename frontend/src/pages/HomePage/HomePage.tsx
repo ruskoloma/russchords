@@ -2,7 +2,7 @@ import { Container, Stack, Title, Text, List, ThemeIcon, Anchor, Code, Card, Div
 
 export const HomePage = () => {
 	return (
-		<Container size="md" px="md" py="xl">
+		<Container size="md" p={0}>
 			<Stack gap="lg">
 				<Stack gap="xs">
 					<Title order={1}>Welcome 👋</Title>

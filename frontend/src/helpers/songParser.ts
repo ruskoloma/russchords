@@ -182,16 +182,20 @@ export const HEADER_ANCHORS: string[] = [
 	'chords:',
 ];
 
-// Checks if a line is a chord line
+// Removes any parenthetical segments (e.g., (2x), (repeat)) but preserves alignment
+function stripParensPreserveSpaces(input: string): string {
+	return input.replace(/\([^)]*\)/g, (m) => ' '.repeat(m.length));
+}
+
+// Checks if a line is a chord line (ignores parenthetical segments like (2x))
 export function isChordLine(input: string): boolean {
-	const tokens = input.trim().split(/\s+/);
+	const cleaned = stripParensPreserveSpaces(input);
+	const tokens = cleaned.trim().split(/\s+/);
 	return tokens.every(
 		(token) =>
 			CHORD_REGEX.test(token) ||
 			token.includes('|') ||
 			token.includes('/') ||
-			token.includes('(') ||
-			token.includes(')') ||
 			token.includes('-') ||
 			token.includes('x') ||
 			token === 'NC' ||
@@ -222,27 +226,28 @@ export function getHeaderType(input: string): SectionType | null {
 // Parses chord line into tokens preserving leading spaces
 export function parseChordLineWithSpaces(line: string): ChordToken[] {
 	const tokens: ChordToken[] = [];
+	const sanitized = stripParensPreserveSpaces(line);
 	let i = 0;
 
-	while (i < line.length) {
+	while (i < sanitized.length) {
 		// Count spaces before chord
 		let leadingSpaces = 0;
-		while (line[i] === ' ') {
+		while (sanitized[i] === ' ') {
 			leadingSpaces++;
 			i++;
 		}
-		if (i >= line.length) break;
+		if (i >= sanitized.length) break;
 
 		// Read chord
 		let chord = '';
-		while (i < line.length && line[i] !== ' ') {
-			chord += line[i];
+		while (i < sanitized.length && sanitized[i] !== ' ') {
+			chord += sanitized[i];
 			i++;
 		}
 
 		// Count spaces after chord
 		let spacesAfter = 0;
-		while (i < line.length && line[i] === ' ') {
+		while (i < sanitized.length && sanitized[i] === ' ') {
 			spacesAfter++;
 			i++;
 		}
