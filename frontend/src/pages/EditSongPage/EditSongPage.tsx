@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import { ActionIcon, Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
 import type { SongDto } from '../../types';
@@ -27,7 +27,13 @@ export const EditSongPage = () => {
 	const [content, setContent] = useState(song.content);
 	const [rootNote, setRootNote] = useState<string | null>(song.rootNote ?? null);
 
-	const [workKey, setWorkKey] = useState<string>(getOriginalKey(parseSongText(song.content)) ?? song.rootNote ?? 'C');
+	const [workKey, setWorkKey] = useState<string>(song.rootNote ?? getOriginalKey(parseSongText(song.content)) ?? 'C');
+
+	useEffect(() => {
+		if (rootNote) {
+			setWorkKey(rootNote);
+		}
+	}, [rootNote]);
 
 	const transposeWholeText = (raw: string, delta: number, targetKeyName: string): string => {
 		const targetKey = getKeyByName(targetKeyName);
@@ -72,6 +78,9 @@ export const EditSongPage = () => {
 		const delta = getDelta(from.value, to.value);
 		setContent((prev) => transposeWholeText(prev, delta, value));
 		setWorkKey(value);
+		if (rootNote !== null) {
+			setRootNote(value);
+		}
 	};
 
 	const handleTransposeDown = () => {
@@ -82,6 +91,9 @@ export const EditSongPage = () => {
 		const delta = getDelta(current.value, next.value);
 		setContent((prev) => transposeWholeText(prev, delta, next.name));
 		setWorkKey(next.name);
+		if (rootNote !== null) {
+			setRootNote(next.name);
+		}
 	};
 
 	const handleTransposeUp = () => {
@@ -90,6 +102,9 @@ export const EditSongPage = () => {
 		const delta = getDelta(current.value, next.value);
 		setContent((prev) => transposeWholeText(prev, delta, next.name));
 		setWorkKey(next.name);
+		if (rootNote !== null) {
+			setRootNote(next.name);
+		}
 	};
 
 	return (
