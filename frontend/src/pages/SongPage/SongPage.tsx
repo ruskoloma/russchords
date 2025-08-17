@@ -13,9 +13,8 @@ import { useEffect, useMemo, useState } from 'react';
 export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
 
-	const auth = useAuth();
+	const { isAuthenticated } = useAuth();
 	const navigate = useNavigate();
-	const isAuthenticated = Boolean(auth?.isAuthenticated);
 	const isOwner = useIsSongOwner(songDto.authorId);
 
 	const { isStarred, isLoading, unstarSong, starSong } = useStarredState(songDto.id);
