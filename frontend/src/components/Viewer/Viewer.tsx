@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	ALL_ACTUAL_KEYS,
 	ALL_KEYS,
@@ -36,15 +36,18 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 
 	const parsed = parseSongText(musicText);
 	const originalKey = getOriginalKey(parsed);
-	const [key, setKey] = useState(defaultKey || originalKey || 'C');
+	const [displayRoot, setDisplayRoot] = useState<string>(defaultKey ?? originalKey ?? 'C');
+	useEffect(() => {
+		const baseline = defaultKey ?? originalKey ?? 'C';
+		setDisplayRoot(baseline);
+		setKey(baseline);
+	}, [defaultKey, originalKey]);
+	const [key, setKey] = useState(displayRoot);
 	const [fontSize, setFontSize] = useState(16);
-
-	console.log('key: ', key);
 
 	const toKey = getKeyByName(key)!;
 
-	console.log('originalKey: ', originalKey);
-	const delta = originalKey ? getDelta(getKeyByName(originalKey).value, getKeyByName(key).value) : 0;
+	const delta = getDelta(getKeyByName(displayRoot).value, getKeyByName(key).value);
 
 	const handleChangeHideChords = () => {
 		setHideChords((prev) => !prev);
@@ -60,7 +63,7 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 
 	const handleKeyDown = () => {
 		const currentKey = getKeyByName(key);
-		const newKey = KEYS.reverse().find((k) => k.value == currentKey.value - 1 && ALL_ACTUAL_KEYS.includes(k.name));
+		const newKey = [...KEYS].reverse().find((k) => k.value == currentKey.value - 1 && ALL_ACTUAL_KEYS.includes(k.name));
 		return newKey ? setKey(newKey.name) : setKey(KEYS.at(-1)!.name);
 	};
 
