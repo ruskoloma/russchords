@@ -107,6 +107,16 @@ export const EditSongPage = () => {
 		}
 	};
 
+	const handleRootNoteChange = (value: string | null) => {
+		if (!value) {
+			setRootNote(null);
+			setWorkKey(getOriginalKey(parseSongText(content)) ?? 'C');
+		} else {
+			setRootNote(value);
+			setWorkKey(value);
+		}
+	};
+
 	return (
 		<Stack gap="md">
 			<Group justify="space-between" align="center">
@@ -144,7 +154,7 @@ export const EditSongPage = () => {
 						placeholder="Not set"
 						data={keyOptions}
 						value={rootNote}
-						onChange={setRootNote}
+						onChange={handleRootNoteChange}
 						searchable
 						clearable
 						nothingFoundMessage="No keys"
