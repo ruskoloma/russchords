@@ -160,4 +160,21 @@ public class SongService : ISongService
 
         return await query.ToListAsync();
     }
+
+    public async Task<List<LiteSongDto>> GetMyForksByOriginalIdAsync(string userId, int originalId)
+    {
+        var query = _context.Songs
+            .Where(x => x.AuthorId == userId && x.OriginalId == originalId)
+            .OrderByDescending(x => x.UpdatedAt)
+            .Select(s => new LiteSongDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Artist = s.Artist,
+                SourceUrl = s.SourceUrl,
+                RootNote = s.RootNote
+            });
+
+        return await query.ToListAsync();
+    }
 }

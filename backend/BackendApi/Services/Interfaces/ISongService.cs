@@ -13,4 +13,5 @@ public interface ISongService
     Task<SongDto> ForkSongAsync(int songId, string userId);
     Task<List<SongDto>> GetAllByUserAsync(string userId);
     Task<List<LiteSongDto>> GetAllLightByUserAsync(string userId);
+    Task<List<LiteSongDto>> GetMyForksByOriginalIdAsync(string userId, int originalId);
 }

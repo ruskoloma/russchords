@@ -93,4 +93,12 @@ public class SongController : ControllerBase
         var songs = await _service.GetAllByUserAsync(GetUserId());
         return Ok(songs);
     }
+
+    [HttpGet("my/forks/{originalId}")]
+    [Authorize]
+    public async Task<IActionResult> GetMyForksByOriginalId(int originalId)
+    {
+        var songs = await _service.GetMyForksByOriginalIdAsync(GetUserId(), originalId);
+        return Ok(songs);
+    }
 }
