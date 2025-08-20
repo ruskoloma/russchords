@@ -13,7 +13,8 @@ import { useEffect, useMemo, useState } from 'react';
 export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
 
-	const { isAuthenticated } = useAuth();
+	const { isAuthenticated, user } = useAuth();
+	const me = user?.profile?.sub;
 	const navigate = useNavigate();
 	const isOwner = useIsSongOwner(songDto.authorId);
 
@@ -26,13 +27,15 @@ export function SongPage() {
 	const handleEditSong = () => navigate(`/song/edit/${songDto.id}`);
 
 	const { playlists: myPlaylists } = useMyPlaylistsWithDetails(isAuthenticated);
+	const ownedPlaylists = useMemo(() => myPlaylists.filter((p) => p.ownerId === me), [myPlaylists, me]);
 	const options = useMemo(
-		() => myPlaylists.map((p) => ({ value: String(p.playlistId), label: p.title })),
-		[myPlaylists],
+		() => ownedPlaylists.map((p) => ({ value: String(p.playlistId), label: p.title })),
+		[ownedPlaylists],
 	);
 	const initiallySelected = useMemo(
-		() => myPlaylists.filter((p) => (p.songs ?? []).some((s) => s.id === songDto.id)).map((p) => String(p.playlistId)),
-		[myPlaylists, songDto.id],
+		() =>
+			ownedPlaylists.filter((p) => (p.songs ?? []).some((s) => s.id === songDto.id)).map((p) => String(p.playlistId)),
+		[ownedPlaylists, songDto.id],
 	);
 	const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(initiallySelected);
 
