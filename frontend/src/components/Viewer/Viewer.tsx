@@ -70,7 +70,7 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 	const handleKeyUp = () => {
 		const currentKey = getKeyByName(key);
 		const newKey = KEYS.find((k) => k.value == currentKey.value + 1 && ALL_ACTUAL_KEYS.includes(k.name));
-		return newKey ? setKey(newKey.name) : setKey(KEYS[0].name!);
+		return newKey ? setKey(newKey.name) : setKey(KEYS[1].name!);
 	};
 
 	const handleFontSizeUp = () => {

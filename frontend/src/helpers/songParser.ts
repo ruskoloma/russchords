@@ -48,6 +48,7 @@ export const ALL_ACTUAL_KEYS = ['C', 'C#', 'D', 'Eb', 'E', 'F', 'F#', 'G', 'Ab',
 
 // All supported keys
 export const KEYS: Key[] = [
+	{ name: 'G#', value: 0, type: 'S' },
 	{ name: 'Ab', value: 0, type: 'F' },
 	{ name: 'A', value: 1, type: 'N' },
 	{ name: 'A#', value: 2, type: 'S' },
@@ -64,7 +65,6 @@ export const KEYS: Key[] = [
 	{ name: 'F#', value: 10, type: 'S' },
 	{ name: 'Gb', value: 10, type: 'F' },
 	{ name: 'G', value: 11, type: 'N' },
-	{ name: 'G#', value: 0, type: 'S' },
 ];
 
 // Regex for chords
