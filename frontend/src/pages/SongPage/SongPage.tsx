@@ -124,7 +124,7 @@ export function SongPage() {
 
 			<Divider />
 
-			<CardHC url={songDto.sourceUrl ?? ''} name={songDto.name} artist={songDto.artist} />
+			{songDto.sourceUrl && <CardHC url={songDto.sourceUrl} name={songDto.name} artist={songDto.artist} />}
 		</>
 	);
 }

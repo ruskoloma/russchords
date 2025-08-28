@@ -349,9 +349,24 @@ export function getNewKey(oldKey: string, delta: number, targetKey: Key): Key {
 
 // Transposes single chord
 export function transposeChord(chord: string, delta: number, targetKey: Key): string {
-	const oldRoot = getChordRoot(chord);
-	const newRoot = getNewKey(oldRoot, delta, targetKey).name;
-	return newRoot + chord.slice(oldRoot.length);
+	const parts = chord.split('/');
+	if (parts.length === 0) return chord;
+
+	const main = parts[0];
+	const oldRootMain = getChordRoot(main);
+	const newRootMain = getNewKey(oldRootMain, delta, targetKey).name;
+	const mainSuffix = main.slice(oldRootMain.length);
+	const transposedMain = newRootMain + mainSuffix;
+
+	const transposedSlashParts = parts.slice(1).map((p) => {
+		if (!p) return p;
+		const bassRoot = getChordRoot(p);
+		const newBassRoot = getNewKey(bassRoot, delta, targetKey).name;
+		const bassSuffix = p.slice(bassRoot.length);
+		return newBassRoot + bassSuffix;
+	});
+
+	return [transposedMain, ...transposedSlashParts].join('/');
 }
 
 // Transposes chord token
