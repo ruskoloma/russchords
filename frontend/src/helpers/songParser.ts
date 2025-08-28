@@ -310,58 +310,70 @@ export function getDelta(oldIndex: number, newIndex: number): number {
 }
 
 // Determines the new key
-export function getNewKey(oldKey: string, delta: number, targetKey: Key): Key {
+export function getNewKey(oldKey: string, delta: number, targetKey: Key, preferType?: 'N' | 'S' | 'F'): Key {
 	const old = getKeyByName(oldKey);
 	if (!old) throw new Error(`Unknown old key: ${oldKey}, target key ${targetKey}`);
 
 	let keyValue = old.value + delta;
-
 	if (keyValue > 11) keyValue -= 12;
 	if (keyValue < 0) keyValue += 12;
 
-	// Enharmonic buckets (can be written as sharp or flat)
 	const ENHARMONIC_VALUES = [0, 2, 5, 7, 10];
+	const tryPick = (t: 'N' | 'S' | 'F') => KEYS.find((k) => k.value === keyValue && k.type === t);
+
 	if (ENHARMONIC_VALUES.includes(keyValue)) {
-		// Prefer the spelling that matches the target key's accidental style
-		if (targetKey.type === 'S') {
-			const sharp = KEYS.find((k) => k.value === keyValue && k.type === 'S');
-			if (sharp) return sharp;
+		// 1) Prefer per-token accidental if provided
+		if (preferType) {
+			const p = tryPick(preferType);
+			if (p) return p;
 		}
-		if (targetKey.type === 'F') {
-			const flat = KEYS.find((k) => k.value === keyValue && k.type === 'F');
-			if (flat) return flat;
+		// 2) Then prefer target key's style
+		if (targetKey.type) {
+			const t = tryPick(targetKey.type);
+			if (t) return t;
 		}
-		// Fallbacks: try natural if it exists, then sharp, then flat
-		const natural = KEYS.find((k) => k.value === keyValue && k.type === 'N');
+		// 3) Fallbacks: natural -> sharp -> flat
+		const natural = tryPick('N');
 		if (natural) return natural;
-		const anySharp = KEYS.find((k) => k.value === keyValue && k.type === 'S');
+		const anySharp = tryPick('S');
 		if (anySharp) return anySharp;
-		const anyFlat = KEYS.find((k) => k.value === keyValue && k.type === 'F');
+		const anyFlat = tryPick('F');
 		if (anyFlat) return anyFlat;
 	} else {
-		// Unique spelling (natural values)
 		const unique = KEYS.find((k) => k.value === keyValue);
 		if (unique) return unique;
 	}
-
 	throw new Error('Key not found');
+}
+
+function inferAccTypeFromRoot(root: string): 'N' | 'S' | 'F' {
+	if (root.endsWith('#')) return 'S';
+	if (root.endsWith('b')) return 'F';
+	return 'N';
 }
 
 // Transposes single chord
 export function transposeChord(chord: string, delta: number, targetKey: Key): string {
+	// If there's no transposition, keep original spelling exactly as typed.
+	if (delta === 0) return chord;
+
 	const parts = chord.split('/');
 	if (parts.length === 0) return chord;
 
+	// Main chord
 	const main = parts[0];
 	const oldRootMain = getChordRoot(main);
-	const newRootMain = getNewKey(oldRootMain, delta, targetKey).name;
+	const mainPrefer = inferAccTypeFromRoot(oldRootMain);
+	const newRootMain = getNewKey(oldRootMain, delta, targetKey, mainPrefer).name;
 	const mainSuffix = main.slice(oldRootMain.length);
 	const transposedMain = newRootMain + mainSuffix;
 
+	// Slash parts (bass notes)
 	const transposedSlashParts = parts.slice(1).map((p) => {
 		if (!p) return p;
 		const bassRoot = getChordRoot(p);
-		const newBassRoot = getNewKey(bassRoot, delta, targetKey).name;
+		const bassPrefer = inferAccTypeFromRoot(bassRoot);
+		const newBassRoot = getNewKey(bassRoot, delta, targetKey, bassPrefer).name;
 		const bassSuffix = p.slice(bassRoot.length);
 		return newBassRoot + bassSuffix;
 	});
