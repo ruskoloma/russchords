@@ -34,6 +34,10 @@ import MyPlaylistsPage from './pages/MyPlaylistsPage/MyPlaylistsPage.tsx';
 
 const router = createBrowserRouter([
 	{
+		path: '/auth/silent-redirect',
+		element: <SilentRedirect />,
+	},
+	{
 		path: '/',
 		element: <Layout />,
 		errorElement: <ErrorPage />,
@@ -80,10 +84,6 @@ const router = createBrowserRouter([
 				path: 'playlist/:id',
 				loader: playlistPageLoader,
 				element: <PlaylistPage />,
-			},
-			{
-				path: '/auth/silent-redirect',
-				element: <SilentRedirect />,
 			},
 			{
 				path: '/search',
