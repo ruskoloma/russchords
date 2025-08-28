@@ -98,7 +98,7 @@ export const EditSongPage = () => {
 
 	const handleTransposeUp = () => {
 		const current = getKeyByName(workKey);
-		const next = KEYS.find((k) => k.value === current.value + 1 && ALL_ACTUAL_KEYS.includes(k.name)) || KEYS[0];
+		const next = KEYS.find((k) => k.value === current.value + 1 && ALL_ACTUAL_KEYS.includes(k.name)) || KEYS[1];
 		const delta = getDelta(current.value, next.value);
 		setContent((prev) => transposeWholeText(prev, delta, next.name));
 		setWorkKey(next.name);
