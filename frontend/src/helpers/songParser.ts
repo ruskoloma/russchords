@@ -264,7 +264,7 @@ export function parseChordLineWithSpaces(line: string): ChordToken[] {
 
 // Parses full text into structured lines
 export function parseSongText(rawText: string): Line[] {
-	const lines = rawText.split(/\r?\n/);
+	const lines = rawText.replace(/[\u00A0\u2000-\u200B]/g, ' ').split(/\r?\n/);
 
 	return lines.map((line) => {
 		if (line.trim() === '') {
@@ -357,9 +357,12 @@ export function transposeChord(chord: string, delta: number, targetKey: Key): st
 	// If there's no transposition, keep original spelling exactly as typed.
 	if (delta === 0) return chord;
 
+	console.log('chord, ', chord);
+
 	const parts = chord.split('/');
 	if (parts.length === 0) return chord;
 
+	console.log('parts, ', parts);
 	// Main chord
 	const main = parts[0];
 	const oldRootMain = getChordRoot(main);
