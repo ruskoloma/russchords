@@ -43,4 +43,5 @@ In case you really want to get what’s going on here, first of all - thank you,
 - Provide single IP entry point for app and API.  
 - Route traffic between backend services.  
 - Allow services to make outbound internet requests.  
-- Design remains **compatible with ALB + Auto Scaling Group** for future scaling.  
+- Design remains **compatible with ALB + Auto Scaling Group** for future scaling.
+- 
