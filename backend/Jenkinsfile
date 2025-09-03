@@ -26,27 +26,23 @@ pipeline {
             env.ECS_CLUSTER       = "${ECS_CLUSTER}"
             env.ECS_SERVICE       = "${ECS_SERVICE}"
             env.ECR_IMAGE         = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO}:${env.IMAGE_TAG}"
+
+            def required = [
+              'AWS_REGION',
+              'IMAGE_TAG',
+              'CODEBUILD_PROJECT',
+              'AWS_ACCOUNT_ID',
+              'ECR_REPO',
+              'ECS_CLUSTER',
+              'ECS_SERVICE',
+              'ECR_IMAGE'
+            ]
+            def missing = required.findAll { k -> !(env."$k"?.trim()) }
+            if (missing) {
+              error "Missing required ENV: ${missing.join(', ')}"
+            }
           }
         }
-      }
-    }
-
-    stage('Preflight') {
-      steps {
-        sh '''#!/bin/bash
-set -euo pipefail
-
-command -v aws >/dev/null 2>&1 || { echo "[err] aws cli not found"; exit 1; }
-command -v jq  >/dev/null 2>&1 || { echo "[err] jq not found"; exit 1; }
-
-: "${AWS_REGION:?AWS_REGION is required}"
-: "${CODEBUILD_PROJECT:?CODEBUILD_PROJECT is required}"
-: "${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID is required}"
-: "${ECR_REPO:?ECR_REPO is required}"
-: "${ECR_IMAGE:?ECR_IMAGE is required}"
-: "${ECS_CLUSTER:?ECS_CLUSTER is required}"
-: "${ECS_SERVICE:?ECS_SERVICE is required}"
-'''
       }
     }
 
