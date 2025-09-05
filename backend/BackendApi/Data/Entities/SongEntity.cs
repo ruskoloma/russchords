@@ -6,6 +6,7 @@ public class SongEntity
     public string Name { get; set; }
     public string Content { get; set; }
     public string? Artist { get; set; }
+    public string? Description { get; set; }
     public int? ParentId { get; set; }
     public int? OriginalId { get; set; }
     public string? SourceUrl { get; set; }

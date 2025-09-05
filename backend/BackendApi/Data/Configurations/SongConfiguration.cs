@@ -17,6 +17,7 @@ public class SongConfiguration : IEntityTypeConfiguration<SongEntity>
         builder.Property(x => x.CreatedAt).IsRequired();
         builder.Property(x => x.UpdatedAt).IsRequired();
         builder.Property(x => x.Artist).HasMaxLength(200);
+        builder.Property(x => x.Description).HasMaxLength(1000);
         builder.Property(x => x.SourceUrl).HasMaxLength(500);
         builder.Property(x => x.RootNote).HasMaxLength(20);
     }

@@ -39,6 +39,7 @@ public class SongService : ISongService
             Name = dto.Name,
             Content = dto.Content,
             Artist = dto.Artist,
+            Description = dto.Description,
             RootNote = dto.RootNote,
             AuthorId = authorId,
             CreatedAt = DateTime.UtcNow,
@@ -63,6 +64,7 @@ public class SongService : ISongService
         if (dto.Name != null) entity.Name = dto.Name;
         if (dto.Content != null) entity.Content = dto.Content;
         entity.Artist = dto.Artist;
+        entity.Description = dto.Description;
         entity.RootNote = dto.RootNote;
 
         entity.UpdatedAt = DateTime.UtcNow;
@@ -93,6 +95,7 @@ public class SongService : ISongService
             Name = cachedSong.Name,
             Content = cachedSong.Content,
             Artist = cachedSong.Artist,
+            Description = null, // Cached songs don't have descriptions
             AuthorId = userId,
             RootNote = null,
             CreatedAt = DateTime.UtcNow,
@@ -119,6 +122,7 @@ public class SongService : ISongService
             Name = existingSong.Name,
             Content = existingSong.Content,
             Artist = existingSong.Artist,
+            Description = existingSong.Description,
             AuthorId = userId,
             RootNote = existingSong.RootNote,
             CreatedAt = DateTime.UtcNow,
