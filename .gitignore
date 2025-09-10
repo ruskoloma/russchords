@@ -4,3 +4,7 @@ bin
 obj
 appsettings.Development.json
 nginx-proxy/reverse/config
+data
+.terraform
+terraform.tfstate*
+.terraform.lock.hcl

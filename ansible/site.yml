@@ -1,0 +1,37 @@
+- name: Jenkins server setup
+  hosts: all
+  become: true
+
+  tasks:
+    - name: Enable NodeSource repo for Node.js 20
+      shell: curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
+      args:
+        creates: /etc/yum.repos.d/nodesource-el7.repo
+
+    - name: Add Jenkins repo
+      get_url:
+        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
+        dest: /etc/yum.repos.d/jenkins.repo
+        mode: "0644"
+
+    - name: Import Jenkins GPG key
+      rpm_key:
+        state: present
+        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+
+    - name: Install base packages
+      yum:
+        name:
+          - nodejs
+          - unzip
+          - jq
+          - java-17-amazon-corretto-devel
+          - jenkins
+          - awscli
+        state: present
+
+    - name: Enable and start Jenkins
+      systemd:
+        name: jenkins
+        enabled: true
+        state: started
