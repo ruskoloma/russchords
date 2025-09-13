@@ -16,7 +16,7 @@ server {
     include /config/nginx/ssl.conf;
 
     location / {
-        set $upstream_host api.${PROXY_PASS_DOMAIN};
+        set $upstream_host ${API_PASS_HOST};
         proxy_pass http://$upstream_host;
         include /config/nginx/proxy.conf;
     }
@@ -34,7 +34,7 @@ server {
     include /config/nginx/ssl.conf;
 
     location / {
-        set $upstream_host jenkins.${PROXY_PASS_DOMAIN};
+        set $upstream_host ${JENKINS_PASS_HOST};
         proxy_pass http://$upstream_host;
         include /config/nginx/proxy.conf;
     }
