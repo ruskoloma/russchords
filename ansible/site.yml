@@ -1,6 +1,11 @@
 - name: Jenkins server setup
   hosts: all
   become: true
+  vars:
+    aws_account_id: "{{ lookup('pipe', 'aws sts get-caller-identity --profile=russchords-admin --query Account --output text') | trim }}"    
+    region: "{{ lookup('pipe','aws configure get region') | trim | default('us-west-2', true) }}"
+    ssm_env_path: "{{ lookup('env','SSM_ENV_PATH') | default('/russchords/dev/nginx-proxy', true) }}"
+    ecr_nginx_repo_name: "russchords/nginx-reverse-proxy"
 
   tasks:
     - name: Enable NodeSource repo for Node.js 20
@@ -28,6 +33,7 @@
           - java-17-amazon-corretto-devel
           - jenkins
           - awscli
+          - docker
         state: present
 
     - name: Enable and start Jenkins
@@ -35,3 +41,81 @@
         name: jenkins
         enabled: true
         state: started
+
+    - name: Enable and start Docker
+      systemd:
+        name: docker
+        enabled: true
+        state: started
+
+    - name: Log in to Amazon ECR
+      shell: |
+        aws ecr get-login-password --region "{{ region }}" \
+        | docker login --username AWS --password-stdin "{{ aws_account_id }}.dkr.ecr.{{ region }}.amazonaws.com"
+      register: ecr_login
+      changed_when: false
+      failed_when: "'Login Succeeded' not in ecr_login.stdout"
+
+    - name: Fetch container env params from SSM Parameter Store
+      shell: >
+        aws ssm get-parameters-by-path --with-decryption --recursive
+        --path "{{ ssm_env_path }}"
+        --region "{{ region }}"
+        --query "Parameters[].{Name:Name,Value:Value}"
+        --output json
+      register: ssm_params_raw
+      changed_when: false
+
+
+    - name: Build env dict for container from SSM params
+      set_fact:
+        container_env: "{{ dict( (ssm_params | map(attribute='Name') | map('regex_replace', '^.*/', '') | map('upper')) | zip(ssm_params | map(attribute='Value')) ) }}"
+      vars:
+        ssm_params: "{{ ssm_params_raw.stdout | from_json }}"
+
+    - name: Set data device
+      set_fact:
+        data_dev: /dev/nvme1n1
+
+    - name: Create ext4 filesystem if missing
+      filesystem:
+        fstype: ext4
+        dev: "{{ data_dev }}"
+
+    - name: Ensure mount point exists
+      file:
+        path: /data
+        state: directory
+        mode: "0755"
+
+    - name: Mount /data (and persist in fstab)
+      mount:
+        path: /data
+        src: "{{ data_dev }}"
+        fstype: ext4
+        state: mounted
+
+    - name: Ensure host dirs for Nginx and Certbot exist on EBS
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: "0755"
+      loop:
+        - /data/certbot/conf
+        - /data/certbot/www
+        - /data/config/keys
+
+    - name: Run container from ECR
+      community.docker.docker_container:
+        name: nginx-reverse
+        image: "{{ aws_account_id }}.dkr.ecr.{{ region }}.amazonaws.com/{{ ecr_nginx_repo_name }}:latest"
+        env: "{{ container_env }}" 
+        state: started
+        restart_policy: always
+        published_ports:
+          - "80:80"
+          - "443:443"
+        volumes:
+          - /data/certbot/conf:/config/etc/letsencrypt
+          - /data/certbot/www:/var/www/certbot
+          - /data/config/keys:/config/keys
