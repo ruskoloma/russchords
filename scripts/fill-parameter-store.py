@@ -47,6 +47,7 @@ PARAMS = [
   {"path":"/russchords/[env]/nginx-proxy/api_pass_host","env_name":"API_PASS_HOST","desc":"Api upstream domain and port that Nginx proxies requests to","example":"api.example.com","type":"String"},
   {"path":"/russchords/[env]/nginx-proxy/jenkins_pass_host","env_name":"JENKINS_PASS_HOST","desc":"Jenkins upstream domain and port that Nginx proxies requests to","example":"jenkins.example.com","type":"String"},
   {"path":"/russchords/[env]/nginx-proxy/domain","env_name":"DOMAIN","desc":"Main domain served by Nginx reverse proxy","example":"example.com","type":"String"},
+  {"path":"/russchords/[env]/nginx-proxy/url","env_name":"URL","desc":"The same as domain, needed by nginx","example":"example.com","type":"String"},
   {"path":"/russchords/[env]/nginx-proxy/subdomains","env_name":"SUBDOMAINS","desc":"Comma-separated list of enabled subdomains","example":"api,jenkins","type":"String"},
   {"path":"/russchords/[env]/nginx-proxy/validation","env_name":"VALIDATION","desc":"Validation method for certificates (http or dns)","example":"http","type":"String"},
   {"path":"/russchords/[env]/nginx-proxy/only_subdomains","env_name":"ONLY_SUBDOMAINS","desc":"Restrict certificate issuance to subdomains only","example":"TRUE","type":"String"},

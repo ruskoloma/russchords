@@ -34,6 +34,7 @@
           - jenkins
           - awscli
           - docker
+          - git
         state: present
 
     - name: Enable and start Jenkins
@@ -41,6 +42,7 @@
         name: jenkins
         enabled: true
         state: started
+
 
     - name: Enable and start Docker
       systemd:

@@ -8,3 +8,4 @@ data
 .terraform
 terraform.tfstate*
 .terraform.lock.hcl
+ssm_sync.py

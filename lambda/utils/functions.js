@@ -1,19 +1,5 @@
-import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { HttpError } from './classes.js';
 import * as cheerio from 'cheerio';
-import { REGION } from './constants.js';
-
-const ssm = new SSMClient({ region: REGION });
-
-export async function getParam(name, decrypt = false) {
-	const command = new GetParameterCommand({
-		Name: name,
-		WithDecryption: decrypt,
-	});
-
-	const response = await ssm.send(command);
-	return response.Parameter.Value;
-}
 
 export function jsonResp(statusCode, obj) {
 	return {
