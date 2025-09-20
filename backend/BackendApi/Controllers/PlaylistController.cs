@@ -7,7 +7,7 @@ using BackendApi.Services.Interfaces;
 namespace BackendApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 [Authorize]
 public class PlaylistController : ControllerBase
 {

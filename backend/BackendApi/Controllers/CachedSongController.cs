@@ -4,7 +4,7 @@ using BackendApi.Services.Interfaces;
 namespace BackendApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class CachedSongController : ControllerBase
 {
     private readonly ICachedSongService _service;
