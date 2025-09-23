@@ -7,7 +7,7 @@ using System.Security.Claims;
 namespace BackendApi.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("[controller]")]
 public class SongController : ControllerBase
 {
     private readonly ISongService _service;

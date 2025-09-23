@@ -62,6 +62,13 @@ Columns:
 | `/russchords/[env]/nginx-proxy/cluster_record_name` | `CLUSTER_RECORD_NAME` | DNS A record name for proxy | `proxy` | String |
 | `/russchords/[env]/nginx-proxy/eip_tag` | `EIP_TAG` | Tag used to identify Elastic IP | `NginxProxyEIP` | String |
 | `/russchords/[env]/nginx-proxy/zone_name` | `ZONE_NAME` | DNS zone name | `static.example.local` | String |
+| `/russchords/[env]/nginx-proxy/proxy_pass_domain` | `PROXY_PASS_DOMAIN` | Upstream domain and port that Nginx proxies requests to | `russchords.local:8080` | String |
+| `/russchords/[env]/nginx-proxy/domain` | `DOMAIN` | Main domain served by Nginx reverse proxy | `example.com` | String |
+| `/russchords/[env]/nginx-proxy/subdomains` | `SUBDOMAINS` | Comma-separated list of enabled subdomains | `api,jenkins` | String |
+| `/russchords/[env]/nginx-proxy/validation` | `VALIDATION` | Validation method for certificates (http or dns) | `http` | String |
+| `/russchords/[env]/nginx-proxy/only_subdomains` | `ONLY_SUBDOMAINS` | Restrict certificate issuance to subdomains only | `TRUE` | String |
+| `/russchords/[env]/nginx-proxy/email` | `EMAIL` | Email address for certificate registration and notifications | `email@gmail.com` | String |
+| `/russchords/[env]/nginx-proxy/url` | `URL` | Base URL served by proxy | `example.com` | String |
 
 ---
 

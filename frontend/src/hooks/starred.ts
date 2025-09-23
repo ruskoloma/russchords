@@ -10,7 +10,7 @@ export function useMyStarred() {
 	const client = useMyFetch();
 	const auth = useAuth();
 
-	const key = auth?.isAuthenticated ? '/api/starred/my' : null;
+	const key = auth?.isAuthenticated ? '/starred/my' : null;
 
 	const { data, error, isLoading, mutate } = useSWR(
 		key,
@@ -39,7 +39,7 @@ export function useStarSongs() {
 			await Promise.all(ids.map((id) => client.post(`/api/starred/${id}`)));
 		},
 		{
-			onSuccess: () => mutate('/api/starred/my'),
+			onSuccess: () => mutate('/starred/my'),
 			onError: (err) => {
 				showNotification({ title: 'Star failed', message: String(err), color: 'red' });
 			},
@@ -63,7 +63,7 @@ export function useUnstarSong() {
 			await client.delete(`/api/starred/${songId}`);
 		},
 		{
-			onSuccess: () => mutate('/api/starred/my'),
+			onSuccess: () => mutate('/starred/my'),
 			onError: (err) => {
 				showNotification({ title: 'Unstar failed', message: String(err), color: 'red' });
 			},

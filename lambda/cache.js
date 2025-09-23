@@ -1,13 +1,6 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
-import {
-	DynamoDBDocumentClient,
-	GetCommand,
-	PutCommand,
-} from '@aws-sdk/lib-dynamodb';
-import { EXPIRES_AT, REGION } from './utils/constants.js';
-import { getParam } from './utils/functions.js';
-
-const TABLE_NAME = await getParam('/russchords/dev/lambda/table-name');
+import { DynamoDBDocumentClient, GetCommand, PutCommand } from '@aws-sdk/lib-dynamodb';
+import { EXPIRES_AT, REGION, TABLE_NAME } from './utils/constants.js';
 
 const ddbClient = new DynamoDBClient({
 	region: REGION,

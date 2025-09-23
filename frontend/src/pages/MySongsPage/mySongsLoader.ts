@@ -6,7 +6,7 @@ import axios from 'axios';
 export const mySongsLoader: LoaderFunction = async () => {
 	try {
 		const client = await myFetch();
-		const res = await client.get<LiteSongDto[]>('/api/song/my/light');
+		const res = await client.get<LiteSongDto[]>('/song/my/light');
 		return res.data;
 	} catch (err) {
 		if (axios.isAxiosError(err)) {

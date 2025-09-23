@@ -138,7 +138,7 @@ export function useIsSongOwner(ownerId?: string) {
 
 export function useMyLightSongs(enabled: boolean = true) {
 	const client = useMyFetch();
-	const key = enabled ? '/api/song/my/light' : null;
+	const key = enabled ? '/song/my/light' : null;
 
 	const { data, error, isLoading, mutate } = useSWR(
 		key,

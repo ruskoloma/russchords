@@ -8,11 +8,12 @@ namespace BackendApi.Services;
 public class CachedSongService : ICachedSongService
 {
     private readonly IAmazonDynamoDB _dynamoDb;
-    private string _tableName = "CachedSongs";
+    private readonly string _tableName;
 
-    public CachedSongService(IAmazonDynamoDB dynamoDb)
+    public CachedSongService(IAmazonDynamoDB dynamoDb, IConfiguration configuration)
     {
         _dynamoDb = dynamoDb;
+        _tableName = configuration["TableNameDDB"]!;
     }
 
     public async Task<CachedSongDto?> GetByIdAsync(int id)
