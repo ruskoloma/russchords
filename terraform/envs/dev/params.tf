@@ -23,6 +23,14 @@ resource "aws_ssm_parameter" "lambda_code_key" {
   overwrite   = true
 }
 
+resource "aws_ssm_parameter" "lambda_code_bucket" {
+  name        = "${local.ssm_base}/lambda/code-bucket"
+  description = "Lambda S3 code bucket"
+  type        = "String"
+  value       = var.s3_bucket_name
+  overwrite   = true
+}
+
 # Backend SSM Parameters
 resource "aws_ssm_parameter" "backend_codebuild_project" {
   name        = "${local.ssm_base}/backend/codebuild-project"

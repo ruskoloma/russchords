@@ -86,7 +86,7 @@ module "lambda" {
   redirect_url        = "https://${var.main_domain_name}"
   dynamodb_table_name = local.ddb_table_name
   lambda_name         = "russchords-parser-${local.env}"
-  s3_bucket_name      = "russchords-state"
+  s3_bucket_name      = var.s3_bucket_name
 }
 
 module "backend" {

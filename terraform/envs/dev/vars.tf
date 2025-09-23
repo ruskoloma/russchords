@@ -61,3 +61,9 @@ variable "vite_google_search_cx" {
   type        = string
   default     = ""
 }
+
+variable "s3_bucket_name" {
+  description = "S3 bucket name for lambda code storage"
+  type        = string
+  default     = "russchords-state"
+}
