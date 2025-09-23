@@ -10,7 +10,7 @@ pipeline {
   parameters {
     string(name: 'AWS_REGION', defaultValue: 'us-west-2')
     string(name: 'IMAGE_TAG', defaultValue: 'latest')
-    string(name: 'SSM_PATH',   defaultValue: '/russchords/stage/backend', description: 'SSM Parameter Store path')
+    string(name: 'SSM_PATH',   defaultValue: '/russchords/dev/backend', description: 'SSM Parameter Store path')
   }
 
   stages {

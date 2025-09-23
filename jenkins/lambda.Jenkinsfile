@@ -9,17 +9,14 @@ pipeline {
   parameters {
     string(name: 'AWS_REGION', defaultValue: 'us-west-2', description: 'AWS region')
     string(name: 'SSM_PATH',   defaultValue: '/russchords/dev/lambda', description: 'SSM Parameter Store path')
-  }
-
-  environment {
-    REPO_BRANCH = 'stage'
-    REPO_URL = 'https://github.com/ruskoloma/russchords'
+    string(name: 'REPO_BRANCH', defaultValue: 'develop', description: 'Git repository branch')
+    string(name: 'REPO_URL', defaultValue: 'https://github.com/ruskoloma/russchords', description: 'Git repository URL')
   }
 
   stages {
     stage('Checkout') {
       steps {
-        git branch: env.REPO_BRANCH, url: env.REPO_URL
+        git branch: params.REPO_BRANCH, url: params.REPO_URL
       }
     }
 

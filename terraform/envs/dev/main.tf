@@ -93,10 +93,8 @@ module "backend" {
   source             = "../../modules/backend"
   vpc_id             = local.vpc_id
   subnet_ids         = local.public_subnet_ids
-  cognito_authority  = local.cognito_authority
-  cognito_client_id  = local.cognito_client_id
   ssm_base           = local.ssm_base
-  github_branch      = "dev"
+  github_branch      = "develop"
   ecr_repository_uri = local.backend_api_ecr_repo_url
   image_repo_name    = local.backend_api_repo_name
 }

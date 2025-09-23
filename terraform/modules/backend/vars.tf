@@ -6,8 +6,6 @@ variable "cluster_name" {
 variable "vpc_id" { type = string }
 variable "subnet_ids" { type = list(string) }
 variable "ecr_repository_uri" { type = string }
-variable "cognito_authority" { type = string }
-variable "cognito_client_id" { type = string }
 variable "ssm_base" { type = string }
 
 
@@ -51,7 +49,7 @@ variable "github_repo" {
 variable "github_branch" {
   description = "Branch or ref to build."
   type        = string
-  default     = "dev"
+  default     = "develop"
 }
 
 variable "buildspec_path" {
