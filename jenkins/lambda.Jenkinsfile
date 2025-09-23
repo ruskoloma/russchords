@@ -43,7 +43,7 @@ pipeline {
     stage('Zip artifact') {
       steps {
         sh '''
-          set -euo pipefail
+          set -eu
           cd lambda
           rm -f ../artifact.zip
           zip -yrq ../artifact.zip ./*
@@ -57,7 +57,7 @@ pipeline {
     stage('Upload to S3') {
       steps {
         sh '''
-          set -euo pipefail
+          set -eu
           echo "Uploading artifact.zip to s3://$CODE_BUCKET/$CODE_KEY"
           aws s3 cp artifact.zip "s3://$CODE_BUCKET/$CODE_KEY" --region "$AWS_REGION" --only-show-errors
         '''
@@ -67,7 +67,7 @@ pipeline {
     stage('Update Lambda code') {
       steps {
         sh '''
-          set -euo pipefail
+          set -eu
           echo "Updating Lambda $FUNCTION_NAME from s3://$CODE_BUCKET/$CODE_KEY"
           aws lambda update-function-code \
             --function-name "$FUNCTION_NAME" \
