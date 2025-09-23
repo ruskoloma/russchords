@@ -159,7 +159,7 @@ export function useMyLightSongs(enabled: boolean = true) {
 
 export function useMyForksByOriginalId(originalId?: number | string, enabled: boolean = true) {
 	const client = useMyFetch();
-	const key = enabled && originalId != null ? `/api/song/my/forks/${originalId}` : null;
+	const key = enabled && originalId != null ? `/song/my/forks/${originalId}` : null;
 
 	const { data, error, isLoading, mutate } = useSWR(
 		key,

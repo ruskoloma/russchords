@@ -51,6 +51,10 @@ resource "aws_ecs_task_definition" "this" {
           name      = "COGNITO__CLIENTID"
           valueFrom = "${var.ssm_base}/shared/cognito/client_id"
         },
+        {
+          name      = "TableNameDDB"
+          valueFrom = "${var.ssm_base}/ddb/table-name"
+        },
       ]
       image = var.ecr_repository_uri
       logConfiguration = {
