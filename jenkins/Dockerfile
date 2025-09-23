@@ -8,6 +8,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     jq \
+    zip \
     && rm -rf /var/lib/apt/lists/*
 
 # Install AWS CLI v2

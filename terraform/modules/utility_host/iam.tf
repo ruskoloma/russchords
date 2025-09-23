@@ -75,6 +75,12 @@ resource "aws_iam_role_policy" "utility_host_role_policy" {
         Effect   = "Allow",
         Action   = "cloudfront:ListDistributions",
         Resource = "*"
+      },
+      {
+        Sid      = "LambdaUpdateFunctionCode",
+        Effect   = "Allow",
+        Action   = ["lambda:UpdateFunctionCode", "lambda:GetFunction", "lambda:PublishVersion"],
+        Resource = "*"
       }
     ]
   })
