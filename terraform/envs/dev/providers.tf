@@ -32,11 +32,5 @@ variable "aws_profile" {
   default     = "russchords-admin"
 }
 
-variable "environment" {
-  type        = string
-  description = "Environment tag"
-  default     = "dev"
-}
-
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}

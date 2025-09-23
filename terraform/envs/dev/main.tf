@@ -66,7 +66,6 @@ module "rds" {
 
 module "ddb" {
   source     = "../../modules/ddb"
-  ssm_base   = local.ssm_base
   table_name = "cached-songs-${local.env}"
 }
 
@@ -87,7 +86,6 @@ module "lambda" {
   redirect_url        = "https://${var.main_domain_name}"
   dynamodb_table_name = local.ddb_table_name
   lambda_name         = "russchords-parser-${local.env}"
-  ssm_base            = local.ssm_base
   s3_bucket_name      = "russchords-state"
 }
 
@@ -98,7 +96,6 @@ module "backend" {
   cognito_authority          = local.cognito_authority
   cognito_client_id          = local.cognito_client_id
   database_connection_string = local.db_connection_string
-  ssm_base                   = local.ssm_base
   github_branch              = "dev"
   ecr_repository_uri         = local.backend_api_ecr_repo_url
   image_repo_name            = local.backend_api_repo_name

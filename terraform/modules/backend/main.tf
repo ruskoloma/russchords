@@ -151,3 +151,7 @@ output "task_definition_arn" {
 output "security_group_id" {
   value = aws_security_group.ecs_sg.id
 }
+
+output "ecr_repo_name" {
+  value = var.image_repo_name
+}

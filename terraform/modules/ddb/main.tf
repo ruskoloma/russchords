@@ -1,6 +1,3 @@
-variable "ssm_base" {
-  type = string
-}
 
 variable "table_name" {
   type        = string
@@ -31,12 +28,6 @@ resource "aws_dynamodb_table" "this" {
   tags = var.tags
 }
 
-resource "aws_ssm_parameter" "lambda_function_name" {
-  name      = "${var.ssm_base}/ddb/table-name"
-  type      = "String"
-  value     = aws_dynamodb_table.this.name
-  overwrite = true
-}
 
 output "ddb_table_name" {
   value = aws_dynamodb_table.this.name

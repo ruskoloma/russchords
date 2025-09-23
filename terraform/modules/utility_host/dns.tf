@@ -31,3 +31,8 @@ resource "aws_route53_record" "isntance1" {
   ttl     = 30
   records = [aws_instance.utility_host.public_ip]
 }
+
+output "api_domain_name" {
+  description = "API domain name"
+  value       = aws_route53_record.dev_public_api.fqdn
+}

@@ -28,7 +28,6 @@ variable "source_url" {
   default = "https://holychords.pro"
 }
 
-variable "ssm_base" {}
 
 variable "s3_bucket_name" {
   description = "Name of existing S3 bucket to store Lambda deployment package"
@@ -147,4 +146,17 @@ resource "aws_route53_record" "api_alias" {
     zone_id                = aws_apigatewayv2_domain_name.custom.domain_name_configuration[0].hosted_zone_id
     evaluate_target_health = false
   }
+}
+
+output "lambda_function_name" {
+  value = aws_lambda_function.this.function_name
+}
+
+output "lambda_code_key" {
+  value = local.lambda_s3_key
+}
+
+output "api_domain_name" {
+  description = "Lambda API domain name"
+  value       = aws_route53_record.api_alias.fqdn
 }
