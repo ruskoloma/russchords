@@ -2,7 +2,7 @@
   hosts: all
   become: true
   vars:
-    aws_account_id: "{{ lookup('pipe', 'aws sts get-caller-identity --profile=russchords-admin --query Account --output text') | trim }}"    
+    aws_account_id: "{{ lookup('pipe', 'aws sts get-caller-identity --profile=russchords-admin --query Account --output text') | trim }}"
     region: "{{ lookup('pipe','aws configure get region') | trim | default('us-west-2', true) }}"
     ssm_env_path: "{{ lookup('env','SSM_ENV_PATH') | default('/russchords/dev/nginx-proxy', true) }}"
     ecr_nginx_repo_name: "russchords/nginx-reverse-proxy"
@@ -43,12 +43,32 @@
         enabled: true
         state: started
 
-
     - name: Enable and start Docker
       systemd:
         name: docker
         enabled: true
         state: started
+
+    - name: Create docker data-root on EBS
+      file:
+        path: /data/docker
+        state: directory
+        mode: "0755"
+
+    - name: Configure Docker data-root to /data/docker
+      copy:
+        dest: /etc/docker/daemon.json
+        content: |
+          {
+            "data-root": "/data/docker"
+          }
+        mode: "0644"
+
+    - name: Restart Docker to apply data-root
+      systemd:
+        name: docker
+        state: restarted
+        enabled: true
 
     - name: Log in to Amazon ECR
       shell: |
@@ -67,7 +87,6 @@
         --output json
       register: ssm_params_raw
       changed_when: false
-
 
     - name: Build env dict for container from SSM params
       set_fact:
@@ -111,13 +130,19 @@
       community.docker.docker_container:
         name: nginx-reverse
         image: "{{ aws_account_id }}.dkr.ecr.{{ region }}.amazonaws.com/{{ ecr_nginx_repo_name }}:latest"
-        env: "{{ container_env }}" 
+        env: "{{ container_env }}"
         state: started
         restart_policy: always
         published_ports:
           - "80:80"
           - "443:443"
-        volumes:
-          - /data/certbot/conf:/config/etc/letsencrypt
-          - /data/certbot/www:/var/www/certbot
-          - /data/config/keys:/config/keys
+        mounts:
+          - type: volume
+            source: certbot_conf
+            target: /config/etc/letsencrypt
+          - type: volume
+            source: certbot_www
+            target: /var/www/certbot
+          - type: volume
+            source: config_keys
+            target: /config/keys

@@ -9,11 +9,11 @@ pipeline {
   parameters {
     string(name: 'AWS_REGION', defaultValue: 'us-west-2')
     string(name: 'IMAGE_TAG', defaultValue: 'latest')
-    string(name: 'SSM_PATH',   defaultValue: '/russchords/stage/frontend', description: 'SSM Parameter Store path')
+    string(name: 'SSM_PATH',   defaultValue: '/russchords/dev/frontend', description: 'SSM Parameter Store path')
   }
 
   environment {
-    REPO_BRANCH = 'stage'
+    REPO_BRANCH = 'develop'
     REPO_URL = 'https://github.com/ruskoloma/russchords'
   }
 
