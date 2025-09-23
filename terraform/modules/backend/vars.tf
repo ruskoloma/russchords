@@ -8,7 +8,7 @@ variable "subnet_ids" { type = list(string) }
 variable "ecr_repository_uri" { type = string }
 variable "cognito_authority" { type = string }
 variable "cognito_client_id" { type = string }
-variable "database_connection_string" { type = string }
+variable "ssm_base" { type = string }
 
 
 variable "task_cpu" {

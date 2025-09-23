@@ -28,6 +28,25 @@ resource "aws_iam_role_policy" "ecs_execution_logs" {
   })
 }
 
+resource "aws_iam_role_policy" "ecs_execution_ssm" {
+  name = "ecs-execution-ssm"
+  role = aws_iam_role.ecs_execution_role.id
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Action = [
+        "ssm:GetParameters",
+        "ssm:GetParameter",
+        "ssm:GetParametersByPath"
+      ]
+      Resource = [
+        "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_base}/*"
+      ]
+    }]
+  })
+}
+
 resource "aws_iam_role" "ecs_task_role" {
   name = "ecs-task-role"
   assume_role_policy = jsonencode({

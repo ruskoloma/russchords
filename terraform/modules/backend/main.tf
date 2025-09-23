@@ -34,20 +34,22 @@ resource "aws_ecs_task_definition" "this" {
           value = "Production"
         },
         {
-          name  = "ConnectionStrings__DefaultConnection"
-          value = var.database_connection_string
-        },
-        {
           name  = "AWS_REGION"
           value = data.aws_region.current.name
         },
+      ]
+      secrets = [
         {
-          name  = "COGNITO__AUTHORITY"
-          value = var.cognito_authority
+          name      = "ConnectionStrings__DefaultConnection"
+          valueFrom = "${var.ssm_base}/rds/connection-string"
         },
         {
-          name  = "COGNITO__CLIENTID"
-          value = var.cognito_client_id
+          name      = "COGNITO__AUTHORITY"
+          valueFrom = "${var.ssm_base}/backend/cognito-authority"
+        },
+        {
+          name      = "COGNITO__CLIENTID"
+          valueFrom = "${var.ssm_base}/backend/cognito-client-id"
         },
       ]
       image = var.ecr_repository_uri
@@ -96,7 +98,7 @@ resource "aws_ecs_service" "this" {
 }
 
 resource "aws_security_group" "ecs_sg" {
-  name        = "ecs-security-group"
+  name        = "ecs-backend-sg"
   description = "Security group for ECS tasks"
   vpc_id      = var.vpc_id
 

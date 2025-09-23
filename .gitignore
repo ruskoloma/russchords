@@ -9,3 +9,4 @@ data
 terraform.tfstate*
 .terraform.lock.hcl
 ssm_sync.py
+terraform.tfvars

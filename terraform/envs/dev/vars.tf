@@ -12,6 +12,12 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "utility_host_instance_type" {
+  description = "EC2 instance type for the utility host"
+  type        = string
+  default     = "t4g.small"
+}
+
 # Frontend build variables
 variable "vite_api_url" {
   description = "API URL for Vite frontend"

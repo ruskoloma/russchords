@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 5.0"
+    }
+  }
+}
+
 variable "domain_name" {
   description = "FQDN for the certificate (e.g., example.com or jenkins.example.dev)."
   type        = string

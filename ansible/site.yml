@@ -6,42 +6,37 @@
     region: "{{ lookup('pipe','aws configure get region') | trim | default('us-west-2', true) }}"
     ssm_env_path: "{{ lookup('env','SSM_ENV_PATH') | default('/russchords/dev/nginx-proxy', true) }}"
     ecr_nginx_repo_name: "russchords/nginx-reverse-proxy"
+    ecr_jenkins_repo_name: "russchords/jenkins"
 
   tasks:
-    - name: Enable NodeSource repo for Node.js 20
-      shell: curl -fsSL https://rpm.nodesource.com/setup_20.x | bash -
-      args:
-        creates: /etc/yum.repos.d/nodesource-el7.repo
+    - name: Set data device
+      set_fact:
+        data_dev: /dev/nvme1n1
 
-    - name: Add Jenkins repo
-      get_url:
-        url: https://pkg.jenkins.io/redhat-stable/jenkins.repo
-        dest: /etc/yum.repos.d/jenkins.repo
-        mode: "0644"
+    - name: Create ext4 filesystem if missing
+      filesystem:
+        fstype: ext4
+        dev: "{{ data_dev }}"
 
-    - name: Import Jenkins GPG key
-      rpm_key:
-        state: present
-        key: https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    - name: Ensure mount point exists
+      file:
+        path: /data
+        state: directory
+        mode: "0755"
 
-    - name: Install base packages
+    - name: Mount /data (and persist in fstab)
+      mount:
+        path: /data
+        src: "{{ data_dev }}"
+        fstype: ext4
+        state: mounted
+        
+    - name: Install base packages for host
       yum:
         name:
-          - nodejs
-          - unzip
-          - jq
-          - java-17-amazon-corretto-devel
-          - jenkins
-          - awscli
           - docker
           - git
         state: present
-
-    - name: Enable and start Jenkins
-      systemd:
-        name: jenkins
-        enabled: true
-        state: started
 
     - name: Enable and start Docker
       systemd:
@@ -78,6 +73,7 @@
       changed_when: false
       failed_when: "'Login Succeeded' not in ecr_login.stdout"
 
+
     - name: Fetch container env params from SSM Parameter Store
       shell: >
         aws ssm get-parameters-by-path --with-decryption --recursive
@@ -93,38 +89,6 @@
         container_env: "{{ dict( (ssm_params | map(attribute='Name') | map('regex_replace', '^.*/', '') | map('upper')) | zip(ssm_params | map(attribute='Value')) ) }}"
       vars:
         ssm_params: "{{ ssm_params_raw.stdout | from_json }}"
-
-    - name: Set data device
-      set_fact:
-        data_dev: /dev/nvme1n1
-
-    - name: Create ext4 filesystem if missing
-      filesystem:
-        fstype: ext4
-        dev: "{{ data_dev }}"
-
-    - name: Ensure mount point exists
-      file:
-        path: /data
-        state: directory
-        mode: "0755"
-
-    - name: Mount /data (and persist in fstab)
-      mount:
-        path: /data
-        src: "{{ data_dev }}"
-        fstype: ext4
-        state: mounted
-
-    - name: Ensure host dirs for Nginx and Certbot exist on EBS
-      file:
-        path: "{{ item }}"
-        state: directory
-        mode: "0755"
-      loop:
-        - /data/certbot/conf
-        - /data/certbot/www
-        - /data/config/keys
 
     - name: Run container from ECR
       community.docker.docker_container:
@@ -146,3 +110,19 @@
           - type: volume
             source: config_keys
             target: /config/keys
+
+    - name: Run Jenkins container from ECR
+      community.docker.docker_container:
+        name: jenkins
+        image: "{{ aws_account_id }}.dkr.ecr.{{ region }}.amazonaws.com/{{ ecr_jenkins_repo_name }}:latest"
+        state: started
+        restart_policy: always
+        published_ports:
+          - "8080:8080"
+          - "50000:50000"
+        mounts:
+          - type: volume
+            source: jenkins_home
+            target: /var/jenkins_home
+        # env:
+          # JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"

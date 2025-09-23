@@ -65,9 +65,18 @@ resource "aws_ssm_parameter" "ddb_table_name" {
   overwrite   = true
 }
 
+# RDS SSM Parameters
+resource "aws_ssm_parameter" "rds_connection_string" {
+  name        = "${local.ssm_base}/rds/connection-string"
+  description = "RDS database connection string"
+  type        = "SecureString"
+  value       = module.rds.ConnectionString
+  overwrite   = true
+}
+
 # Frontend SSM Parameters
 resource "aws_ssm_parameter" "frontend_s3_bucket" {
-  name        = "${local.ssm_base}/frontend/BUILD_S3_BUCKET"
+  name        = "${local.ssm_base}/frontend/build-s3-bucket"
   description = "Frontend S3 bucket name"
   type        = "String"
   value       = module.frontend_hosting.s3_bucket_name
@@ -75,7 +84,7 @@ resource "aws_ssm_parameter" "frontend_s3_bucket" {
 }
 
 resource "aws_ssm_parameter" "frontend_cf_dist_id" {
-  name        = "${local.ssm_base}/frontend/BUILD_CF_DIST_ID"
+  name        = "${local.ssm_base}/frontend/build-cf-dist-id"
   description = "Frontend CloudFront distribution ID"
   type        = "String"
   value       = module.frontend_hosting.cloudfront_distribution_id
@@ -83,7 +92,7 @@ resource "aws_ssm_parameter" "frontend_cf_dist_id" {
 }
 
 resource "aws_ssm_parameter" "frontend_api_url" {
-  name        = "${local.ssm_base}/frontend/VITE_API_URL"
+  name        = "${local.ssm_base}/frontend/vite-api-url"
   description = "Frontend API URL"
   type        = "String"
   value       = var.vite_api_url != "" ? var.vite_api_url : "https://${module.utility_host.api_domain_name}"
@@ -91,7 +100,7 @@ resource "aws_ssm_parameter" "frontend_api_url" {
 }
 
 resource "aws_ssm_parameter" "frontend_lambda_parser_domain" {
-  name        = "${local.ssm_base}/frontend/VITE_LAMBDA_PARSER_DOMAIN"
+  name        = "${local.ssm_base}/frontend/vite-lambda-parser-domain"
   description = "Lambda parser domain for frontend"
   type        = "String"
   value       = "https://${module.lambda.api_domain_name}"
@@ -99,7 +108,7 @@ resource "aws_ssm_parameter" "frontend_lambda_parser_domain" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_authority" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_AUTHORITY"
+  name        = "${local.ssm_base}/frontend/vite-cognito-authority"
   description = "Cognito authority for frontend"
   type        = "String"
   value       = module.cognito.cognito_hosted_ui_base
@@ -107,7 +116,7 @@ resource "aws_ssm_parameter" "frontend_cognito_authority" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_client_id" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_CLIENT_ID"
+  name        = "${local.ssm_base}/frontend/vite-cognito-client-id"
   description = "Cognito client ID for frontend"
   type        = "String"
   value       = module.cognito.cognito_user_pool_client_id
@@ -115,7 +124,7 @@ resource "aws_ssm_parameter" "frontend_cognito_client_id" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_redirect_uri" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_REDIRECT_URI"
+  name        = "${local.ssm_base}/frontend/vite-cognito-redirect-uri"
   description = "Cognito redirect URI for frontend"
   type        = "String"
   value       = var.vite_cognito_redirect_uri != "" ? var.vite_cognito_redirect_uri : "https://${var.main_domain_name}/auth/callback"
@@ -123,7 +132,7 @@ resource "aws_ssm_parameter" "frontend_cognito_redirect_uri" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_logout_uri" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_LOGOUT_URI"
+  name        = "${local.ssm_base}/frontend/vite-cognito-logout-uri"
   description = "Cognito logout URI for frontend"
   type        = "String"
   value       = var.vite_cognito_logout_uri != "" ? var.vite_cognito_logout_uri : "https://${var.main_domain_name}"
@@ -131,7 +140,7 @@ resource "aws_ssm_parameter" "frontend_cognito_logout_uri" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_domain" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_DOMAIN"
+  name        = "${local.ssm_base}/frontend/vite-cognito-domain"
   description = "Cognito domain for frontend"
   type        = "String"
   value       = module.cognito.cognito_domain_alias_record_name
@@ -139,7 +148,7 @@ resource "aws_ssm_parameter" "frontend_cognito_domain" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_silent_redirect_uri" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_SILENT_REDIRECT_URI"
+  name        = "${local.ssm_base}/frontend/vite-cognito-silent-redirect-uri"
   description = "Cognito silent redirect URI for frontend"
   type        = "String"
   value       = var.vite_cognito_silent_redirect_uri != "" ? var.vite_cognito_silent_redirect_uri : "https://${var.main_domain_name}/auth/silent-callback"
@@ -147,7 +156,7 @@ resource "aws_ssm_parameter" "frontend_cognito_silent_redirect_uri" {
 }
 
 resource "aws_ssm_parameter" "frontend_cognito_scope" {
-  name        = "${local.ssm_base}/frontend/VITE_COGNITO_SCOPE"
+  name        = "${local.ssm_base}/frontend/vite-cognito-scope"
   description = "Cognito scope for frontend"
   type        = "String"
   value       = var.vite_cognito_scope
@@ -155,7 +164,7 @@ resource "aws_ssm_parameter" "frontend_cognito_scope" {
 }
 
 resource "aws_ssm_parameter" "frontend_google_search_key" {
-  name        = "${local.ssm_base}/frontend/VITE_GOOGLE_SEARCH_KEY"
+  name        = "${local.ssm_base}/frontend/vite-google-search-key"
   description = "Google Search API key for frontend"
   type        = "SecureString"
   value       = var.vite_google_search_key
@@ -163,10 +172,27 @@ resource "aws_ssm_parameter" "frontend_google_search_key" {
 }
 
 resource "aws_ssm_parameter" "frontend_google_search_cx" {
-  name        = "${local.ssm_base}/frontend/VITE_GOOGLE_SEARCH_CX"
+  name        = "${local.ssm_base}/frontend/vite-google-search-cx"
   description = "Google Search Custom Search Engine ID for frontend"
   type        = "String"
   value       = var.vite_google_search_cx
+  overwrite   = true
+}
+
+# Backend Cognito SSM Parameters
+resource "aws_ssm_parameter" "backend_cognito_authority" {
+  name        = "${local.ssm_base}/backend/cognito-authority"
+  description = "Cognito authority for backend"
+  type        = "String"
+  value       = module.cognito.cognito_hosted_ui_base
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "backend_cognito_client_id" {
+  name        = "${local.ssm_base}/backend/cognito-client-id"
+  description = "Cognito client ID for backend"
+  type        = "String"
+  value       = module.cognito.cognito_user_pool_client_id
   overwrite   = true
 }
 

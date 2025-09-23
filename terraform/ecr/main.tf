@@ -35,10 +35,15 @@ variable "nginx_proxy_repo_name" {
   default = "russchords/nginx-reverse-proxy"
 }
 
+variable "jenkins_repo_name" {
+  default = "russchords/jenkins"
+}
+
 resource "aws_ecr_repository" "repos" {
   for_each = toset([
     var.backend_api_repo_name,
-    var.nginx_proxy_repo_name
+    var.nginx_proxy_repo_name,
+    var.jenkins_repo_name
   ])
 
   name                 = each.value
@@ -83,6 +88,11 @@ output "nginx_proxy_ecr_repo_url" {
   value       = aws_ecr_repository.repos[var.nginx_proxy_repo_name].repository_url
 }
 
+output "jenkins_ecr_repo_url" {
+  description = "Jenkins ECR repository URL"
+  value       = aws_ecr_repository.repos[var.jenkins_repo_name].repository_url
+}
+
 output "backend_api_repo_name" {
   description = "Backend API ECR repository name"
   value       = var.backend_api_repo_name
@@ -91,4 +101,9 @@ output "backend_api_repo_name" {
 output "nginx_proxy_repo_name" {
   description = "Nginx Proxy ECR repository name"
   value       = var.nginx_proxy_repo_name
+}
+
+output "jenkins_repo_name" {
+  description = "Jenkins ECR repository name"
+  value       = var.jenkins_repo_name
 }

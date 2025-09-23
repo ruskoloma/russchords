@@ -32,7 +32,6 @@ locals {
   ddb_table_name        = module.ddb.ddb_table_name
   cognito_authority     = module.cognito.cognito_hosted_ui_base
   cognito_client_id     = module.cognito.cognito_user_pool_client_id
-  db_connection_string  = module.rds.ConnectionString
   cognito_domain        = "auth.${var.main_domain_name}"
 }
 
@@ -61,7 +60,7 @@ module "rds" {
   db_identifier             = local.project_env_name
   subnet_ids                = local.public_subnet_ids
   vpc_id                    = local.vpc_id
-  ingress_security_group_id = module.utility_host.ingress_security_group_id
+  ingress_security_group_id = module.backend.security_group_id
 }
 
 module "ddb" {
@@ -77,6 +76,7 @@ module "utility_host" {
   availability_zone = local.default_az
   private_zone_id   = local.private_zone_id
   public_zone_id    = local.public_zone_id
+  instance_type     = var.utility_host_instance_type
 }
 
 module "lambda" {
@@ -90,15 +90,15 @@ module "lambda" {
 }
 
 module "backend" {
-  source                     = "../../modules/backend"
-  vpc_id                     = local.vpc_id
-  subnet_ids                 = local.public_subnet_ids
-  cognito_authority          = local.cognito_authority
-  cognito_client_id          = local.cognito_client_id
-  database_connection_string = local.db_connection_string
-  github_branch              = "dev"
-  ecr_repository_uri         = local.backend_api_ecr_repo_url
-  image_repo_name            = local.backend_api_repo_name
+  source             = "../../modules/backend"
+  vpc_id             = local.vpc_id
+  subnet_ids         = local.public_subnet_ids
+  cognito_authority  = local.cognito_authority
+  cognito_client_id  = local.cognito_client_id
+  ssm_base           = local.ssm_base
+  github_branch      = "dev"
+  ecr_repository_uri = local.backend_api_ecr_repo_url
+  image_repo_name    = local.backend_api_repo_name
 }
 
 module "frontend_hosting" {

@@ -1,5 +1,5 @@
 resource "aws_security_group" "utility_host_sg" {
-  name        = "utility_host_sg"
+  name        = "utility-host-sg"
   description = "allow ssh and http traffic"
   vpc_id      = var.vpc_id
 
