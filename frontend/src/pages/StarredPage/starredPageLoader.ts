@@ -6,7 +6,7 @@ import axios from 'axios';
 export const starredPageLoader: LoaderFunction = async () => {
 	try {
 		const client = await myFetch();
-		const res = await client.get<SongDto[]>('/api/starred/my');
+		const res = await client.get<SongDto[]>('/starred/my');
 		return res.data;
 	} catch (err) {
 		if (axios.isAxiosError(err)) {

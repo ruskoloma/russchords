@@ -8,7 +8,7 @@ import { useAuth } from 'react-oidc-context';
 export function useMyPlaylistsWithDetails(enabled: boolean = true) {
 	const client = useMyFetch();
 	const fetcher = (url: string) => client.get<MyPlaylistDto[]>(url).then((r) => r.data);
-	const key = enabled ? '/api/playlist/my' : null;
+	const key = enabled ? '/playlist/my' : null;
 	const { data, error, isLoading, mutate } = useSWR<MyPlaylistDto[]>(key, fetcher, {
 		revalidateOnFocus: false,
 	});
@@ -34,13 +34,13 @@ export function useCreatePlaylist(opts: { onSuccess?: (created: PlaylistDto) => 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'CREATE_PLAYLIST',
 		async (_: string, { arg }: { arg: CreatePlaylistDto }) => {
-			const res = await client.post<PlaylistDto>('/api/playlist', arg);
+			const res = await client.post<PlaylistDto>('/playlist', arg);
 			return res.data;
 		},
 		{
 			onSuccess: async (created) => {
 				showNotification({ title: 'Playlist created', message: 'Successfully created.', color: 'green' });
-				await mutate('/api/playlist/my');
+				await mutate('/playlist/my');
 				opts.onSuccess?.(created);
 			},
 			onError: (err) => showNotification({ title: 'Create failed', message: String(err), color: 'red' }),
@@ -67,7 +67,7 @@ export function useUpdatePlaylist() {
 		{
 			onSuccess: async (id) => {
 				showNotification({ title: 'Playlist updated', message: 'Changes saved.', color: 'green' });
-				await mutate('/api/playlist/my');
+				await mutate('/playlist/my');
 				await mutate(`/api/playlist/${id}`);
 			},
 			onError: (err) => showNotification({ title: 'Update failed', message: String(err), color: 'red' }),
@@ -94,7 +94,7 @@ export function useDeletePlaylist() {
 		{
 			onSuccess: async () => {
 				showNotification({ title: 'Playlist deleted', message: 'Removed successfully.', color: 'green' });
-				await mutate('/api/playlist/my');
+				await mutate('/playlist/my');
 			},
 			onError: (err) => showNotification({ title: 'Delete failed', message: String(err), color: 'red' }),
 		},
@@ -171,7 +171,7 @@ export function useSetPlaylistPinned() {
 		},
 		{
 			onSuccess: async (playlistId) => {
-				await mutate('/api/playlist/my');
+				await mutate('/playlist/my');
 				await mutate(`/api/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Pin failed', message: String(err), color: 'red' }),
@@ -224,13 +224,13 @@ export function useAddPlaylistToMy() {
 			if (!me) {
 				throw new Error('Not authorized');
 			}
-			await client.post('/api/playlist/members', { playlistId, memberId: me });
+			await client.post('/playlist/members', { playlistId, memberId: me });
 			return playlistId;
 		},
 		{
 			onSuccess: async () => {
 				showNotification({ title: 'Added', message: 'Playlist added to your list.', color: 'green' });
-				await mutate('/api/playlist/my');
+				await mutate('/playlist/my');
 			},
 			onError: (err) => {
 				showNotification({ title: 'Add failed', message: String(err), color: 'red' });
@@ -258,7 +258,7 @@ export function useRemovePlaylistFromMy() {
 		{
 			onSuccess: async () => {
 				showNotification({ title: 'Removed', message: 'Playlist removed from your list.', color: 'green' });
-				await mutate('/api/playlist/my');
+				await mutate('/playlist/my');
 			},
 			onError: (err) => {
 				showNotification({ title: 'Remove failed', message: String(err), color: 'red' });
