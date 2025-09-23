@@ -7,6 +7,7 @@ variable "vpc_id" { type = string }
 variable "subnet_ids" { type = list(string) }
 variable "ecr_repository_uri" { type = string }
 variable "ssm_base" { type = string }
+variable "private_zone_id" { type = string }
 
 
 variable "task_cpu" {

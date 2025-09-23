@@ -67,3 +67,9 @@ variable "s3_bucket_name" {
   type        = string
   default     = "russchords-state"
 }
+
+variable "email" {
+  description = "Email address for SSL certificate notifications"
+  type        = string
+  default     = "admin@russchords.pro"
+}

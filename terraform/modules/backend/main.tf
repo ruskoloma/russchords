@@ -45,11 +45,11 @@ resource "aws_ecs_task_definition" "this" {
         },
         {
           name      = "COGNITO__AUTHORITY"
-          valueFrom = "${var.ssm_base}/backend/cognito-authority"
+          valueFrom = "${var.ssm_base}/shared/cognito/authority"
         },
         {
           name      = "COGNITO__CLIENTID"
-          valueFrom = "${var.ssm_base}/backend/cognito-client-id"
+          valueFrom = "${var.ssm_base}/shared/cognito/client_id"
         },
       ]
       image = var.ecr_repository_uri
@@ -133,9 +133,14 @@ resource "aws_service_discovery_service" "api" {
     }
     routing_policy = "MULTIVALUE"
   }
-  #   health_check_custom_config {
-  #     failure_threshold = 1
-  #   }
+}
+
+resource "aws_route53_record" "dev_internal_api" {
+  name    = "api"
+  zone_id = var.private_zone_id
+  type    = "CNAME"
+  ttl     = 30
+  records = ["api.backend-ecs.internal"]
 }
 
 output "cluster_name" {
@@ -156,4 +161,9 @@ output "security_group_id" {
 
 output "ecr_repo_name" {
   value = var.image_repo_name
+}
+
+output "api_internal_domain" {
+  description = "API internal domain name"
+  value       = aws_route53_record.dev_internal_api.fqdn
 }

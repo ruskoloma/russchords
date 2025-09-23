@@ -43,9 +43,17 @@ module "private_zone" {
 
 
 module "cognito" {
-  source             = "../../modules/cognito"
-  callback_urls      = ["http://localhost:5173/auth/callback"]
-  logout_urls        = ["http://localhost:5173"]
+  source = "../../modules/cognito"
+  callback_urls = [
+    "http://localhost:5173/auth/callback",
+    "https://${var.main_domain_name}/auth/callback",
+    "http://localhost:5173",
+    "https://${var.main_domain_name}"
+  ]
+  logout_urls = [
+    "http://localhost:5173",
+    "https://${var.main_domain_name}"
+  ]
   custom_domain_name = local.cognito_domain
   route53_zone_id    = local.public_zone_id
   certificate_arn    = local.cognito_cert_arn
@@ -97,6 +105,7 @@ module "backend" {
   github_branch      = "develop"
   ecr_repository_uri = local.backend_api_ecr_repo_url
   image_repo_name    = local.backend_api_repo_name
+  private_zone_id    = local.private_zone_id
 }
 
 module "frontend_hosting" {

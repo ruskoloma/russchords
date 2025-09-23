@@ -119,7 +119,7 @@ resource "aws_ssm_parameter" "frontend_cognito_authority" {
   name        = "${local.ssm_base}/frontend/vite-cognito-authority"
   description = "Cognito authority for frontend"
   type        = "String"
-  value       = module.cognito.cognito_hosted_ui_base
+  value       = local.cognito_issuer
   overwrite   = true
 }
 
@@ -199,6 +199,87 @@ resource "aws_ssm_parameter" "backend_cognito_authority" {
 resource "aws_ssm_parameter" "backend_cognito_client_id" {
   name        = "${local.ssm_base}/backend/cognito-client-id"
   description = "Cognito client ID for backend"
+  type        = "String"
+  value       = module.cognito.cognito_user_pool_client_id
+  overwrite   = true
+}
+
+# Nginx-proxy SSM Parameters
+resource "aws_ssm_parameter" "nginx_proxy_api_pass_host" {
+  name        = "${local.ssm_base}/nginx-proxy/api-pass-host"
+  description = "API pass host for nginx-proxy"
+  type        = "String"
+  value       = "${module.backend.api_internal_domain}:8080"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_domain" {
+  name        = "${local.ssm_base}/nginx-proxy/domain"
+  description = "Domain for nginx-proxy"
+  type        = "String"
+  value       = var.main_domain_name
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_email" {
+  name        = "${local.ssm_base}/nginx-proxy/email"
+  description = "Email for nginx-proxy SSL certificates"
+  type        = "String"
+  value       = var.email
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_jenkins_pass_host" {
+  name        = "${local.ssm_base}/nginx-proxy/jenkins-pass-host"
+  description = "Jenkins pass host for nginx-proxy"
+  type        = "String"
+  value       = "${module.utility_host.jenkins_internal_domain}:8080"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_only_subdomains" {
+  name        = "${local.ssm_base}/nginx-proxy/only-subdomains"
+  description = "Only subdomains flag for nginx-proxy"
+  type        = "String"
+  value       = "TRUE"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_subdomains" {
+  name        = "${local.ssm_base}/nginx-proxy/subdomains"
+  description = "Subdomains for nginx-proxy"
+  type        = "String"
+  value       = "api,jenkins"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_url" {
+  name        = "${local.ssm_base}/nginx-proxy/url"
+  description = "URL for nginx-proxy"
+  type        = "String"
+  value       = var.main_domain_name
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "nginx_proxy_validation" {
+  name        = "${local.ssm_base}/nginx-proxy/validation"
+  description = "Validation method for nginx-proxy SSL"
+  type        = "String"
+  value       = "http"
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "shared_cognito_authority" {
+  name        = "${local.ssm_base}/shared/cognito/authority"
+  description = "Shared Cognito authority for applications"
+  type        = "String"
+  value       = local.cognito_issuer
+  overwrite   = true
+}
+
+resource "aws_ssm_parameter" "shared_cognito_client_id" {
+  name        = "${local.ssm_base}/shared/cognito/client_id"
+  description = "Shared Cognito client ID for applications"
   type        = "String"
   value       = module.cognito.cognito_user_pool_client_id
   overwrite   = true

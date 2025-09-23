@@ -59,7 +59,7 @@ resource "aws_cognito_user_pool" "this" {
 }
 
 resource "aws_cognito_user_pool_client" "web" {
-  name                                 = var.app_name
+  name                                 = "${var.app_name}-web"
   user_pool_id                         = aws_cognito_user_pool.this.id
   generate_secret                      = false
   supported_identity_providers         = ["COGNITO"]
@@ -86,26 +86,11 @@ resource "aws_cognito_user_pool_client" "web" {
   }
 }
 
-resource "aws_cognito_user_pool_domain" "domain" {
-  domain                = "${var.app_name}-${var.env}"
-  user_pool_id          = aws_cognito_user_pool.this.id
-  managed_login_version = 2
-}
-
-
-# module "cert" {
-#   source         = "../acm_cert"
-#   domain_name    = var.custom_domain_name
-#   hosted_zone_id = var.route53_zone_id
-#   tags = {
-#     Name = "${var.app_name}-${var.env}-cognito-domain"
-#   }
-# }
-
 resource "aws_cognito_user_pool_domain" "custom" {
-  domain          = var.custom_domain_name
-  user_pool_id    = aws_cognito_user_pool.this.id
-  certificate_arn = var.certificate_arn
+  domain                = var.custom_domain_name
+  user_pool_id          = aws_cognito_user_pool.this.id
+  certificate_arn       = var.certificate_arn
+  managed_login_version = 2
 }
 
 resource "aws_route53_record" "cognito_custom_domain" {
@@ -114,7 +99,7 @@ resource "aws_route53_record" "cognito_custom_domain" {
   type    = "A"
 
   alias {
-    name                   = aws_cognito_user_pool_domain.custom.cloudfront_distribution
+    name                   = aws_cognito_user_pool_domain.custom.cloudfront_distribution_arn
     zone_id                = local.cloudfront_zone_id
     evaluate_target_health = false
   }
