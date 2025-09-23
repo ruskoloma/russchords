@@ -86,7 +86,7 @@
 
     - name: Build env dict for container from SSM params
       set_fact:
-        container_env: "{{ dict( (ssm_params | map(attribute='Name') | map('regex_replace', '^.*/', '') | map('upper')) | zip(ssm_params | map(attribute='Value')) ) }}"
+        container_env: "{{ dict( (ssm_params | map(attribute='Name') | map('regex_replace', '^.*/', '') | map('upper')) | map('regex_replace', '-', '_') | zip(ssm_params | map(attribute='Value')) ) }}"
       vars:
         ssm_params: "{{ ssm_params_raw.stdout | from_json }}"
 

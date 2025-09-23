@@ -40,6 +40,19 @@ pipeline {
       }
     }
 
+    stage('Install dependencies') {
+      steps {
+        sh '''
+          set -eu
+          cd lambda
+          echo "Installing npm dependencies..."
+          npm ci --only=production
+          echo "Dependencies installed successfully"
+          cd ..
+        '''
+      }
+    }
+
     stage('Zip artifact') {
       steps {
         sh '''
