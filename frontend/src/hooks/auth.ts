@@ -21,7 +21,7 @@ export function useAuthActions() {
 		await auth.removeUser();
 
 		const logoutUrl =
-			`${import.meta.env.VITE_COGNITO_DOMAIN}/logout?` +
+			`https://${import.meta.env.VITE_COGNITO_DOMAIN}/logout?` +
 			`client_id=${import.meta.env.VITE_COGNITO_CLIENT_ID}&` +
 			`logout_uri=${encodeURIComponent(import.meta.env.VITE_COGNITO_LOGOUT_URI)}`;
 

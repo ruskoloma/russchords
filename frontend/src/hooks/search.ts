@@ -31,7 +31,7 @@ export async function searchSite(q: string, start?: number): Promise<SearchRespo
 	const url = new URL('https://www.googleapis.com/customsearch/v1');
 	url.searchParams.set('key', apiKey);
 	url.searchParams.set('cx', cx);
-	url.searchParams.set('q', q);
+	url.searchParams.set('q', q + "%20-filetype:pdf");
 	if (start) url.searchParams.set('start', String(start));
 
 	try {
