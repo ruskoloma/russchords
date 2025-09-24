@@ -72,3 +72,15 @@ variable "email" {
   type        = string
   default     = "admin@russchords.pro"
 }
+
+variable "viewer_user_email" {
+  description = "Email address for the viewer user (for AWS console login)"
+  type        = string
+  default     = "guest@russchords.pro"
+}
+
+variable "viewer_user_password" {
+  description = "Password for the viewer user (for AWS console login)"
+  type        = string
+  default     = "Noth!ngJustHangingAr0und"
+}

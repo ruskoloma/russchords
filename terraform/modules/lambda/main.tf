@@ -28,7 +28,6 @@ variable "source_url" {
   default = "https://holychords.pro"
 }
 
-
 variable "s3_bucket_name" {
   description = "Name of existing S3 bucket to store Lambda deployment package"
   type        = string
