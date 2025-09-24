@@ -1,47 +1,68 @@
-# russchords – aws infrastructure
+# **russchords**
 
-Here is CloudCraft snapshot. Cannot say it's comprehensive, but it shows something.
+This is a full-stack web application designed to help my church music band organize and perform worship more easily. The application allows for saving and managing song chords, utilizing an existing database of songs from the popular Slavic portal, HolyChords. It also serves as a comprehensive portfolio project showcasing modern cloud-native development, DevOps practices, and infrastructure automation.
 
-![architecture blueprint](./cloud-blueprint.png)
+## **Live Access & Credentials**
 
-In case you really want to get what’s going on here, first of all - thank you, here is a quick summary of all the "architecture".
+You can explore the live project using the following read-only credentials and links.
 
-## 1. Frontend
-- React app builds in **Jenkins**, deployed to **S3**.  
-- Served globally through **CloudFront**.  
+### **Application Demo**
 
-## 2. Backend
-- **ASP.NET Core API** running on **ECS (EC2 launch type)**.  
-- **nginx proxy servers** handle forward/reverse routing and traffic entry.  
-- Jenkins automates builds; **AWS CodeBuild** used for heavy builds.  
+* **URL:** [https://russchords.dev](https://www.google.com/search?q=https://russchords.dev)  
+* **Email:** russchords.exclusion058@passmail.net  
+* **Password:** NothingJustHangingAround
 
-## 3. Data Layer
-- **PostgreSQL** (ECS task) – primary database.  
-- **DynamoDB** – caching “temporary songs” parsed from source.  
-- **EFS** – stores configs and certs (nginx, Jenkins).  
-- **S3** – one bucket for the deployed website, another for utility storage.  
+### **CI/CD Pipeline**
 
-## 4. Networking
-- Single **VPC** with multiple subnets (currently only public subnets in use).  
-- Internet access for services routed through nginx proxies (instead of NAT gateways).  
+The Jenkins instance is publicly viewable for anyone interested in the CI/CD setup.
 
-## 5. Security & Identity
-- **AWS Cognito** as identity provider.  
-- **IAM roles & policies** designed with least privilege principle.  
+* **URL:** [https://jenkins.russchords.dev](https://www.google.com/search?q=https://jenkins.russchords.dev) (Read-only anonymous access)
 
-## 6. Observability
-- **CloudWatch** logs and metrics for ECS tasks, Jenkins, and Lambda.  
+### **AWS Console (Read-Only)**
 
-## 7. CI/CD
-- **Jenkins** runs on ECS cluster as a service.  
-- Pipeline: build → push to **ECR** → deploy to ECS.  
-- **AWS CodeBuild** supports heavy builds.  
-- Infrastructure as Code (Terraform) → in progress.  
+A read-only IAM user is available for hiring managers to review the underlying AWS infrastructure.
 
-## 8. Nginx Proxy Design
-- Two **nginx proxies** replace costly ALB/ASG setup.  
-- Provide single IP entry point for app and API.  
-- Route traffic between backend services.  
-- Allow services to make outbound internet requests.  
-- Design remains **compatible with ALB + Auto Scaling Group** for future scaling.
-- 
+1. **Go to:** [AWS Console Login](https://466279485288.signin.aws.amazon.com/console?region=us-west-2)  
+2. **Username:** guest  
+3. **Password:** Noth\!ngJustHangingAr0und  
+4. **Region:** us-west-2
+
+**What you can explore:**
+
+* EC2, ECS (backend API), RDS (PostgreSQL), DynamoDB (caching), Lambda, CloudFront, S3, Route53, and the VPC networking setup.
+
+## **Technology Stack**
+
+This project is built with a modern, cloud-native technology stack. The key technologies are highlighted below.
+
+### **Frontend**
+
+* **React 19** with TypeScript  
+* **Vite** for a fast development experience  
+* **Mantine UI** for the component library  
+* **SWR** for data fetching and caching  
+* **OpenID Connect (OIDC)** for authentication
+
+### **Backend**
+
+* **.NET 8** with ASP.NET Core for the Web API  
+* **Entity Framework Core** as the ORM  
+* **PostgreSQL** as the primary relational database  
+* **Swagger/OpenAPI** for API documentation
+
+### **Cloud Infrastructure & DevOps (AWS)**
+
+* **Containerization:** **Docker** images orchestrated with **Amazon ECS**.  
+* **Infrastructure as Code:** **Terraform** to define and manage all AWS resources.  
+* **CI/CD:** **Jenkins** for orchestrating automated builds and deployments.  
+* **Configuration Management:** **Ansible** for server configuration.  
+* **Core AWS Services:**  
+  * **Compute:** ECS, Lambda  
+  * **Storage:** S3, RDS for PostgreSQL, DynamoDB  
+  * **Networking:** VPC, Route 53, CloudFront (CDN)  
+  * **Security:** IAM, Cognito, ACM
+
+## **Architecture Overview**
+
+The application is architected as a container-based system running on AWS. The backend API is deployed as a service on an ECS cluster, communicating with a managed RDS PostgreSQL database. The frontend is a single-page application built with React, hosted on S3, and delivered globally via CloudFront.  
+The entire infrastructure is managed as code using Terraform, and the deployment process is fully automated with a Jenkins CI/CD pipeline.
