@@ -6,7 +6,7 @@ import type { MyPlaylistDto } from '../../types';
 export const playlistPageLoader: LoaderFunction = async ({ params }) => {
 	try {
 		const client = await myFetch();
-		const res = await client.get<MyPlaylistDto>(`/api/playlist/${params.id}`);
+		const res = await client.get<MyPlaylistDto>(`/playlist/${params.id}`);
 		return res.data;
 	} catch (err) {
 		if (axios.isAxiosError(err)) {

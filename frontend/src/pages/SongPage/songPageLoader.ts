@@ -6,7 +6,7 @@ export const songLoader: LoaderFunction = async ({ params }) => {
 	try {
 		const client = await myFetch();
 
-		const res = await client.get<SongDto>(`/api/song/${params.id}`);
+		const res = await client.get<SongDto>(`/song/${params.id}`);
 		return res.data;
 	} catch (err) {
 		console.error(err);

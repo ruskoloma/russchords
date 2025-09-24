@@ -36,7 +36,7 @@ export function useStarSongs() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'STAR_SONGS',
 		async (_: string, { arg: ids }: { arg: number[] }) => {
-			await Promise.all(ids.map((id) => client.post(`/api/starred/${id}`)));
+			await Promise.all(ids.map((id) => client.post(`/starred/${id}`)));
 		},
 		{
 			onSuccess: () => mutate('/starred/my'),
@@ -60,7 +60,7 @@ export function useUnstarSong() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'UNSTAR_SONG',
 		async (_: string, { arg: songId }: { arg: number }) => {
-			await client.delete(`/api/starred/${songId}`);
+			await client.delete(`/starred/${songId}`);
 		},
 		{
 			onSuccess: () => mutate('/starred/my'),

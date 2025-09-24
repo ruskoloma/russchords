@@ -15,7 +15,7 @@ export function useDeleteSongs(params: { navigateOnSuccess?: boolean } = { navig
 	const { data, trigger, isMutating, error } = useSWRMutation(
 		'DELETE_SONGS',
 		async (_: string, { arg: ids }: { arg: number[] }) => {
-			await Promise.all(ids.map((id) => client.delete(`/api/song/${id}`)));
+			await Promise.all(ids.map((id) => client.delete(`/song/${id}`)));
 			return ids;
 		},
 		{
@@ -50,7 +50,7 @@ export function useAddSongsToPlaylist() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'ADD_SONGS_TO_PLAYLIST',
 		async (_: string, { arg }: { arg: Arg }) => {
-			await client.post(`/api/playlists/${arg.playlistId}/songs`, { songIds: arg.songIds });
+			await client.post(`/playlists/${arg.playlistId}/songs`, { songIds: arg.songIds });
 		},
 		{
 			onError: (err) => {
@@ -75,7 +75,7 @@ export function useForkSong(params: { navigateOnSuccess?: boolean } = { navigate
 	const { trigger, isMutating, error } = useSWRMutation(
 		'FORK_SONG',
 		async (_: string, { arg: songId }: { arg: string }) => {
-			const res = await client.post<{ id: number }>(`/api/song/fork/${songId}`);
+			const res = await client.post<{ id: number }>(`/song/fork/${songId}`);
 			return res.data.id;
 		},
 		{
@@ -104,7 +104,7 @@ export function useCloneSong(params: { navigateOnSuccess?: boolean } = { navigat
 	const { trigger, isMutating, error } = useSWRMutation(
 		'CLONE_SONG',
 		async (_: string, { arg: songId }: { arg: number }) => {
-			const res = await client.post<{ id: number }>(`/api/song/clone/${songId}`);
+			const res = await client.post<{ id: number }>(`/song/clone/${songId}`);
 			return res.data.id;
 		},
 		{
@@ -184,7 +184,7 @@ export function useUpdateSong(opts: { onSuccess?: (id: number) => void } = {}) {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'UPDATE_SONG',
 		async (_: string, { arg }: { arg: { id: number; dto: UpdateSongDto } }) => {
-			await client.put(`/api/song/${arg.id}`, arg.dto);
+			await client.put(`/song/${arg.id}`, arg.dto);
 			return arg.id;
 		},
 		{
@@ -211,7 +211,7 @@ export function useCreateSong(opts: { onSuccess?: (id: number) => void } = {}) {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'CREATE_SONG',
 		async (_: string, { arg }: { arg: CreateSongDto }) => {
-			const res = await client.post<{ id: number }>(`/api/song`, arg);
+			const res = await client.post<{ id: number }>(`/song`, arg);
 			return res.data.id;
 		},
 		{

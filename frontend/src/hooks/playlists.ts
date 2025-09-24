@@ -17,7 +17,7 @@ export function useMyPlaylistsWithDetails(enabled: boolean = true) {
 
 export function usePlaylistFull(id: number | null | undefined) {
 	const client = useMyFetch();
-	const key = id ? `/api/playlist/${id}` : null;
+	const key = id ? `/playlist/${id}` : null;
 	const fetcher = (url: string) => client.get<MyPlaylistDto>(url).then((r) => r.data);
 
 	const { data, error, isLoading, mutate } = useSWR<MyPlaylistDto>(key, fetcher, {
@@ -61,14 +61,14 @@ export function useUpdatePlaylist() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'UPDATE_PLAYLIST',
 		async (_: string, { arg }: { arg: { id: number; dto: UpdatePlaylistDto } }) => {
-			await client.put(`/api/playlist/${arg.id}`, arg.dto);
+			await client.put(`/playlist/${arg.id}`, arg.dto);
 			return arg.id;
 		},
 		{
 			onSuccess: async (id) => {
 				showNotification({ title: 'Playlist updated', message: 'Changes saved.', color: 'green' });
 				await mutate('/playlist/my');
-				await mutate(`/api/playlist/${id}`);
+				await mutate(`/playlist/${id}`);
 			},
 			onError: (err) => showNotification({ title: 'Update failed', message: String(err), color: 'red' }),
 		},
@@ -88,7 +88,7 @@ export function useDeletePlaylist() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'DELETE_PLAYLIST',
 		async (_: string, { arg: id }: { arg: number }) => {
-			await client.delete(`/api/playlist/${id}`);
+			await client.delete(`/playlist/${id}`);
 			return id;
 		},
 		{
@@ -114,13 +114,13 @@ export function useAddSongToPlaylist() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'ADD_SONG_TO_PLAYLIST',
 		async (_: string, { arg }: { arg: { playlistId: number; songId: number } }) => {
-			await client.post(`/api/playlist/${arg.playlistId}/songs/${arg.songId}`);
+			await client.post(`/playlist/${arg.playlistId}/songs/${arg.songId}`);
 			return arg.playlistId;
 		},
 		{
 			onSuccess: async (playlistId) => {
 				showNotification({ title: 'Added', message: 'Song added to playlist.', color: 'green' });
-				await mutate(`/api/playlist/${playlistId}`);
+				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Add failed', message: String(err), color: 'red' }),
 		},
@@ -140,13 +140,13 @@ export function useRemoveSongFromPlaylist() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'REMOVE_SONG_FROM_PLAYLIST',
 		async (_: string, { arg }: { arg: { playlistId: number; songId: number } }) => {
-			await client.delete(`/api/playlist/${arg.playlistId}/songs/${arg.songId}`);
+			await client.delete(`/playlist/${arg.playlistId}/songs/${arg.songId}`);
 			return arg.playlistId;
 		},
 		{
 			onSuccess: async (playlistId) => {
 				showNotification({ title: 'Removed', message: 'Song removed from playlist.', color: 'green' });
-				await mutate(`/api/playlist/${playlistId}`);
+				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Remove failed', message: String(err), color: 'red' }),
 		},
@@ -166,13 +166,13 @@ export function useSetPlaylistPinned() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'SET_PLAYLIST_PINNED',
 		async (_: string, { arg }: { arg: { playlistId: number; value: boolean } }) => {
-			await client.put(`/api/playlist/${arg.playlistId}/members/pin?value=${arg.value}`);
+			await client.put(`/playlist/${arg.playlistId}/members/pin?value=${arg.value}`);
 			return arg.playlistId;
 		},
 		{
 			onSuccess: async (playlistId) => {
 				await mutate('/playlist/my');
-				await mutate(`/api/playlist/${playlistId}`);
+				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Pin failed', message: String(err), color: 'red' }),
 		},
@@ -192,13 +192,13 @@ export function useSavePlaylistOrder() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'SAVE_PLAYLIST_ORDER',
 		async (_: string, { arg }: { arg: { playlistId: number; songIds: number[] } }) => {
-			await client.post(`/api/playlist/${arg.playlistId}/reorder`, { songIds: arg.songIds });
+			await client.post(`/playlist/${arg.playlistId}/reorder`, { songIds: arg.songIds });
 			return arg.playlistId;
 		},
 		{
 			onSuccess: async (playlistId) => {
 				showNotification({ title: 'Order saved', message: 'Song order updated.', color: 'green' });
-				await mutate(`/api/playlist/${playlistId}`);
+				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Save order failed', message: String(err), color: 'red' }),
 		},
@@ -252,7 +252,7 @@ export function useRemovePlaylistFromMy() {
 	const { trigger, isMutating, error } = useSWRMutation(
 		'REMOVE_PLAYLIST_FROM_MY',
 		async (_: string, { arg: membershipId }: { arg: number }) => {
-			await client.delete(`/api/playlist/members/${membershipId}`);
+			await client.delete(`/playlist/members/${membershipId}`);
 			return membershipId;
 		},
 		{
