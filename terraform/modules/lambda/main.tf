@@ -34,6 +34,12 @@ variable "s3_bucket_name" {
   type        = string
 }
 
+variable "cors_origins" {
+  description = "List of allowed CORS origins for the Lambda API"
+  type        = list(string)
+  default     = []
+}
+
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
@@ -75,6 +81,15 @@ resource "aws_lambda_permission" "allow_apigw" {
 resource "aws_apigatewayv2_api" "http_api" {
   name          = "${var.lambda_name}-http-api"
   protocol_type = "HTTP"
+
+  cors_configuration {
+    allow_credentials = true
+    allow_headers     = ["*"]
+    allow_methods     = ["*"]
+    allow_origins     = var.cors_origins
+    expose_headers    = ["*"]
+    max_age           = 300
+  }
 }
 
 resource "aws_apigatewayv2_integration" "lambda_proxy" {

@@ -111,7 +111,7 @@ resource "aws_ssm_parameter" "frontend_lambda_parser_domain" {
   name        = "${local.ssm_base}/frontend/vite-lambda-parser-domain"
   description = "Lambda parser domain for frontend"
   type        = "String"
-  value       = "https://${module.lambda.api_domain_name}"
+  value       = module.lambda.api_domain_name
   overwrite   = true
 }
 

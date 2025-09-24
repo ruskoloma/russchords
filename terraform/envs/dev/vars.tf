@@ -18,7 +18,6 @@ variable "utility_host_instance_type" {
   default     = "t4g.small"
 }
 
-# Frontend build variables
 variable "vite_api_url" {
   description = "API URL for Vite frontend"
   type        = string

@@ -95,6 +95,7 @@ module "lambda" {
   dynamodb_table_name = local.ddb_table_name
   lambda_name         = "russchords-parser-${local.env}"
   s3_bucket_name      = var.s3_bucket_name
+  cors_origins        = ["https://${var.main_domain_name}", "http://localhost:5173"]
 }
 
 module "backend" {
