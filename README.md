@@ -8,7 +8,7 @@ You can explore the live project using the following read-only credentials and l
 
 ### **Application Demo**
 
-* **URL:** [https://russchords.dev](https://www.google.com/search?q=https://russchords.dev)  
+* **URL:** [https://russchords.dev](https://russchords.dev)  
 * **Email:** russchords.exclusion058@passmail.net  
 * **Password:** NothingJustHangingAround
 
@@ -16,7 +16,7 @@ You can explore the live project using the following read-only credentials and l
 
 The Jenkins instance is publicly viewable for anyone interested in the CI/CD setup.
 
-* **URL:** [https://jenkins.russchords.dev](https://www.google.com/search?q=https://jenkins.russchords.dev) (Read-only anonymous access)
+* **URL:** [https://jenkins.russchords.dev](https://jenkins.russchords.dev) (Read-only anonymous access)
 
 ### **AWS Console (Read-Only)**
 
