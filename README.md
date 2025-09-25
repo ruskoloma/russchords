@@ -8,6 +8,8 @@ You can explore the live project using the following read-only credentials and l
 
 ### **Application Demo**
 
+Use the provided account with pre-filled data.
+
 * **URL:** [https://russchords.dev](https://russchords.dev)  
 * **Email:** russchords.exclusion058@passmail.net  
 * **Password:** NothingJustHangingAround
