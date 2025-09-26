@@ -30,8 +30,13 @@ variable "ingress_security_group_id" {
   type        = string
 }
 
+variable "environment" {
+  description = "Environment name (dev, prod, etc.)"
+  type        = string
+}
+
 resource "aws_db_subnet_group" "this" {
-  name       = "dev-db-subnets"
+  name       = "${var.environment}-db-subnets"
   subnet_ids = var.subnet_ids
 }
 
@@ -59,7 +64,7 @@ resource "aws_db_instance" "this" {
 }
 
 resource "aws_security_group" "this" {
-  name   = "rds-postgres-sg"
+  name   = "rds-postgres-sg-${var.environment}"
   vpc_id = var.vpc_id
 
   ingress {

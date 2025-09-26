@@ -1,5 +1,5 @@
 resource "aws_ecs_cluster" "main" {
-  name = var.cluster_name
+  name = "${var.cluster_name}-${var.environment}"
   tags = var.tags
 }
 
@@ -80,7 +80,7 @@ resource "aws_ecs_task_definition" "this" {
 
 
 resource "aws_ecs_service" "this" {
-  name            = "backend-service"
+  name            = "backend-service-${var.environment}"
   cluster         = aws_ecs_cluster.main.name
   task_definition = aws_ecs_task_definition.this.arn
   desired_count   = var.desired_count

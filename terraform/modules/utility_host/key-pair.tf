@@ -14,7 +14,7 @@ resource "tls_private_key" "ssh" {
 }
 
 resource "aws_key_pair" "my_server_key" {
-  key_name   = var.key_pair_name
+  key_name   = "${var.key_pair_name}_${var.environment}"
   public_key = tls_private_key.ssh.public_key_openssh
 }
 

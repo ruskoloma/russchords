@@ -1,5 +1,5 @@
 resource "aws_iam_role" "ecs_execution_role" {
-  name = "ecs-execution-role"
+  name = "ecs-execution-role-${var.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
@@ -16,7 +16,7 @@ resource "aws_iam_role_policy_attachment" "ecs_execution_role_policy" {
 }
 
 resource "aws_iam_role_policy" "ecs_execution_logs" {
-  name = "ecs-execution-logs"
+  name = "ecs-execution-logs-${var.environment}"
   role = aws_iam_role.ecs_execution_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -29,7 +29,7 @@ resource "aws_iam_role_policy" "ecs_execution_logs" {
 }
 
 resource "aws_iam_role_policy" "ecs_execution_ssm" {
-  name = "ecs-execution-ssm"
+  name = "ecs-execution-ssm-${var.environment}"
   role = aws_iam_role.ecs_execution_role.id
   policy = jsonencode({
     Version = "2012-10-17"
@@ -48,7 +48,7 @@ resource "aws_iam_role_policy" "ecs_execution_ssm" {
 }
 
 resource "aws_iam_role" "ecs_task_role" {
-  name = "ecs-task-role"
+  name = "ecs-task-role-${var.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{

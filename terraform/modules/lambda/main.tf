@@ -39,6 +39,11 @@ variable "cors_origins" {
   default     = []
 }
 
+variable "environment" {
+  description = "Environment name (dev, prod, etc.)"
+  type        = string
+}
+
 data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 

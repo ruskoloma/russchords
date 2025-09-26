@@ -41,3 +41,11 @@ module "dns" {
 output "public_zone_id" {
   value = module.dns.public_zone_id
 }
+
+output "main_domain_name" {
+  value = var.public_zone_name
+}
+
+output "lambda_domain_name" {
+  value = "fn.${var.public_zone_name}"
+}

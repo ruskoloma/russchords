@@ -2,7 +2,7 @@ data "terraform_remote_state" "dns" {
   backend = "s3"
   config = {
     bucket  = "russchords-state"
-    key     = "dns/dev/terraform.tfstate"
+    key     = "dns/prod/terraform.tfstate"
     region  = "us-west-2"
     encrypt = true
     profile = "russchords-admin"
@@ -22,6 +22,7 @@ data "terraform_remote_state" "ecr" {
 
 locals {
   public_zone_id           = data.terraform_remote_state.dns.outputs.public_zone_id
+  lambda_zone_id           = data.terraform_remote_state.dns.outputs.zones.lambda.public_zone_id
   main_domain_name         = data.terraform_remote_state.dns.outputs.main_domain_name
   lambda_domain_name       = data.terraform_remote_state.dns.outputs.lambda_domain_name
   backend_api_ecr_repo_url = data.terraform_remote_state.ecr.outputs.backend_api_ecr_repo_url

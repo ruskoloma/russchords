@@ -6,7 +6,7 @@ variable "project_name" {
 variable "environment" {
   description = "Environment name (dev, prod, etc.)"
   type        = string
-  default     = "dev"
+  default     = "prod"
 }
 
 variable "utility_host_instance_type" {

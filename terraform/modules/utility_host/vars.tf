@@ -14,7 +14,7 @@ variable "instance_name" {
 
 variable "ebs_volume_size" {
   type    = number
-  default = 5
+  default = 10
 }
 
 variable "root_volume_size" {
@@ -39,5 +39,10 @@ variable "private_zone_id" {
 
 variable "public_zone_id" {
   description = "Route53 hosted zone ID for the domain"
+  type        = string
+}
+
+variable "environment" {
+  description = "Environment name (dev, prod, etc.)"
   type        = string
 }

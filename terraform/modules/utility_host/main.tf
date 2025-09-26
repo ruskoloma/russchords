@@ -23,7 +23,7 @@ resource "aws_volume_attachment" "utility_host_data_attachment" {
 }
 
 resource "aws_iam_role" "utility_host_role" {
-  name = "utility_host_role"
+  name = "utility_host_role_${var.environment}"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [
@@ -37,7 +37,7 @@ resource "aws_iam_role" "utility_host_role" {
 }
 
 resource "aws_iam_instance_profile" "utility_host_profile" {
-  name = "utility_host_profile"
+  name = "utility_host_profile_${var.environment}"
   role = aws_iam_role.utility_host_role.name
 }
 

@@ -34,7 +34,6 @@ locals {
   cognito_client_id     = module.cognito.cognito_user_pool_client_id
   cognito_domain        = "auth.${local.main_domain_name}"
 
-  # Combine variable URLs with hardcoded URLs
   callback_urls = concat(var.callback_urls, [
     "https://${local.main_domain_name}/auth/callback",
     "https://${local.main_domain_name}"

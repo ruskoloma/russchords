@@ -59,5 +59,10 @@ variable "buildspec_path" {
   default     = "backend/BackendApi/buildspec.yml"
 }
 
+variable "environment" {
+  description = "Environment name (dev, prod, etc.)"
+  type        = string
+}
+
 data "aws_caller_identity" "current" {}
 data "aws_region" "current" {}
