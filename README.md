@@ -10,23 +10,23 @@ You can explore the live project using the following read-only credentials and l
 
 Use the provided account with pre-filled data.
 
-* **URL:** [https://russchords.dev](https://russchords.dev)  
-* **Email:** russchords.exclusion058@passmail.net  
-* **Password:** NothingJustHangingAround
+* **URL:** [https://russchords.app](https://russchords.app)  
+* **Email:** guest@russchords.pro  
+* **Password:** Noth!ngJustHangingAr0und
 
 ### **CI/CD Pipeline**
 
 The Jenkins instance is publicly viewable for anyone interested in the CI/CD setup.
 
-* **URL:** [https://jenkins.russchords.dev](https://jenkins.russchords.dev) (Read-only anonymous access)
+* **URL:** [https://jenkins.russchords.app](https://jenkins.russchords.app) (Read-only anonymous access)
 
 ### **AWS Console (Read-Only)**
 
 A read-only IAM user is available for hiring managers to review the underlying AWS infrastructure.
 
 1. **Go to:** [AWS Console Login](https://466279485288.signin.aws.amazon.com/console?region=us-west-2)  
-2. **Username:** guest  
-3. **Password:** Noth\!ngJustHangingAr0und  
+2. **Username:** prod-guest  
+3. **Password:** Noth!ngJustHangingAr0und  
 4. **Region:** us-west-2
 
 **What you can explore:**

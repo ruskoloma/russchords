@@ -15,7 +15,7 @@ export const HomePage = () => {
 						song base; you can also import <Code>ChordPro</Code> files.
 					</Text>
 					<Text>
-						Feedback &amp; ideas: <Anchor href="mailto:admin@rsln.dev">admin@rsln.dev</Anchor>
+						Feedback &amp; ideas: <Anchor href="mailto:contact@russchords.pro">contact@russchords.pro</Anchor>
 					</Text>
 				</Stack>
 
@@ -30,7 +30,7 @@ export const HomePage = () => {
 							</List.Item>
 							<List.Item>
 								Import from holychords: on a song page, replace domain <Code>holychords.pro</Code> with{' '}
-								<Code>rsln.pro</Code>
+								<Code>russchords.pro</Code>
 							</List.Item>
 							<List.Item>Clone and edit songs easily</List.Item>
 							<List.Item>
