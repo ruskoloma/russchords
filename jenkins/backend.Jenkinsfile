@@ -8,15 +8,15 @@ pipeline {
   }
 
   parameters {
+    choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Environment')
     string(name: 'AWS_REGION', defaultValue: 'us-west-2')
     string(name: 'IMAGE_TAG', defaultValue: 'latest')
-    string(name: 'SSM_PATH',   defaultValue: '/russchords/dev/backend', description: 'SSM Parameter Store path')
   }
 
   stages {
     stage('Load env from SSM') {
       steps {
-        withAWSParameterStore(path: params.SSM_PATH, recursive: true, naming: 'relative', regionName: params.AWS_REGION) {
+        withAWSParameterStore(path: "/russchords/${params.ENV}/backend", recursive: true, naming: 'relative', regionName: params.AWS_REGION) {
           script {
             env.AWS_REGION        = "${params.AWS_REGION}"
             env.IMAGE_TAG         = "${params.IMAGE_TAG}"

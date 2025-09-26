@@ -4,8 +4,9 @@ variable "key_pair_name" {
 }
 
 variable "write_private_key_path" {
-  type    = string
-  default = "../../../data/jenkins_id_rsa"
+  type        = string
+  default     = "../../../data/jenkins_id_rsa"
+  description = "Path to write the private key file"
 }
 
 resource "tls_private_key" "ssh" {

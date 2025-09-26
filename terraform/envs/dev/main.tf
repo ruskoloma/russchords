@@ -17,6 +17,7 @@ module "network" {
   source              = "../../modules/network"
   vpc_cidr            = var.vpc_cidr
   public_subnet_cidrs = var.public_subnet_cidrs
+  environment         = var.environment
   tags = {
     Environment = var.environment
   }
@@ -80,14 +81,16 @@ module "ddb" {
 
 
 module "utility_host" {
-  source            = "../../modules/utility_host"
-  vpc_id            = local.vpc_id
-  subnet_id         = local.default_subnet_id
-  availability_zone = local.default_az
-  private_zone_id   = local.private_zone_id
-  public_zone_id    = local.public_zone_id
-  instance_type     = var.utility_host_instance_type
-  environment       = var.environment
+  source                 = "../../modules/utility_host"
+  vpc_id                 = local.vpc_id
+  subnet_id              = local.default_subnet_id
+  availability_zone      = local.default_az
+  private_zone_id        = local.private_zone_id
+  public_zone_id         = local.public_zone_id
+  instance_type          = var.utility_host_instance_type
+  environment            = var.environment
+  write_public_ip_path   = "../../../data/${var.environment}/hosts.ini"
+  write_private_key_path = "../../../data/${var.environment}/jenkins_id_rsa"
 }
 
 module "lambda" {

@@ -2,9 +2,10 @@
   hosts: all
   become: true
   vars:
+    env: "{{ lookup('env','ENV') | default('dev', true) }}"
     aws_account_id: "{{ lookup('pipe', 'aws sts get-caller-identity --profile=russchords-admin --query Account --output text') | trim }}"
     region: "{{ lookup('pipe','aws configure get region') | trim | default('us-west-2', true) }}"
-    ssm_env_path: "{{ lookup('env','SSM_ENV_PATH') | default('/russchords/dev/nginx-proxy', true) }}"
+    ssm_env_path_nginx: "/russchords/{{ env }}/nginx-proxy"
     ecr_nginx_repo_name: "russchords/nginx-reverse-proxy"
     ecr_jenkins_repo_name: "russchords/jenkins"
 
@@ -77,7 +78,7 @@
     - name: Fetch container env params from SSM Parameter Store
       shell: >
         aws ssm get-parameters-by-path --with-decryption --recursive
-        --path "{{ ssm_env_path }}"
+        --path "{{ ssm_env_path_nginx }}"
         --region "{{ region }}"
         --query "Parameters[].{Name:Name,Value:Value}"
         --output json

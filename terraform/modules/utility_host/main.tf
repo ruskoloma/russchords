@@ -52,7 +52,13 @@ resource "aws_instance" "utility_host" {
 
   root_block_device { volume_size = var.root_volume_size }
 
-  tags = { Name = var.instance_name }
+  tags = { Name = "${var.instance_name}-${var.environment}" }
+}
+
+resource "local_file" "ansible_directory" {
+  filename        = "${dirname(var.write_public_ip_path)}/.gitkeep"
+  content         = "# Directory for ${var.environment} environment files"
+  file_permission = "0755"
 }
 
 resource "local_file" "ansible_inventory" {
@@ -60,6 +66,7 @@ resource "local_file" "ansible_inventory" {
   content = templatefile(var.ansible_inventory_template_path, {
     hosts = [aws_instance.utility_host.public_ip]
   })
+  depends_on = [local_file.ansible_directory]
 }
 
 output "public_ip" {

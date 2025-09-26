@@ -85,7 +85,7 @@ variable "viewer_user_password" {
 variable "github_branch" {
   description = "GitHub branch for deployment"
   type        = string
-  default     = "develop"
+  default     = "master"
 }
 
 

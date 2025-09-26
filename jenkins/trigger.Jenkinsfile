@@ -6,14 +6,14 @@ pipeline {
   }
 
   parameters {
-    string(name: 'REPO_BRANCH', defaultValue: 'develop', description: 'Git repository branch')
+    choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Environment')
     string(name: 'REPO_URL', defaultValue: 'https://github.com/ruskoloma/russchords', description: 'Git repository URL')
   }
 
   stages {
     stage('Checkout branch') {
       steps {
-            git branch: params.REPO_BRANCH, url: params.REPO_URL
+            git branch: params.ENV == 'dev' ? 'develop' : 'master', url: params.REPO_URL
       }
     }
 
@@ -25,10 +25,11 @@ pipeline {
           }
           steps {
             echo "[trigger] Changes detected under frontend/** — triggering frontend build job"
-            build job: 'russchords-frontend-dev',
+            build job: "russchords-frontend-${params.ENV}",
               parameters: [
+                choice(name: 'ENV', value: params.ENV),
                 string(name: 'GIT_URL', value: params.REPO_URL),
-                string(name: 'GIT_BRANCH', value: params.REPO_BRANCH),
+                string(name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'),
               ],
               propagate: true,
               wait: true
@@ -40,10 +41,11 @@ pipeline {
           }
           steps {
             echo "[trigger] Changes detected under backend/** — triggering backend build job"
-            build job: 'russchords-backend-dev',
+            build job: "russchords-backend-${params.ENV}",
               parameters: [
+                choice(name: 'ENV', value: params.ENV),
                 string(name: 'GIT_URL', value: params.REPO_URL),
-                string(name: 'GIT_BRANCH', value: params.REPO_BRANCH),
+                string(name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'),
               ],
               propagate: true,
               wait: true
@@ -55,10 +57,11 @@ pipeline {
           }
           steps {
             echo "[trigger] Changes detected under lambda/** — triggering lambda build job"
-            build job: 'russchords-lambda-dev',
+            build job: "russchords-lambda-${params.ENV}",
               parameters: [
+                choice(name: 'ENV', value: params.ENV),
                 string(name: 'GIT_URL', value: params.REPO_URL),
-                string(name: 'GIT_BRANCH', value: params.REPO_BRANCH),
+                string(name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'),
               ],
               propagate: true,
               wait: true

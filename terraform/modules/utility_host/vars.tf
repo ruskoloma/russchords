@@ -23,8 +23,9 @@ variable "root_volume_size" {
 }
 
 variable "write_public_ip_path" {
-  type    = string
-  default = "../../../data/hosts.ini"
+  type        = string
+  default     = "../../../data/hosts.ini"
+  description = "Path to write the Ansible inventory file"
 }
 
 variable "ansible_inventory_template_path" {

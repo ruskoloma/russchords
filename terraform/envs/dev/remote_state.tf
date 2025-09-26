@@ -22,6 +22,7 @@ data "terraform_remote_state" "ecr" {
 
 locals {
   public_zone_id           = data.terraform_remote_state.dns.outputs.public_zone_id
+  lambda_zone_id           = data.terraform_remote_state.dns.outputs.public_zone_id
   main_domain_name         = data.terraform_remote_state.dns.outputs.main_domain_name
   lambda_domain_name       = data.terraform_remote_state.dns.outputs.lambda_domain_name
   backend_api_ecr_repo_url = data.terraform_remote_state.ecr.outputs.backend_api_ecr_repo_url

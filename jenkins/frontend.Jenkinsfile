@@ -7,17 +7,16 @@ pipeline {
   }
 
   parameters {
+    choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Environment')
     string(name: 'AWS_REGION', defaultValue: 'us-west-2')
     string(name: 'IMAGE_TAG', defaultValue: 'latest')
-    string(name: 'SSM_PATH',   defaultValue: '/russchords/dev/frontend', description: 'SSM Parameter Store path')
-    string(name: 'REPO_BRANCH', defaultValue: 'develop', description: 'Git repository branch')
     string(name: 'REPO_URL', defaultValue: 'https://github.com/ruskoloma/russchords', description: 'Git repository URL')
   }
 
   stages {
     stage('Load ENV from SSM') {
         steps {
-            withAWSParameterStore(path: params.SSM_PATH, recursive: true, naming: 'relative', regionName: params.AWS_REGION) {
+            withAWSParameterStore(path: "/russchords/${params.ENV}/frontend", recursive: true, naming: 'relative', regionName: params.AWS_REGION) {
                 script {
                   env.AWS_REGION                        = "${params.AWS_REGION}"
                   env.S3_BUCKET                         = "${BUILD_S3_BUCKET ?: error('S3_BUCKET not set in SSM')}"
@@ -63,7 +62,7 @@ pipeline {
     
     stage('Checkout') {
       steps {
-        git branch: params.REPO_BRANCH, url: params.REPO_URL
+        git branch: params.ENV == 'dev' ? 'develop' : 'master', url: params.REPO_URL
       }
     }
 
