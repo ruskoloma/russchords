@@ -1,0 +1,33 @@
+version: 0.2
+
+env:
+  variables:
+    DOCKER_BUILDKIT: "1"
+    DOCKER_DEFAULT_PLATFORM: "linux/arm64"
+
+phases:
+  pre_build:
+    commands:
+      - set -euo pipefail
+      - ': "${AWS_DEFAULT_REGION:?AWS_DEFAULT_REGION required}"'
+      - ': "${AWS_ACCOUNT_ID:?AWS_ACCOUNT_ID required}"'
+      - ': "${IMAGE_REPO_NAME:?IMAGE_REPO_NAME required}"'
+      - IMAGE="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${IMAGE_REPO_NAME}"
+      - if [ -z "${IMAGE_TAG:-}" ]; then IMAGE_TAG="$(date +%Y%m%d%H%M%S)"; fi
+      - export IMAGE IMAGE_TAG
+      - echo "IMAGE=${IMAGE}  TAG=${IMAGE_TAG}"
+      - aws ecr get-login-password --region "${AWS_DEFAULT_REGION}" | docker login --username AWS --password-stdin "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
+
+  build:
+    commands:
+      - set -euo pipefail
+      - echo "== build =="
+      - cd backend/BackendApi
+      - docker build --platform "${DOCKER_DEFAULT_PLATFORM:-linux/arm64}" -t "${IMAGE}:${IMAGE_TAG}" -t "${IMAGE}:latest" -f Dockerfile .
+
+  post_build:
+    commands:
+      - set -euo pipefail
+      - docker push "${IMAGE}:${IMAGE_TAG}"
+      - docker push "${IMAGE}:latest"
+      - echo "Pushed ${IMAGE}:${IMAGE_TAG} and :latest"

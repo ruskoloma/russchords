@@ -1,0 +1,184 @@
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using BackendApi.Data;
+using BackendApi.Data.Entities;
+using BackendApi.Models.Dtos;
+using BackendApi.Services.Interfaces;
+
+namespace BackendApi.Services;
+
+public class SongService : ISongService
+{
+    private readonly ApplicationDbContext _context;
+    private readonly IMapper _mapper;
+    private readonly ICachedSongService _cachedSongService;
+
+    public SongService(ApplicationDbContext context, IMapper mapper, ICachedSongService cachedSongService)
+    {
+        _context = context;
+        _mapper = mapper;
+        _cachedSongService = cachedSongService;
+    }
+
+    public async Task<List<SongDto>> GetAllAsync()
+    {
+        var entities = await _context.Songs.ToListAsync();
+        return _mapper.Map<List<SongDto>>(entities);
+    }
+
+    public async Task<SongDto?> GetByIdAsync(int id)
+    {
+        var entity = await _context.Songs.FindAsync(id);
+        return entity == null ? null : _mapper.Map<SongDto>(entity);
+    }
+
+    public async Task<SongDto> CreateAsync(CreateSongDto dto, string authorId)
+    {
+        var entity = new SongEntity
+        {
+            Name = dto.Name,
+            Content = dto.Content,
+            Artist = dto.Artist,
+            Description = dto.Description,
+            RootNote = dto.RootNote,
+            AuthorId = authorId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow
+        };
+
+        _context.Songs.Add(entity);
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<SongDto>(entity);
+    }
+
+    public async Task UpdateAsync(int id, UpdateSongDto dto, string userId)
+    {
+        var entity = await _context.Songs.FindAsync(id);
+        if (entity == null)
+            throw new Exception("Not found");
+
+        if (entity.AuthorId != userId)
+            throw new Exception("You are not the owner of this song");
+
+        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Content != null) entity.Content = dto.Content;
+        entity.Artist = dto.Artist;
+        entity.Description = dto.Description;
+        entity.RootNote = dto.RootNote;
+
+        entity.UpdatedAt = DateTime.UtcNow;
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DeleteAsync(int id, string userId)
+    {
+        var entity = await _context.Songs.FindAsync(id);
+        if (entity == null)
+            throw new Exception("Not found");
+
+        if (entity.AuthorId != userId)
+            throw new Exception("You are not the owner of this song");
+
+        _context.Songs.Remove(entity);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<SongDto> ForkCachedSongAsync(int cachedSongId, string userId)
+    {
+        var cachedSong = await _cachedSongService.GetByIdAsync(cachedSongId);
+        if (cachedSong == null)
+            throw new Exception("Cached song not found");
+
+        var newSong = new SongEntity
+        {
+            Name = cachedSong.Name,
+            Content = cachedSong.Content,
+            Artist = cachedSong.Artist,
+            Description = null, // Cached songs don't have descriptions
+            AuthorId = userId,
+            RootNote = null,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            SourceUrl = cachedSong.OriginalUrl,
+            OriginalId = cachedSong.Id,
+            ParentId = null
+        };
+
+        _context.Songs.Add(newSong);
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<SongDto>(newSong);
+    }
+
+    public async Task<SongDto> ForkSongAsync(int songId, string userId)
+    {
+        var existingSong = await _context.Songs.FindAsync(songId);
+        if (existingSong == null)
+            throw new Exception("Original song not found");
+
+        var newSong = new SongEntity
+        {
+            Name = existingSong.Name,
+            Content = existingSong.Content,
+            Artist = existingSong.Artist,
+            Description = existingSong.Description,
+            AuthorId = userId,
+            RootNote = existingSong.RootNote,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+            SourceUrl = existingSong.SourceUrl,
+            ParentId = existingSong.Id,
+            OriginalId = existingSong.OriginalId ?? existingSong.Id
+        };
+
+        _context.Songs.Add(newSong);
+        await _context.SaveChangesAsync();
+
+        return _mapper.Map<SongDto>(newSong);
+    }
+
+    public async Task<List<SongDto>> GetAllByUserAsync(string userId)
+    {
+        var entities = await _context.Songs
+            .Where(x => x.AuthorId == userId)
+            .OrderByDescending(x => x.UpdatedAt)
+            .ToListAsync();
+
+        return _mapper.Map<List<SongDto>>(entities);
+    }
+
+    public async Task<List<LiteSongDto>> GetAllLightByUserAsync(string userId)
+    {
+        var query = _context.Songs
+            .Where(x => x.AuthorId == userId)
+            .OrderByDescending(x => x.UpdatedAt)
+            .Select(s => new LiteSongDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Artist = s.Artist,
+                SourceUrl = s.SourceUrl,
+                RootNote = s.RootNote
+            });
+
+        return await query.ToListAsync();
+    }
+
+    public async Task<List<LiteSongDto>> GetMyForksByOriginalIdAsync(string userId, int originalId)
+    {
+        var query = _context.Songs
+            .Where(x => x.AuthorId == userId && x.OriginalId == originalId)
+            .OrderByDescending(x => x.UpdatedAt)
+            .Select(s => new LiteSongDto
+            {
+                Id = s.Id,
+                Name = s.Name,
+                Artist = s.Artist,
+                SourceUrl = s.SourceUrl,
+                RootNote = s.RootNote
+            });
+
+        return await query.ToListAsync();
+    }
+}

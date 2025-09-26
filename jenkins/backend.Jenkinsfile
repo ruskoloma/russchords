@@ -1,0 +1,124 @@
+pipeline {
+  agent any
+  
+  options {
+    timestamps()
+    disableConcurrentBuilds()
+    skipDefaultCheckout(true)
+  }
+
+  parameters {
+    choice(name: 'ENV', choices: ['dev', 'prod'], description: 'Environment')
+    string(name: 'AWS_REGION', defaultValue: 'us-west-2')
+    string(name: 'IMAGE_TAG', defaultValue: 'latest')
+  }
+
+  stages {
+    stage('Load env from SSM') {
+      steps {
+        withAWSParameterStore(path: "/russchords/${params.ENV}/backend", recursive: true, naming: 'relative', regionName: params.AWS_REGION) {
+          script {
+            env.AWS_REGION        = "${params.AWS_REGION}"
+            env.IMAGE_TAG         = "${params.IMAGE_TAG}"
+            env.CODEBUILD_PROJECT = "${CODEBUILD_PROJECT}"
+            env.AWS_ACCOUNT_ID    = "${AWS_ACCOUNT_ID}"
+            env.ECR_REPO          = "${ECR_REPO}"
+            env.ECS_CLUSTER       = "${ECS_CLUSTER}"
+            env.ECS_SERVICE       = "${ECS_SERVICE}"
+            env.ECR_IMAGE         = "${env.AWS_ACCOUNT_ID}.dkr.ecr.${env.AWS_REGION}.amazonaws.com/${env.ECR_REPO}:${env.IMAGE_TAG}"
+
+            def required = [
+              'AWS_REGION',
+              'IMAGE_TAG',
+              'CODEBUILD_PROJECT',
+              'AWS_ACCOUNT_ID',
+              'ECR_REPO',
+              'ECS_CLUSTER',
+              'ECS_SERVICE',
+              'ECR_IMAGE'
+            ]
+            def missing = required.findAll { k -> !(env."$k"?.trim()) }
+            if (missing) {
+              error "Missing required ENV: ${missing.join(', ')}"
+            }
+          }
+        }
+      }
+    }
+
+    stage('Build & Push via CodeBuild') {
+      steps {
+        sh '''#!/bin/bash
+set -euo pipefail
+
+echo "[info] will build/push: ${ECR_IMAGE}"
+
+# Start CodeBuild job
+START_OUT="$(aws codebuild start-build \
+  --region "${AWS_REGION}" \
+  --project-name "${CODEBUILD_PROJECT}" \
+  --environment-variables-override \
+    name=AWS_DEFAULT_REGION,value="${AWS_REGION}",type=PLAINTEXT \
+    name=AWS_REGION,value="${AWS_REGION}",type=PLAINTEXT \
+    name=AWS_ACCOUNT_ID,value="${AWS_ACCOUNT_ID}",type=PLAINTEXT \
+    name=IMAGE_REPO_NAME,value="${ECR_REPO}",type=PLAINTEXT \
+    name=ECR_REPO,value="${ECR_REPO}",type=PLAINTEXT \
+    name=IMAGE_TAG,value="${IMAGE_TAG}",type=PLAINTEXT \
+)"
+
+BUILD_ID="$(echo "$START_OUT" | jq -r '.build.id')"
+[ -n "$BUILD_ID" ] && [ "$BUILD_ID" != "null" ] || { echo "[err] no BUILD_ID"; exit 1; }
+
+echo "[info] started CodeBuild: ${BUILD_ID}"
+
+# Wait until build finishes
+while :; do
+  RES="$(aws codebuild batch-get-builds --ids "$BUILD_ID" --region "${AWS_REGION}")"
+  
+  STATUS="$(echo "$RES" | jq -r '.builds[0].buildStatus')"
+  PHASE="$(echo "$RES" | jq -r '.builds[0].currentPhase')"
+  
+  echo "[wait] status=$STATUS phase=$PHASE"
+  
+  case "$STATUS" in
+    SUCCEEDED) break ;;
+    FAILED|FAULT|TIMED_OUT|STOPPED)
+      echo "[err] CodeBuild failed with status=$STATUS"
+      exit 1
+      ;;
+    *) sleep 5 ;;
+  esac
+done
+
+echo "[ok] CodeBuild SUCCEEDED: ${BUILD_ID}"
+'''
+      }
+    }
+    
+    stage('Deploy to ECS (force new deployment)') {
+      steps {
+        sh '''#!/bin/bash
+set -euo pipefail
+
+echo "[ecs] force new deployment for ${ECS_CLUSTER}/${ECS_SERVICE}"
+aws ecs update-service \
+  --cluster "${ECS_CLUSTER}" \
+  --service "${ECS_SERVICE}" \
+  --force-new-deployment \
+  --region "${AWS_REGION}" >/dev/null
+
+echo "[ok] ECS updated"
+'''
+      }
+    }
+  }
+
+  post {
+    failure {
+      echo "Pipeline failed"
+    }
+    success {
+      echo "Pipeline finished OK. ECR_IMAGE=${env.ECR_IMAGE}"
+    }
+  }
+}
