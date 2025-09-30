@@ -21,7 +21,7 @@ resource "aws_iam_user_policy_attachment" "viewer_readonly" {
 
 # Additional policy for DynamoDB data access (ReadOnlyAccess doesn't include data operations)
 resource "aws_iam_policy" "viewer_dynamodb_data" {
-  name        = "guest-dynamodb-data"
+  name        = "guest-dynamodb-data-${local.env}"
   description = "DynamoDB data access for guest viewer user"
 
   policy = jsonencode({

@@ -357,6 +357,9 @@ export function transposeChord(chord: string, delta: number, targetKey: Key): st
 	// If there's no transposition, keep original spelling exactly as typed.
 	if (delta === 0) return chord;
 
+	if(!CHORD_REGEX.test(chord)) return chord
+	
+
 	const parts = chord.split('/');
 	if (parts.length === 0) return chord;
 
@@ -394,14 +397,20 @@ export function transposeChordToken(token: ChordToken, delta: number, targetKey:
 
 // Renders chord line to string
 export function renderChordLine(tokens: ChordToken[]): string {
-	return tokens.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces)).join('');
+	try {
+		return tokens
+			.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces))
+			.join('');
+	} catch {
+		return tokens.join('');
+	}
 }
 
 export function getOriginalKey(parsedLines: Line[]): string | undefined {
 	for (let i = 0; i < parsedLines.length; i++) {
 		const line = parsedLines[i];
 		if (line.type === 'chords' && line.tokens.length > 0) {
-			const firstChord = line.tokens[0].chord;
+			const firstChord = line.tokens.filter((el) => ALL_KEYS.includes(getChordRoot(el.chord)))[0].chord;
 			return getChordRoot(firstChord);
 		}
 	}
