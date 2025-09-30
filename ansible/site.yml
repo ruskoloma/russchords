@@ -91,12 +91,6 @@
       vars:
         ssm_params: "{{ ssm_params_raw.stdout | from_json }}"
 
-    # --- ADDED TASK TO DISPLAY ENV VARS ---
-    - name: Display container environment variables from SSM
-      debug:
-        var: container_env
-    # ------------------------------------
-
     - name: Run container from ECR
       community.docker.docker_container:
         name: nginx-reverse
