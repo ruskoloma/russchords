@@ -63,11 +63,16 @@ export const SearchPage = () => {
 		if (redirectingLink) return; // prevent double-clicks while in-flight
 		try {
 			setRedirectingLink(originalLink);
-			const redirectUrl = originalLink.replace('holychords.pro', parserDomain);
-			await fetch(redirectUrl, { method: 'GET', redirect: 'manual' });
-			if (location) {
-				navigate(`/song/cached/${originalLink.split('/').at(-1)}`);
-				return;
+			const songId = originalLink.split('/').at(-1);
+			const lambdaUrl = `${parserDomain}/${songId}?client_mode=true`;
+
+			const response = await fetch(lambdaUrl, { method: 'GET' });
+			const data = await response.json();
+
+			if (response.ok && data.songId) {
+				navigate(`/song/cached/${data.songId}`);
+			} else {
+				throw new Error(data.error || 'Failed to get song info');
 			}
 		} catch (e: unknown) {
 			setRedirectingLink(null);

@@ -10,9 +10,10 @@ export const handler = async (event = {}) => {
 
 		if (!songId) throw new HttpError(400, 'No song specified');
 
-		// Check for force refresh query parameter
+		// Check for query parameters
 		const queryParams = event.queryStringParameters || {};
 		const forceRefresh = queryParams.force_refresh === 'true';
+		const clientMode = queryParams.client_mode === 'true';
 
 		const fetchUrl = SOURCE_URL + `/${songId}`;
 
@@ -54,6 +55,18 @@ export const handler = async (event = {}) => {
 		console.log(`Song ID: ${songId}`);
 		console.log(`Song Name: ${song.name}`);
 		console.log(`Artist: ${song.artist}`);
+
+		// If client_mode query parameter is present, return song info instead of redirecting
+		if (clientMode) {
+			return jsonResp(200, {
+				songId: songId,
+				redirectUrl: `${REDIRECT_URL}/song/cached/${songId}`,
+				song: {
+					name: song.name,
+					artist: song.artist
+				}
+			});
+		}
 
 		return {
 			statusCode: 302,
