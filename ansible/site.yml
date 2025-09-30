@@ -91,6 +91,12 @@
       vars:
         ssm_params: "{{ ssm_params_raw.stdout | from_json }}"
 
+    # --- ADDED TASK TO DISPLAY ENV VARS ---
+    - name: Display container environment variables from SSM
+      debug:
+        var: container_env
+    # ------------------------------------
+
     - name: Run container from ECR
       community.docker.docker_container:
         name: nginx-reverse
@@ -128,12 +134,5 @@
         # env:
           # JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
 
-    - name: Wait 180 seconds before restart
-      wait_for:
-        timeout: 60
-
-    - name: Restart nginx container
-      community.docker.docker_container:
-        name: nginx-reverse
-        state: started
-        restart: true
+    - name: Schedule restart of nginx container in 180 seconds
+      shell: (sleep 180 && docker restart nginx-reverse) &
