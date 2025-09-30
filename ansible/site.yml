@@ -127,3 +127,13 @@
             target: /var/jenkins_home
         # env:
           # JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+
+    - name: Wait 180 seconds before restart
+      wait_for:
+        timeout: 60
+
+    - name: Restart nginx container
+      community.docker.docker_container:
+        name: nginx-reverse
+        state: started
+        restart: true
