@@ -394,7 +394,13 @@ export function transposeChordToken(token: ChordToken, delta: number, targetKey:
 
 // Renders chord line to string
 export function renderChordLine(tokens: ChordToken[]): string {
-	return tokens.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces)).join('');
+	try {
+		return tokens
+			.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces))
+			.join('');
+	} catch {
+		return tokens.join('');
+	}
 }
 
 export function getOriginalKey(parsedLines: Line[]): string | undefined {
