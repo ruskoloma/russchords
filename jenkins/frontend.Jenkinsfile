@@ -32,6 +32,7 @@ pipeline {
                   env.VITE_COGNITO_SCOPE                = "${VITE_COGNITO_SCOPE}"
                   env.VITE_GOOGLE_SEARCH_KEY            = "${VITE_GOOGLE_SEARCH_KEY}"
                   env.VITE_GOOGLE_SEARCH_CX             = "${VITE_GOOGLE_SEARCH_CX}"
+                  env.VITE_GTM_ID                       = "${VITE_GTM_ID}"
 
                   def required = [
                     'AWS_REGION',
@@ -47,7 +48,8 @@ pipeline {
                     'VITE_COGNITO_SILENT_REDIRECT_URI',
                     'VITE_COGNITO_SCOPE',
                     'VITE_GOOGLE_SEARCH_KEY',
-                    'VITE_GOOGLE_SEARCH_CX'
+                    'VITE_GOOGLE_SEARCH_CX',
+                    'VITE_GTM_ID'
                   ]
 
                   def missing = required.findAll { k -> !(env."$k"?.trim()) }

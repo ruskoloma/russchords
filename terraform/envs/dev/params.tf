@@ -284,4 +284,3 @@ resource "aws_ssm_parameter" "shared_cognito_client_id" {
   value       = module.cognito.cognito_user_pool_client_id
   overwrite   = true
 }
-

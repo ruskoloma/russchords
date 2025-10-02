@@ -31,6 +31,13 @@ import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
 import MyPlaylistsPage from './pages/MyPlaylistsPage/MyPlaylistsPage.tsx';
+import TagManager from 'react-gtm-module';
+
+// Initialize Google Tag Manager
+const gtmId = import.meta.env.VITE_GTM_ID;
+if (gtmId) {
+	TagManager.initialize({ gtmId });
+}
 
 const router = createBrowserRouter([
 	{

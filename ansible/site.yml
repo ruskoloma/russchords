@@ -127,3 +127,6 @@
             target: /var/jenkins_home
         # env:
           # JAVA_OPTS: "-Djenkins.install.runSetupWizard=false"
+
+    - name: Schedule restart of nginx container in 180 seconds
+      shell: (sleep 180 && docker restart nginx-reverse) &
