@@ -2,9 +2,10 @@ import useSWRMutation from 'swr/mutation';
 import useSWR from 'swr';
 import type { CreateSongDto, LiteSongDto, UpdateSongDto } from '../types';
 import { showNotification } from '@mantine/notifications';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMyFetch } from './api';
 import { useAuth } from 'react-oidc-context';
+import { createNavigationUrl } from '../helpers/navigation';
 
 export function useDeleteSongs(params: { navigateOnSuccess?: boolean } = { navigateOnSuccess: false }) {
 	const { navigateOnSuccess } = params;
@@ -66,11 +67,12 @@ export function useAddSongsToPlaylist() {
 	};
 }
 
-export function useForkSong(params: { navigateOnSuccess?: boolean } = { navigateOnSuccess: false }) {
-	const { navigateOnSuccess } = params;
+export function useForkSong(params: { navigateOnSuccess?: boolean; preserveSource?: boolean } = { navigateOnSuccess: false, preserveSource: false }) {
+	const { navigateOnSuccess, preserveSource } = params;
 
 	const client = useMyFetch();
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'FORK_SONG',
@@ -80,7 +82,16 @@ export function useForkSong(params: { navigateOnSuccess?: boolean } = { navigate
 		},
 		{
 			onSuccess: (newId) => {
-				if (navigateOnSuccess) navigate(`/song/${newId}`);
+				if (navigateOnSuccess) {
+					if (preserveSource) {
+						const currentUrl = new URL(window.location.href);
+						const source = currentUrl.searchParams.get('source');
+						const targetUrl = source ? `/song/${newId}?source=${encodeURIComponent(source)}` : createNavigationUrl(`/song/${newId}`, location);
+						navigate(targetUrl);
+					} else {
+						navigate(createNavigationUrl(`/song/${newId}`, location));
+					}
+				}
 			},
 			onError: (err) => {
 				showNotification({ title: 'Fork failed', message: String(err), color: 'red' });
@@ -100,6 +111,7 @@ export function useCloneSong(params: { navigateOnSuccess?: boolean } = { navigat
 
 	const client = useMyFetch();
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'CLONE_SONG',
@@ -115,7 +127,7 @@ export function useCloneSong(params: { navigateOnSuccess?: boolean } = { navigat
 					color: 'green',
 				});
 
-				if (navigateOnSuccess) navigate(`/song/${newId}`);
+				if (navigateOnSuccess) navigate(createNavigationUrl(`/song/${newId}`, location));
 			},
 			onError: (err) => {
 				showNotification({ title: 'Clone failed', message: String(err), color: 'red' });

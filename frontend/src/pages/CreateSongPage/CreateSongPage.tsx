@@ -4,7 +4,7 @@ import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/co
 import { KEYS, fillMissingChords } from '../../helpers/songParser';
 import { parseChordPro } from '../../helpers/chordPro';
 import { useCreateSong } from '../../hooks/song';
-import { NoWrapTextarea } from '../../components';
+import { NoWrapTextarea, BackButton } from '../../components';
 
 export const CreateSongPage = () => {
 	const navigate = useNavigate();
@@ -49,6 +49,7 @@ export const CreateSongPage = () => {
 	return (
 		<Stack gap="md">
 			<Group justify="space-between" align="center">
+				<BackButton />
 				<Text fw={700} size="xl">
 					Create song
 				</Text>

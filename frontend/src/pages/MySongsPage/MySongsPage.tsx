@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import { ActionIcon, Button, Group, Stack, Text, TextInput } from '@mantine/core';
 import { useDebouncedValue } from '@mantine/hooks';
@@ -8,10 +8,12 @@ import type { LiteSongDto } from '../../types';
 import { useDeleteSongs } from '../../hooks/song';
 import { IconStar } from '@tabler/icons-react';
 import { useStarSongs } from '../../hooks/starred.ts';
+import { createNavigationUrl } from '../../helpers/navigation';
 
 export const MySongsPage: React.FC = () => {
 	const loaded = useLoaderData() as LiteSongDto[];
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [data, setData] = useState<LiteSongDto[]>(loaded ?? []);
 	useEffect(() => setData(loaded ?? []), [loaded]);
@@ -163,7 +165,7 @@ export const MySongsPage: React.FC = () => {
 					},
 				]}
 				noRecordsText={debouncedQuery ? 'No matches' : 'No songs'}
-				onRowClick={(row) => navigate(`/song/${row.record.id}`)}
+				onRowClick={(row) => navigate(createNavigationUrl(`/song/${row.record.id}`, location))}
 				minHeight={'600px'}
 			/>
 		</Stack>

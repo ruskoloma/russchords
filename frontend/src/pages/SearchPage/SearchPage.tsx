@@ -1,28 +1,30 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Anchor, Button, Card, Group, Loader, Pagination, Stack, Text, TextInput } from '@mantine/core';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
+import { Anchor, Button, Card, Flex, Group, Loader, Pagination, Stack, Text, TextInput } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { IconSearch } from '@tabler/icons-react';
 import useSWR from 'swr';
 import { type SearchItem, type SearchResponse, searchSite } from '../../hooks/search';
 import { PAGE_SIZE, parserDomain } from '../../constants/search.ts';
 import { MrBeanLoader } from '../../components';
+import { createNavigationUrl } from '../../helpers/navigation';
 
 export const SearchPage = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [q, setQ] = useState('');
 	const [startIndex, setStartIndex] = useState<number | undefined>(undefined);
 	const [redirectingLink, setRedirectingLink] = useState<string | null>(null);
+	const [searchTrigger, setSearchTrigger] = useState<string | null>(null);
 
-	// Create a cache key for SWR
-	const cacheKey = q.trim() ? `search-${q.trim()}-${startIndex || 1}` : null;
+	// Only create cache key when we have explicitly triggered a search
+	const cacheKey = searchTrigger ? `search-${searchTrigger}-${startIndex || 1}` : null;
 
-	// Use SWR for data fetching with caching
 	const { data, error, isLoading } = useSWR<SearchResponse>(
 		cacheKey,
-		() => searchSite(q.trim(), startIndex),
+		() => searchSite(searchTrigger!, startIndex),
 		{
 			revalidateOnFocus: false,
 			revalidateOnReconnect: false,
@@ -57,26 +59,38 @@ export const SearchPage = () => {
 			}
 
 			setSearchParams(newParams);
+			setSearchTrigger(q.trim()); // Trigger the search with the actual query
 		},
 		[q, startIndex, searchParams, setSearchParams],
 	);
 
 	// Initialize state from URL parameters on mount
+	const urlQuery = searchParams.get('q');
+
+
 	useEffect(() => {
-		const urlQuery = searchParams.get('q');
 		const urlStart = searchParams.get('start');
+		let hasUrlParams = false;
 
 		if (urlQuery) {
 			setQ(urlQuery);
+			hasUrlParams = true;
 		}
 
 		if (urlStart) {
 			const startNum = parseInt(urlStart, 10);
 			if (!isNaN(startNum)) {
 				setStartIndex(startNum);
+				hasUrlParams = true;
 			}
 		}
+
+		// Trigger search if we have URL parameters
+		if (hasUrlParams && urlQuery) {
+			setSearchTrigger(urlQuery);
+		}
 	}, [searchParams]);
+
 
 	const onTitleClick = async (originalLink: string) => {
 		if (!parserDomain) {
@@ -93,7 +107,7 @@ export const SearchPage = () => {
 			const data = await response.json();
 
 			if (response.ok && data.songId) {
-				navigate(`/song/cached/${data.songId}`);
+				navigate(createNavigationUrl(`/song/cached/${data.songId}`, location));
 			} else {
 				throw new Error(data.error || 'Failed to get song info');
 			}
@@ -123,6 +137,11 @@ export const SearchPage = () => {
 			newParams.delete('start');
 		}
 		setSearchParams(newParams);
+
+		// Trigger search for new page if we have a search query
+		if (searchTrigger) {
+			setSearchTrigger(searchTrigger);
+		}
 	};
 
 	if (redirectingLink !== null) {
@@ -132,20 +151,20 @@ export const SearchPage = () => {
 	return (
 		<Stack gap="md">
 			<form onSubmit={onSubmit}>
-				<Group align="end" wrap="wrap">
+				<Flex align="end" wrap="nowrap" gap={-1} w="100%">
 					<TextInput
 						label="Search holychords.pro"
 						placeholder="Type your query"
 						value={q}
 						onChange={(e) => setQ(e.currentTarget.value)}
 						w={480}
-						leftSection={<IconSearch size={16} />}
 						aria-label="Search input"
+						flex={1}
 					/>
-					<Button type="submit" leftSection={<IconSearch size={16} />} disabled={!q.trim()}>
+					<Button type="submit" leftSection={<IconSearch size={16} />} disabled={!q.trim()} ml={-5}>
 						Search
 					</Button>
-				</Group>
+				</Flex>
 			</form>
 
 			{isLoading && (
@@ -209,17 +228,13 @@ export const SearchPage = () => {
 				</Stack>
 			)}
 
-			{!isLoading && (!data?.items || data.items.length === 0) && q.trim() && (
+			{!isLoading && (!data?.items || data.items.length === 0) && q.trim() && !!urlQuery ? (
 				<Text c="dimmed" size="sm">
 					No results found for "{q}".
 				</Text>
-			)}
-
-			{!isLoading && !q.trim() && (
-				<Text c="dimmed" size="sm">
-					No results yet. Try a search above.
-				</Text>
-			)}
+			) : !!data?.items ? <></> : <Text c="dimmed" size="sm">
+				No results yet. Try a search above.
+			</Text>}
 		</Stack>
 	);
 };

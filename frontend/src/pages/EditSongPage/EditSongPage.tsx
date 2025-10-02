@@ -15,7 +15,7 @@ import {
 	fillMissingChords,
 } from '../../helpers/songParser';
 import { useUpdateSong } from '../../hooks/song';
-import { NoWrapTextarea } from '../../components';
+import { NoWrapTextarea, BackButton } from '../../components';
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
 
 export const EditSongPage = () => {
@@ -120,6 +120,7 @@ export const EditSongPage = () => {
 	return (
 		<Stack gap="md">
 			<Group justify="space-between" align="center">
+				<BackButton />
 				<Text fw={700} size="xl">
 					Edit song
 				</Text>

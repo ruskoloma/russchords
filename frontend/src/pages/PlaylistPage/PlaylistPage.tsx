@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
 import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, MultiSelect } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import {
@@ -26,10 +26,12 @@ import {
 import { useMyLightSongs } from '../../hooks/song';
 import type { LiteSongDto, MyPlaylistDto } from '../../types';
 import { useAuth } from 'react-oidc-context';
+import { createNavigationUrl } from '../../helpers/navigation';
 
 export const PlaylistPage: React.FC = () => {
 	const initial = useLoaderData() as MyPlaylistDto;
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [title, setTitle] = useState(initial.title);
 	const [description, setDescription] = useState(initial.description ?? '');
@@ -288,7 +290,7 @@ export const PlaylistPage: React.FC = () => {
 																fw={600}
 																truncate="end"
 																style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
-																onClick={() => navigate(`/song/${song.id}`)}
+																onClick={() => navigate(createNavigationUrl(`/song/${song.id}`, location))}
 															>
 																{song.name}
 															</Text>
@@ -299,7 +301,7 @@ export const PlaylistPage: React.FC = () => {
 																size="sm"
 																lineClamp={1}
 																style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
-																onClick={() => navigate(`/song/${song.id}`)}
+																onClick={() => navigate(createNavigationUrl(`/song/${song.id}`, location))}
 															>
 																{song.artist ?? ''}
 															</Text>
