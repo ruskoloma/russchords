@@ -13,7 +13,7 @@ resource "aws_ebs_volume" "utility_host_data" {
   tags = {
     Name = "${var.instance_name}_data"
   }
-  lifecycle { prevent_destroy = true }
+  # lifecycle { prevent_destroy = true }
 }
 
 resource "aws_volume_attachment" "utility_host_data_attachment" {

@@ -1,19 +1,34 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Anchor, Button, Card, Group, Loader, Pagination, Stack, Text, TextInput } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
 import { IconSearch } from '@tabler/icons-react';
+import useSWR from 'swr';
 import { type SearchItem, type SearchResponse, searchSite } from '../../hooks/search';
 import { PAGE_SIZE, parserDomain } from '../../constants/search.ts';
 import { MrBeanLoader } from '../../components';
 
 export const SearchPage = () => {
+	const [searchParams, setSearchParams] = useSearchParams();
+	const navigate = useNavigate();
+
 	const [q, setQ] = useState('');
 	const [startIndex, setStartIndex] = useState<number | undefined>(undefined);
-	const [data, setData] = useState<SearchResponse | null>(null);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
 	const [redirectingLink, setRedirectingLink] = useState<string | null>(null);
+
+	// Create a cache key for SWR
+	const cacheKey = q.trim() ? `search-${q.trim()}-${startIndex || 1}` : null;
+
+	// Use SWR for data fetching with caching
+	const { data, error, isLoading } = useSWR<SearchResponse>(
+		cacheKey,
+		() => searchSite(q.trim(), startIndex),
+		{
+			revalidateOnFocus: false,
+			revalidateOnReconnect: false,
+			dedupingInterval: 60000, // 1 minute deduplication
+		}
+	);
 
 	const totalResults = useMemo(() => Number(data?.searchInformation?.totalResults || 0), [data]);
 	const totalPages = useMemo(() => {
@@ -27,33 +42,41 @@ export const SearchPage = () => {
 	}, [startIndex]);
 
 	const doSearch = useCallback(
-		async (opts?: { resetPage?: boolean }) => {
+		(opts?: { resetPage?: boolean }) => {
 			if (!q.trim()) return;
-			setLoading(true);
-			setError(null);
-			try {
-				const start = opts?.resetPage ? undefined : startIndex;
-				const resp = await searchSite(q.trim(), start);
-				setData(resp);
-			} catch (e: unknown) {
-				if (e instanceof Error) {
-					setError(e.message);
-				} else {
-					setError('Search failed');
-				}
-			} finally {
-				setLoading(false);
+
+			// Update URL parameters
+			const newParams = new URLSearchParams(searchParams);
+			newParams.set('q', q.trim());
+
+			if (opts?.resetPage) {
+				setStartIndex(undefined);
+				newParams.delete('start');
+			} else if (startIndex) {
+				newParams.set('start', startIndex.toString());
 			}
+
+			setSearchParams(newParams);
 		},
-		[q, startIndex],
+		[q, startIndex, searchParams, setSearchParams],
 	);
 
+	// Initialize state from URL parameters on mount
 	useEffect(() => {
-		if (startIndex !== undefined) {
-			void doSearch();
+		const urlQuery = searchParams.get('q');
+		const urlStart = searchParams.get('start');
+
+		if (urlQuery) {
+			setQ(urlQuery);
 		}
-	}, [startIndex]);
-	const navigate = useNavigate();
+
+		if (urlStart) {
+			const startNum = parseInt(urlStart, 10);
+			if (!isNaN(startNum)) {
+				setStartIndex(startNum);
+			}
+		}
+	}, [searchParams]);
 
 	const onTitleClick = async (originalLink: string) => {
 		if (!parserDomain) {
@@ -64,7 +87,7 @@ export const SearchPage = () => {
 		try {
 			setRedirectingLink(originalLink);
 			const songId = originalLink.split('/').at(-1);
-			const lambdaUrl = `${parserDomain}/${songId}?client_mode=true`;
+			const lambdaUrl = `https://${parserDomain}/${songId}?client_mode=true`;
 
 			const response = await fetch(lambdaUrl, { method: 'GET' });
 			const data = await response.json();
@@ -91,6 +114,15 @@ export const SearchPage = () => {
 	const onPageChange = (page: number) => {
 		const newStart = (page - 1) * PAGE_SIZE + 1;
 		setStartIndex(newStart);
+
+		// Update URL parameters for pagination
+		const newParams = new URLSearchParams(searchParams);
+		if (newStart > 1) {
+			newParams.set('start', newStart.toString());
+		} else {
+			newParams.delete('start');
+		}
+		setSearchParams(newParams);
 	};
 
 	if (redirectingLink !== null) {
@@ -116,7 +148,7 @@ export const SearchPage = () => {
 				</Group>
 			</form>
 
-			{loading && (
+			{isLoading && (
 				<Group>
 					<Loader size="sm" />
 					<Text size="sm">Searching…</Text>
@@ -125,7 +157,7 @@ export const SearchPage = () => {
 
 			{error && (
 				<Card withBorder color="red">
-					<Text c="red">{error}</Text>
+					<Text c="red">{error.message || 'Search failed'}</Text>
 				</Card>
 			)}
 
@@ -177,7 +209,13 @@ export const SearchPage = () => {
 				</Stack>
 			)}
 
-			{!loading && (!data?.items || data.items.length === 0) && (
+			{!isLoading && (!data?.items || data.items.length === 0) && q.trim() && (
+				<Text c="dimmed" size="sm">
+					No results found for "{q}".
+				</Text>
+			)}
+
+			{!isLoading && !q.trim() && (
 				<Text c="dimmed" size="sm">
 					No results yet. Try a search above.
 				</Text>

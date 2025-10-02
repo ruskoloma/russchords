@@ -187,6 +187,14 @@ resource "aws_ssm_parameter" "frontend_google_search_cx" {
   overwrite   = true
 }
 
+resource "aws_ssm_parameter" "frontend_gtm_id" {
+  name        = "${local.ssm_base}/frontend/vite-gtm-id"
+  description = "Google Tag Manager ID for frontend"
+  type        = "String"
+  value       = var.vite_gtm_id
+  overwrite   = true
+}
+
 # Backend Cognito SSM Parameters
 resource "aws_ssm_parameter" "backend_cognito_authority" {
   name        = "${local.ssm_base}/backend/cognito-authority"
