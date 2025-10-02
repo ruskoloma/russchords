@@ -1,29 +1,51 @@
-import { useLoaderData, Link } from 'react-router-dom';
+import { useLoaderData, Link, useSearchParams, useLocation } from 'react-router-dom';
 import type { CachedSongDto } from '../../types';
 import { Viewer } from '../../components/Viewer/Viewer';
 import { Box, Divider, Menu, Text, Card, Group, Badge, Stack, Title } from '@mantine/core';
 import { CardHC } from '../../components/CardHC/CardHC';
+import { BackButton } from '../../components/BackButton/BackButton';
 import { useForkSong, useMyForksByOriginalId } from '../../hooks/song';
 import { useAuth } from 'react-oidc-context';
+import { createNavigationUrl } from '../../helpers/navigation';
+import { useSourceContext } from '../../contexts/SourceContext';
+import { useEffect } from 'react';
 
 export function CachedSongPage() {
 	const songDto = useLoaderData() as CachedSongDto;
 	const { isAuthenticated } = useAuth();
-	const { forkSong, isForking } = useForkSong({ navigateOnSuccess: true });
+	const { forkSong, isForking } = useForkSong({ navigateOnSuccess: true, preserveSource: true });
+	const [searchParams] = useSearchParams();
+	const location = useLocation();
+	const { setLastSongPageSource } = useSourceContext();
 
 	const originalId = Number(songDto.id);
 	const { forks, isLoading: isForksLoading } = useMyForksByOriginalId(originalId, isAuthenticated);
 
+	const source = searchParams.get('source');
+	const getSongLink = (songId: number) => {
+		return source ? `/song/${songId}?source=${encodeURIComponent(source)}` : createNavigationUrl(`/song/${songId}`, location);
+	};
+
+	// Store the source in context when this cached song page loads
+	useEffect(() => {
+		if (source) {
+			setLastSongPageSource(source);
+		}
+	}, [source, setLastSongPageSource]);
+
 	return (
 		<>
-			<Box>
-				<Text size={'xl'} fw={700}>
-					{songDto.name}
-				</Text>
-				<Text size={'md'} fw={400}>
-					{songDto.artist}
-				</Text>
-			</Box>
+			<Group justify="space-between">
+				<Box>
+					<Text size={'xl'} fw={700}>
+						{songDto.name}
+					</Text>
+					<Text size={'md'} fw={400}>
+						{songDto.artist}
+					</Text>
+				</Box>
+				<BackButton />
+			</Group>
 			<Divider my={'sm'} />
 			<Viewer
 				musicText={songDto.content}
@@ -51,7 +73,7 @@ export function CachedSongPage() {
 							</Text>
 						)}
 						{forks.map((s) => (
-							<Card key={s.id} withBorder component={Link} to={`/song/${s.id}`}>
+							<Card key={s.id} withBorder component={Link} to={getSongLink(s.id)}>
 								<Group justify="space-between">
 									<Box>
 										<Text fw={600}>{s.name}</Text>

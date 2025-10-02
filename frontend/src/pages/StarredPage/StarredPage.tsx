@@ -1,14 +1,16 @@
 import { useMemo, useState } from 'react';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import { ActionIcon, Stack, Text } from '@mantine/core';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import type { SongDto } from '../../types';
 import { useStarSongs, useUnstarSong } from '../../hooks/starred';
+import { createNavigationUrl } from '../../helpers/navigation';
 
 export const StarredPage: React.FC = () => {
 	const loaded = useLoaderData() as SongDto[];
 	const navigate = useNavigate();
+	const location = useLocation();
 
 	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<SongDto>>({
 		columnAccessor: 'name',
@@ -100,7 +102,7 @@ export const StarredPage: React.FC = () => {
 						},
 					},
 				]}
-				onRowClick={(row) => navigate(`/song/${row.record.id}`)}
+				onRowClick={(row) => navigate(createNavigationUrl(`/song/${row.record.id}`, location))}
 				noRecordsText="No starred songs"
 				minHeight={'500px'}
 			/>

@@ -32,6 +32,7 @@ import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
 import MyPlaylistsPage from './pages/MyPlaylistsPage/MyPlaylistsPage.tsx';
 import TagManager from 'react-gtm-module';
+import { SourceProvider } from './contexts/SourceContext';
 
 // Initialize Google Tag Manager
 const gtmId = import.meta.env.VITE_GTM_ID;
@@ -118,9 +119,11 @@ createRoot(document.getElementById('root')!).render(
 			<ModalsProvider>
 				<Notifications position="top-right" />
 				<AuthProvider>
-					<Suspense fallback={<div>Loading...</div>}>
-						<RouterProvider router={router} />
-					</Suspense>
+					<SourceProvider>
+						<Suspense fallback={<div>Loading...</div>}>
+							<RouterProvider router={router} />
+						</Suspense>
+					</SourceProvider>
 				</AuthProvider>
 			</ModalsProvider>
 		</MantineProvider>

@@ -1,14 +1,16 @@
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useLoaderData, useNavigate, useSearchParams } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../components/Viewer/Viewer';
 import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
 import { CardHC } from '../../components/CardHC/CardHC';
+import { BackButton } from '../../components';
 import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../hooks/song';
 import { useStarredState } from '../../hooks/starred';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../hooks/playlists';
 import { useEffect, useMemo, useState } from 'react';
+import { useSourceContext } from '../../contexts/SourceContext';
 
 export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
@@ -17,6 +19,8 @@ export function SongPage() {
 	const me = user?.profile?.sub;
 	const navigate = useNavigate();
 	const isOwner = useIsSongOwner(songDto.authorId);
+	const [searchParams] = useSearchParams();
+	const { setLastSongPageSource } = useSourceContext();
 
 	const { isStarred, isLoading, unstarSong, starSong } = useStarredState(songDto.id);
 
@@ -44,6 +48,14 @@ export function SongPage() {
 		setSelectedPlaylists(initiallySelected);
 	}, [initiallySelected, isAuthenticated]);
 
+	// Store the source in context when this song page loads
+	useEffect(() => {
+		const source = searchParams.get('source');
+		if (source) {
+			setLastSongPageSource(source);
+		}
+	}, [searchParams, setLastSongPageSource]);
+
 	const { addSongToPlaylist, isAdding } = useAddSongToPlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
 	const onChangePlaylists = async (values: string[]) => {
@@ -69,19 +81,7 @@ export function SongPage() {
 					</Text>
 					<Text size="md">{songDto.artist}</Text>
 				</Box>
-				<Group>
-					{isAuthenticated && (
-						<MultiSelect
-							data={options}
-							value={selectedPlaylists}
-							onChange={onChangePlaylists}
-							searchable
-							w={280}
-							disabled={isAdding || isRemoving}
-							placeholder="Add to playlists..."
-							className="hide-multiselect-tags"
-						/>
-					)}
+				<Group wrap="nowrap" maw={'100%'}>
 					{isAuthenticated && (
 						<ActionIcon
 							variant={'subtle'}
@@ -95,6 +95,22 @@ export function SongPage() {
 							{isStarred ? <IconStarFilled size={24} /> : <IconStar size={24} />}
 						</ActionIcon>
 					)}
+					{isAuthenticated && (
+						<MultiSelect
+							data={options}
+							value={selectedPlaylists}
+							onChange={onChangePlaylists}
+							searchable
+							w={280}
+							disabled={isAdding || isRemoving}
+							placeholder="Add to playlists..."
+							className="hide-multiselect-tags"
+							flex={'0 1 auto'}
+						/>
+					)}
+					<Box flex={'0 0'}>
+						<BackButton /
+						></Box>
 				</Group>
 			</Group>
 
