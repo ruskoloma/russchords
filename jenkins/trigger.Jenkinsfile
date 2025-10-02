@@ -27,9 +27,9 @@ pipeline {
             echo "[trigger] Changes detected under frontend/** — triggering frontend build job"
             build job: "russchords-frontend-${params.ENV}",
               parameters: [
-                choice(name: 'ENV', value: params.ENV),
-                string(name: 'GIT_URL', value: params.REPO_URL),
-                string(name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'),
+                [$class: 'StringParameterValue', name: 'ENV', value: params.ENV],
+                [$class: 'StringParameterValue', name: 'GIT_URL', value: params.REPO_URL],
+                [$class: 'StringParameterValue', name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'],
               ],
               propagate: true,
               wait: true
@@ -43,9 +43,9 @@ pipeline {
             echo "[trigger] Changes detected under backend/** — triggering backend build job"
             build job: "russchords-backend-${params.ENV}",
               parameters: [
-                choice(name: 'ENV', value: params.ENV),
-                string(name: 'GIT_URL', value: params.REPO_URL),
-                string(name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'),
+                [$class: 'StringParameterValue', name: 'ENV', value: params.ENV],
+                [$class: 'StringParameterValue', name: 'GIT_URL', value: params.REPO_URL],
+                [$class: 'StringParameterValue', name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'],
               ],
               propagate: true,
               wait: true
@@ -59,9 +59,9 @@ pipeline {
             echo "[trigger] Changes detected under lambda/** — triggering lambda build job"
             build job: "russchords-lambda-${params.ENV}",
               parameters: [
-                choice(name: 'ENV', value: params.ENV),
-                string(name: 'GIT_URL', value: params.REPO_URL),
-                string(name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'),
+                [$class: 'StringParameterValue', name: 'ENV', value: params.ENV],
+                [$class: 'StringParameterValue', name: 'GIT_URL', value: params.REPO_URL],
+                [$class: 'StringParameterValue', name: 'GIT_BRANCH', value: params.ENV == 'dev' ? 'develop' : 'master'],
               ],
               propagate: true,
               wait: true
