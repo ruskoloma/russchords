@@ -58,6 +58,12 @@ variable "vite_google_search_cx" {
   default     = ""
 }
 
+variable "vite_gtm_id" {
+  description = "Google Tag Manager ID for frontend"
+  type        = string
+  default     = ""
+}
+
 variable "s3_bucket_name" {
   description = "S3 bucket name for lambda code storage"
   type        = string

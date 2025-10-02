@@ -1,6 +1,6 @@
 
 
-resource "aws_route53_record" "dev_internal_jenkins" {
+resource "aws_route53_record" "internal_jenkins" {
   name    = "jenkins"
   zone_id = var.private_zone_id
   type    = "A"
@@ -9,7 +9,7 @@ resource "aws_route53_record" "dev_internal_jenkins" {
 }
 
 
-resource "aws_route53_record" "dev_public_jenkins" {
+resource "aws_route53_record" "public_jenkins" {
   name    = "jenkins"
   zone_id = var.public_zone_id
   type    = "A"
@@ -17,7 +17,7 @@ resource "aws_route53_record" "dev_public_jenkins" {
   records = [aws_instance.utility_host.public_ip]
 }
 
-resource "aws_route53_record" "dev_public_api" {
+resource "aws_route53_record" "public_api" {
   name    = "api"
   zone_id = var.public_zone_id
   type    = "A"
@@ -35,11 +35,11 @@ resource "aws_route53_record" "isntance1" {
 
 output "api_domain_name" {
   description = "API domain name"
-  value       = aws_route53_record.dev_public_api.fqdn
+  value       = aws_route53_record.public_api.fqdn
 }
 
 output "jenkins_internal_domain" {
   description = "Jenkins internal domain name"
-  value       = aws_route53_record.dev_internal_jenkins.fqdn
+  value       = aws_route53_record.internal_jenkins.fqdn
 }
 
