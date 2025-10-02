@@ -5,7 +5,7 @@ from boto3.session import Session
 from botocore.exceptions import ProfileNotFound
 
 # Hardcoded base path
-SSM_BASE = "/russchords/prod"
+SSM_BASE = "/russchords/dev"
 
 # Map env var -> relative SSM name
 SSM_PARAMS = {
