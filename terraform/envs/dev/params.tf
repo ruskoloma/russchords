@@ -188,6 +188,7 @@ resource "aws_ssm_parameter" "frontend_google_search_cx" {
 }
 
 resource "aws_ssm_parameter" "frontend_gtm_id" {
+  count       = 0
   name        = "${local.ssm_base}/frontend/vite-gtm-id"
   description = "Google Tag Manager ID for frontend"
   type        = "String"
