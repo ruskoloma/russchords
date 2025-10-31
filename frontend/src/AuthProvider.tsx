@@ -14,6 +14,7 @@ const settings: UserManagerSettings = {
 	automaticSilentRenew: true,
 	silent_redirect_uri: import.meta.env.VITE_COGNITO_SILENT_REDIRECT_URI,
 	revokeTokensOnSignout: false,
+	accessTokenExpiringNotificationTimeInSeconds: 60, // Start renewing token 60 seconds before expiration
 };
 
 // eslint-disable-next-line react-refresh/only-export-components
