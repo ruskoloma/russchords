@@ -114,6 +114,7 @@ module "backend" {
   image_repo_name    = local.backend_api_repo_name
   private_zone_id    = local.private_zone_id
   environment        = var.environment
+  task_cpu           = "256"
 }
 
 module "frontend_hosting" {
