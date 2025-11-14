@@ -50,7 +50,7 @@ export function NoWrapTextarea({
 					input: {
 						width: w,
 						maxWidth: '100%',
-						whiteSpace: 'pre-wrap',
+						whiteSpace: 'pre',
 						overflowX: 'auto',
 						padding: '0.5rem',
 					},
