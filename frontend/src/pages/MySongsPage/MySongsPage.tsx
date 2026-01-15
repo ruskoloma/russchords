@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
-import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useLoaderData, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
 import { ActionIcon, Button, Group, Stack, Text, TextInput } from '@mantine/core';
-import { useDebouncedValue } from '@mantine/hooks';
+import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import type { LiteSongDto } from '../../types';
 import { useDeleteSongs } from '../../hooks/song';
@@ -14,6 +14,8 @@ export const MySongsPage: React.FC = () => {
 	const loaded = useLoaderData() as LiteSongDto[];
 	const navigate = useNavigate();
 	const location = useLocation();
+	const [searchParams, setSearchParams] = useSearchParams();
+	const isMobile = useMediaQuery('(max-width: 48em)');
 
 	const [data, setData] = useState<LiteSongDto[]>(loaded ?? []);
 	useEffect(() => setData(loaded ?? []), [loaded]);
@@ -26,8 +28,24 @@ export const MySongsPage: React.FC = () => {
 		direction: 'asc',
 	});
 
-	const [page, setPage] = useState(1);
-	const [pageSize, setPageSize] = useState(10);
+	const page = parseInt(searchParams.get('page') || '1', 10);
+	const setPage = (p: number) => {
+		setSearchParams((prev) => {
+			prev.set('page', String(p));
+			return prev;
+		});
+	};
+
+	const [pageSize, setPageSize] = useState(() => {
+		const saved = localStorage.getItem('russchords-my-songs-size');
+		if (saved) return parseInt(saved, 10);
+		return 15;
+	});
+
+	const handlePageSizeChange = (v: number) => {
+		setPageSize(v);
+		localStorage.setItem('russchords-my-songs-size', v.toString());
+	};
 
 	const [selected, setSelected] = useState<LiteSongDto[]>([]);
 
@@ -53,7 +71,14 @@ export const MySongsPage: React.FC = () => {
 		return sorted.slice(from, from + pageSize);
 	}, [sorted, page, pageSize]);
 
-	useEffect(() => setPage(1), [debouncedQuery, pageSize]);
+	const prevDeps = useRef({ query: debouncedQuery, pageSize });
+	useEffect(() => {
+		const prev = prevDeps.current;
+		if (prev.query !== debouncedQuery || prev.pageSize !== pageSize) {
+			if (page !== 1) setPage(1);
+			prevDeps.current = { query: debouncedQuery, pageSize };
+		}
+	}, [debouncedQuery, pageSize, page]);
 
 	const { deleteSongs, isDeleting } = useDeleteSongs();
 	const { starSongs, isStarring } = useStarSongs();
@@ -96,31 +121,36 @@ export const MySongsPage: React.FC = () => {
 					placeholder="Filter by name…"
 					value={query}
 					onChange={(e) => setQuery(e.currentTarget.value)}
-					w={320}
+					miw={250}
+					maw={320}
 				/>
 				<Group>
 					<Button onClick={() => navigate('/song/create')}>New Song</Button>
-					<Button
-						variant="light"
-						color="red"
-						disabled={selected.length === 0 || isDeleting}
-						onClick={onDeleteSelected}
-						loading={isDeleting}
-					>
-						Delete selected ({selected.length})
-					</Button>
-					<ActionIcon
-						disabled={selected.length === 0 || isStarring}
-						variant={'filled'}
-						color="yellow"
-						onClick={onStarSelected}
-						loading={isStarring}
-						aria-label={'Star'}
-						w={'3rem'}
-						h={36}
-					>
-						<IconStar size={20} />
-					</ActionIcon>
+					{!isMobile && (
+						<>
+							<Button
+								variant="light"
+								color="red"
+								disabled={selected.length === 0 || isDeleting}
+								onClick={onDeleteSelected}
+								loading={isDeleting}
+							>
+								Delete ({selected.length})
+							</Button>
+							<ActionIcon
+								disabled={selected.length === 0 || isStarring}
+								variant={'filled'}
+								color="yellow"
+								onClick={onStarSelected}
+								loading={isStarring}
+								aria-label={'Star'}
+								w={'3rem'}
+								h={36}
+							>
+								<IconStar size={20} />
+							</ActionIcon>
+						</>
+					)}
 				</Group>
 			</Group>
 
@@ -137,11 +167,11 @@ export const MySongsPage: React.FC = () => {
 				page={page}
 				onPageChange={setPage}
 				recordsPerPage={pageSize}
-				onRecordsPerPageChange={setPageSize}
-				recordsPerPageOptions={[15, 25, 50, 100]}
+				onRecordsPerPageChange={handlePageSizeChange}
+				recordsPerPageOptions={isMobile ? undefined as any as number[] : [15, 25, 50, 100]}
 				paginationText={({ from, to, totalRecords }) => `${from}–${to} of ${totalRecords}`}
-				selectedRecords={selected}
-				onSelectedRecordsChange={setSelected}
+				selectedRecords={isMobile ? undefined : selected}
+				onSelectedRecordsChange={isMobile ? undefined : setSelected}
 				columns={[
 					{
 						accessor: 'name',

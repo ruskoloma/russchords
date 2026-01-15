@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
-import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, MultiSelect } from '@mantine/core';
+import { Link, useLoaderData, useNavigate, useLocation } from 'react-router-dom';
+import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, MultiSelect, Tooltip } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import {
 	IconChecks,
+	IconCopy,
 	IconGripVertical,
 	IconPencil,
 	IconPin,
@@ -22,6 +24,7 @@ import {
 	useAddSongToPlaylist,
 	useMyPlaylistsWithDetails,
 	useRemovePlaylistFromMy,
+	useDeletePlaylist,
 } from '../../hooks/playlists';
 import { useMyLightSongs } from '../../hooks/song';
 import type { LiteSongDto, MyPlaylistDto } from '../../types';
@@ -60,8 +63,9 @@ export const PlaylistPage: React.FC = () => {
 
 	const { updatePlaylist, isUpdating } = useUpdatePlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
-	const { saveOrder, isSaving } = useSavePlaylistOrder();
+	const { saveOrder } = useSavePlaylistOrder();
 	const { setPinned: setPinnedReq, isSetting } = useSetPlaylistPinned();
+	const { deletePlaylist, isDeleting: isDeletingPlaylist } = useDeletePlaylist();
 
 	const { songs: mySongs, isLoading: isLoadingMySongs } = useMyLightSongs(isAuthenticated);
 
@@ -125,7 +129,11 @@ export const PlaylistPage: React.FC = () => {
 	};
 
 	const onSaveMeta = async () => {
-		await updatePlaylist(initial.playlistId, { title, description });
+		const orderedIds = songs.map((s) => s.id);
+		await Promise.all([
+			updatePlaylist(initial.playlistId, { title, description }),
+			saveOrder(initial.playlistId, orderedIds),
+		]);
 		setEditing(false);
 	};
 
@@ -135,10 +143,7 @@ export const PlaylistPage: React.FC = () => {
 		setEditing(false);
 	};
 
-	const onSaveOrder = async () => {
-		const orderedIds = songs.map((s) => s.id);
-		await saveOrder(initial.playlistId, orderedIds);
-	};
+
 
 	const togglePin = async () => {
 		const next = !pinned;
@@ -164,13 +169,48 @@ export const PlaylistPage: React.FC = () => {
 		});
 	};
 
+	const onDeletePlaylist = () => {
+		modals.openConfirmModal({
+			title: 'Delete playlist',
+			children: <Text size="sm">Are you sure you want to delete this playlist? This action cannot be undone.</Text>,
+			labels: { confirm: 'Delete', cancel: 'Cancel' },
+			confirmProps: { color: 'red' },
+			onConfirm: async () => {
+				await deletePlaylist(initial.playlistId);
+				navigate('/my-playlists');
+			},
+		});
+	};
+
 	const hasSongs = useMemo(() => songs.length > 0, [songs]);
 
 	return (
 		<Stack gap="md">
-			<Card withBorder shadow="sm">
+			{editing && isOwner && (
+				<Group justify="flex-end">
+					<Button
+						variant="subtle"
+						color="red"
+						leftSection={<IconTrash size={16} />}
+						onClick={onDeletePlaylist}
+						loading={isDeletingPlaylist}
+					>
+						Delete playlist
+					</Button>
+					<Button
+						variant="default"
+						onClick={togglePin}
+						loading={isSetting}
+						leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+					>
+						{pinned ? 'Unpin' : 'Pin'}
+					</Button>
+				</Group>
+			)}
+
+			<Card withBorder shadow="sm" p={0}>
 				{editing && isOwner ? (
-					<Stack gap="sm">
+					<Stack gap="sm" p="md">
 						<TextInput label="Title" value={title} onChange={(e) => setTitle(e.currentTarget.value)} />
 						<Textarea
 							label="Description"
@@ -179,17 +219,9 @@ export const PlaylistPage: React.FC = () => {
 							autosize
 							minRows={3}
 						/>
-						<Group>
-							<Button leftSection={<IconChecks size={16} />} onClick={onSaveMeta} loading={isUpdating}>
-								Save
-							</Button>
-							<Button variant="light" color="gray" leftSection={<IconX size={16} />} onClick={onCancelMeta}>
-								Cancel
-							</Button>
-						</Group>
 					</Stack>
 				) : (
-					<Group justify="space-between" align="flex-start">
+					<Group justify="space-between" align="flex-start" p="md">
 						<Stack gap={4}>
 							<Text fw={800} size="xl">
 								{title}
@@ -203,9 +235,19 @@ export const PlaylistPage: React.FC = () => {
 							)}
 						</Stack>
 						{isOwner && (
-							<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
-								Edit
-							</Button>
+							<Group>
+								<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
+									Edit
+								</Button>
+								<Button
+									variant="default"
+									onClick={togglePin}
+									loading={isSetting}
+									leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+								>
+									{pinned ? 'Unpin' : 'Pin'}
+								</Button>
+							</Group>
 						)}
 					</Group>
 				)}
@@ -213,34 +255,40 @@ export const PlaylistPage: React.FC = () => {
 
 			<Stack gap="xs">
 				<Group justify="space-between" align="center">
-					<Text fw={700}>Songs</Text>
-					<Group>
-						{isAuthenticated && isOwner && (
-							<>
-								<MultiSelect
-									placeholder="Add/remove my songs..."
-									data={mySongOptions}
-									value={selectedIds}
-									onChange={onChangeSelected}
-									searchable
-									disabled={isLoadingMySongs || isAddingSong || isRemoving}
-									w={320}
-									className="hide-multiselect-tags"
-								/>
-								<Button variant="default" onClick={onSaveOrder} loading={isSaving}>
-									Save order
-								</Button>
-							</>
-						)}
-						{isAuthenticated && (
-							<Button
-								variant="default"
-								onClick={togglePin}
-								loading={isSetting}
-								leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+					<Group gap="xs">
+						<Text fw={700}>Songs</Text>
+						<Tooltip label="Copy song list" withArrow>
+							<ActionIcon
+								variant="subtle"
+								color="gray"
+								size="sm"
+								onClick={() => {
+									const text = songs.map((s) => s.name).join('\n');
+									navigator.clipboard.writeText(text);
+									showNotification({
+										title: 'Copied',
+										message: 'Song list copied to clipboard',
+										color: 'green',
+										autoClose: 500,
+									});
+								}}
 							>
-								{pinned ? 'Unpin' : 'Pin'}
-							</Button>
+								<IconCopy size={16} />
+							</ActionIcon>
+						</Tooltip>
+					</Group>
+					<Group>
+						{isAuthenticated && isOwner && editing && (
+							<MultiSelect
+								placeholder="Add/remove my songs..."
+								data={mySongOptions}
+								value={selectedIds}
+								onChange={onChangeSelected}
+								searchable
+								disabled={isLoadingMySongs || isAddingSong || isRemoving}
+								w={320}
+								className="hide-multiselect-tags"
+							/>
 						)}
 						{isAuthenticated &&
 							!isOwner &&
@@ -270,42 +318,67 @@ export const PlaylistPage: React.FC = () => {
 									<Text c="dimmed">No songs in this playlist</Text>
 								) : (
 									songs.map((song, index) => (
-										<Draggable key={song.id} draggableId={song.id.toString()} index={index} isDragDisabled={!isOwner}>
+										<Draggable
+											key={song.id}
+											draggableId={song.id.toString()}
+											index={index}
+											isDragDisabled={!isOwner || !editing}
+										>
 											{(draggableProvided, snapshot) => (
 												<Card
 													withBorder
 													shadow={snapshot.isDragging ? 'md' : 'xs'}
 													ref={draggableProvided.innerRef}
 													{...draggableProvided.draggableProps}
-													style={{ ...draggableProvided.draggableProps.style, opacity: snapshot.isDragging ? 0.95 : 1 }}
+													style={{
+														...draggableProvided.draggableProps.style,
+														opacity: snapshot.isDragging ? 0.95 : 1,
+													}}
 												>
 													<Group justify="space-between" wrap="nowrap" align="center">
-														<Group wrap="nowrap" gap="sm" align="center" style={{ minWidth: 0, flex: 1 }}>
-															{isOwner && (
-																<ActionIcon variant="subtle" {...draggableProvided.dragHandleProps} aria-label="Drag">
+														<Group
+															wrap="nowrap"
+															gap="sm"
+															align="center"
+															style={{ minWidth: 0, flex: 1 }}
+														>
+															{isOwner && editing && (
+																<ActionIcon
+																	variant="subtle"
+																	{...draggableProvided.dragHandleProps}
+																	aria-label="Drag"
+																	style={{ cursor: 'grab' }}
+																>
 																	<IconGripVertical size={18} />
 																</ActionIcon>
 															)}
 															<Text
 																fw={600}
 																truncate="end"
-																style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
-																onClick={() => navigate(createNavigationUrl(`/song/${song.id}`, location))}
+																style={{ minWidth: 0, flex: 1, cursor: editing ? 'default' : 'pointer' }}
+																component={(editing ? 'div' : Link) as any}
+																to={editing ? undefined : createNavigationUrl(`/song/${song.id}`, location)}
 															>
 																{song.name}
 															</Text>
 														</Group>
-														<Group wrap="nowrap" gap="sm" align="center" style={{ minWidth: 0, flex: '0.5 1' }}>
+														<Group
+															wrap="nowrap"
+															gap="sm"
+															align="center"
+															style={{ minWidth: 0, flex: '0.5 1' }}
+														>
 															<Text
 																c="dimmed"
 																size="sm"
 																lineClamp={1}
-																style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
-																onClick={() => navigate(createNavigationUrl(`/song/${song.id}`, location))}
+																style={{ minWidth: 0, flex: 1, cursor: editing ? 'default' : 'pointer' }}
+																component={(editing ? 'div' : Link) as any}
+																to={editing ? undefined : createNavigationUrl(`/song/${song.id}`, location)}
 															>
 																{song.artist ?? ''}
 															</Text>
-															{isOwner && (
+															{isOwner && editing && (
 																<ActionIcon
 																	variant="subtle"
 																	color="red"
@@ -328,6 +401,23 @@ export const PlaylistPage: React.FC = () => {
 						)}
 					</Droppable>
 				</DragDropContext>
+
+				{editing && isOwner && (
+					<Group justify="flex-end" mt="md">
+						<Button
+							variant="default"
+							color="gray"
+							leftSection={<IconX size={16} />}
+							onClick={onCancelMeta}
+							disabled={isUpdating}
+						>
+							Cancel
+						</Button>
+						<Button leftSection={<IconChecks size={16} />} onClick={onSaveMeta} loading={isUpdating}>
+							Save changes
+						</Button>
+					</Group>
+				)}
 			</Stack>
 		</Stack>
 	);
