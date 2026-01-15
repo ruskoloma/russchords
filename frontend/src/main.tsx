@@ -42,7 +42,7 @@ if (gtmId) {
 
 const router = createBrowserRouter([
 	{
-		path: '/auth/silent-redirect',
+		path: '/auth/silent-callback',
 		element: <SilentRedirect />,
 	},
 	{

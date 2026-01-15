@@ -1,4 +1,4 @@
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { Link, useLoaderData, useNavigate } from 'react-router-dom';
 import { Box, Button, Card, Divider, Group, Select, SimpleGrid, Stack, Text, Textarea, TextInput } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { useMemo, useState } from 'react';
@@ -113,7 +113,8 @@ export default function MyPlaylistsPage() {
 							key={pl.playlistId}
 							withBorder
 							shadow="sm"
-							onClick={() => navigate(`/playlist/${pl.playlistId}`)}
+							component={Link}
+							to={`/playlist/${pl.playlistId}`}
 							style={{ cursor: 'pointer', position: 'relative' }}
 						>
 							<Stack gap={8} h="100%">

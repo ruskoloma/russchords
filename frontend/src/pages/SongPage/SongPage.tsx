@@ -75,11 +75,11 @@ export function SongPage() {
 	return (
 		<>
 			<Group justify="space-between">
-				<Box>
-					<Text size="xl" fw={700}>
+				<Box maw={'350px'}>
+					<Text size="xl" fw={700} truncate>
 						{songDto.name}
 					</Text>
-					<Text size="md">{songDto.artist}</Text>
+					<Text size="md" truncate>{songDto.artist}</Text>
 				</Box>
 				<Group wrap="nowrap" maw={'100%'}>
 					{isAuthenticated && (
@@ -101,7 +101,8 @@ export function SongPage() {
 							value={selectedPlaylists}
 							onChange={onChangePlaylists}
 							searchable
-							w={280}
+							miw={200}
+							maw={280}
 							disabled={isAdding || isRemoving}
 							placeholder="Add to playlists..."
 							className="hide-multiselect-tags"
@@ -109,8 +110,7 @@ export function SongPage() {
 						/>
 					)}
 					<Box flex={'0 0'}>
-						<BackButton /
-						></Box>
+						<BackButton /></Box>
 				</Group>
 			</Group>
 
