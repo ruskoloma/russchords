@@ -121,8 +121,9 @@ export const MySongsPage: React.FC = () => {
 					placeholder="Filter by name…"
 					value={query}
 					onChange={(e) => setQuery(e.currentTarget.value)}
-					miw={250}
+					miw={200}
 					maw={320}
+					flex={'1 0 auto'}
 				/>
 				<Group>
 					<Button onClick={() => navigate('/song/create')}>New Song</Button>

@@ -106,7 +106,7 @@ export function SongPage() {
 							disabled={isAdding || isRemoving}
 							placeholder="Add to playlists..."
 							className="hide-multiselect-tags"
-							flex={'0 1 auto'}
+							flex={'1 0 auto'}
 						/>
 					)}
 					<Box flex={'0 0'}>
