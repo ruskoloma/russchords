@@ -16,6 +16,7 @@
     "@mantine/hooks": "^8.2.4",
     "@mantine/modals": "^8.2.4",
     "@mantine/notifications": "^8.2.4",
+    "@mantine/nprogress": "^8.2.4",
     "@tabler/icons-react": "^3.34.0",
     "axios": "^1.11.0",
     "mantine-datatable": "^8.2.0",

@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { useEffect } from 'react';
-import { NavLink as ReactNavLink, Outlet, useLocation } from 'react-router-dom';
+import { NavLink as ReactNavLink, Outlet, useLocation, useNavigation } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack, Text } from '@mantine/core';
+import { NavigationProgress, nprogress } from '@mantine/nprogress';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
 import {
@@ -107,6 +108,15 @@ export const Layout: React.FC = () => {
 	const { isAuthenticated } = useAuth();
 	const [opened, { toggle, close }] = useDisclosure();
 	const location = useLocation();
+	const navigation = useNavigation();
+
+	useEffect(() => {
+		if (navigation.state === 'loading') {
+			nprogress.start();
+		} else {
+			nprogress.complete();
+		}
+	}, [navigation.state]);
 
 	useEffect(() => {
 		if (isAuthenticated && (window.location.search.includes('code=') || window.location.search.includes('state='))) {
@@ -128,6 +138,7 @@ export const Layout: React.FC = () => {
 			}}
 			padding="md"
 		>
+			<NavigationProgress />
 			<AppShell.Header>
 				<Group justify={'space-between'} px={'lg'} fz={'h2'} h={'100%'}>
 					<Logo />
