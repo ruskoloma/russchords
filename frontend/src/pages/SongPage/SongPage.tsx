@@ -101,12 +101,12 @@ export function SongPage() {
 							value={selectedPlaylists}
 							onChange={onChangePlaylists}
 							searchable
-							miw={200}
+							miw={180}
 							maw={280}
 							disabled={isAdding || isRemoving}
 							placeholder="Add to playlists..."
 							className="hide-multiselect-tags"
-							flex={'1 0 auto'}
+							flex={'1 1 auto'}
 						/>
 					)}
 					<Box flex={'0 0'}>
