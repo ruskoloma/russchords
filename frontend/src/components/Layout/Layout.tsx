@@ -16,9 +16,95 @@ import {
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
 
-export const Layout: React.FC = () => {
+const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 	const { isAuthenticated, user } = useAuth();
 	const { login, logout } = useAuthActions();
+	const location = useLocation();
+
+	return (
+		<Stack h={'100%'}>
+			<Box>
+				<NavLink
+					label="Home"
+					active={location.pathname === '/'}
+					component={ReactNavLink}
+					to="/"
+					onClick={onNavigate}
+					leftSection={<IconHome2 size={16} stroke={1.5} />}
+				/>
+				{isAuthenticated && (
+					<>
+						<NavLink
+							label="My Songs"
+							active={location.pathname.includes('song')}
+							component={ReactNavLink}
+							to="/my-songs"
+							onClick={onNavigate}
+							leftSection={<IconListLetters size={16} stroke={1.5} />}
+						/>
+						<NavLink
+							label="Starred"
+							active={location.pathname === 'starred'}
+							component={ReactNavLink}
+							to="/starred"
+							onClick={onNavigate}
+							leftSection={<IconStar size={16} stroke={1.5} />}
+						/>
+						<NavLink
+							label="Playlists"
+							active={location.pathname.includes('playlist')}
+							component={ReactNavLink}
+							to="/my-playlists"
+							onClick={onNavigate}
+							leftSection={<IconPlaylist size={16} stroke={1.5} />}
+						/>
+					</>
+				)}
+				<NavLink
+					label="Search"
+					active={location.pathname.includes('search')}
+					component={ReactNavLink}
+					to="/search"
+					onClick={onNavigate}
+					leftSection={<IconSearch size={16} stroke={1.5} />}
+				/>
+			</Box>
+
+			<Box flex={'2 0 auto'}></Box>
+
+			<Box>
+				{isAuthenticated ? (
+					<>
+						<NavLink
+							onClick={() => {
+								logout();
+								onNavigate?.();
+							}}
+							leftSection={<IconLogout size={16} stroke={1.5} />}
+							label="Logout"
+						/>
+						<Group gap={12} py={8} px={12}>
+							<IconUser size={16} stroke={1.5} />
+							<Text size={'14px'}>{'Hi, ' + user?.profile?.nickname}</Text>
+						</Group>
+					</>
+				) : (
+					<NavLink
+						onClick={() => {
+							login();
+							onNavigate?.();
+						}}
+						leftSection={<IconUser size={16} stroke={1.5} />}
+						label="Login"
+					/>
+				)}
+			</Box>
+		</Stack>
+	);
+};
+
+export const Layout: React.FC = () => {
+	const { isAuthenticated } = useAuth();
 	const [opened, { toggle, close }] = useDisclosure();
 	const location = useLocation();
 
@@ -50,65 +136,7 @@ export const Layout: React.FC = () => {
 			</AppShell.Header>
 
 			<AppShell.Navbar p="md">
-				<Stack h={'100%'}>
-					<Box>
-						<NavLink
-							label="Home"
-							active={location.pathname === '/'}
-							component={ReactNavLink}
-							to="/"
-							leftSection={<IconHome2 size={16} stroke={1.5} />}
-						/>
-						{isAuthenticated && (
-							<>
-								<NavLink
-									label="My Songs"
-									active={location.pathname.includes('song')}
-									component={ReactNavLink}
-									to="/my-songs"
-									leftSection={<IconListLetters size={16} stroke={1.5} />}
-								/>
-								<NavLink
-									label="Starred"
-									active={location.pathname === 'starred'}
-									component={ReactNavLink}
-									to="/starred"
-									leftSection={<IconStar size={16} stroke={1.5} />}
-								/>
-								<NavLink
-									label="Playlists"
-									active={location.pathname.includes('playlist')}
-									component={ReactNavLink}
-									to="/my-playlists"
-									leftSection={<IconPlaylist size={16} stroke={1.5} />}
-								/>
-							</>
-						)}
-						<NavLink
-							label="Search"
-							active={location.pathname.includes('search')}
-							component={ReactNavLink}
-							to="/search"
-							leftSection={<IconSearch size={16} stroke={1.5} />}
-						/>
-					</Box>
-
-					<Box flex={'2 0 auto'}></Box>
-
-					<Box>
-						{isAuthenticated ? (
-							<>
-								<NavLink onClick={logout} leftSection={<IconLogout size={16} stroke={1.5} />} label="Logout" />
-								<Group gap={12} py={8} px={12}>
-									<IconUser size={16} stroke={1.5} />
-									<Text size={'14px'}>{'Hi, ' + user?.profile?.nickname}</Text>
-								</Group>
-							</>
-						) : (
-							<NavLink onClick={login} leftSection={<IconUser size={16} stroke={1.5} />} label="Login" />
-						)}
-					</Box>
-				</Stack>
+				<NavbarContent onNavigate={close} />
 			</AppShell.Navbar>
 
 			<AppShell.Main>
