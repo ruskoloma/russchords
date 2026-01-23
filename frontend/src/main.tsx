@@ -2,6 +2,7 @@ import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import '@mantine/core/styles.css';
+import '@mantine/nprogress/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { ErrorPage, Layout, NotFound } from './components';
