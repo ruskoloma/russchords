@@ -4,6 +4,7 @@ import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, Mult
 import { showNotification } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import {
+	IconArrowLeft,
 	IconChecks,
 	IconCopy,
 	IconGripVertical,
@@ -186,6 +187,20 @@ export const PlaylistPage: React.FC = () => {
 
 	return (
 		<Stack gap="md">
+			{!editing && (
+				<Group>
+					<Button
+						component={Link}
+						to="/my-playlists"
+						variant="subtle"
+						color="gray"
+						size="sm"
+						leftSection={<IconArrowLeft size={16} />}
+					>
+						My Playlists
+					</Button>
+				</Group>
+			)}
 			{editing && isOwner && (
 				<Group justify="flex-end">
 					<Button

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { ActionIcon, Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
+import { ActionIcon, Button, Card, Group, Select, Stack, Text, TextInput, Tooltip } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import type { SongDto } from '../../types';
 import {
 	ALL_ACTUAL_KEYS,
@@ -120,30 +121,10 @@ export const EditSongPage = () => {
 	return (
 		<Stack gap="md">
 			<Group justify="space-between" align="center">
-				<BackButton />
 				<Text fw={700} size="xl">
 					Edit song
 				</Text>
-				<Group gap="0.5em" align="center">
-					<ActionIcon onClick={handleTransposeDown} aria-label="Key down">
-						<IconArrowDown />
-					</ActionIcon>
-					<Select
-						aria-label="Editing key"
-						placeholder="Select key"
-						data={ALL_KEYS}
-						value={workKey}
-						onChange={handleKeySelect}
-						w="7em"
-						searchable
-					/>
-					<ActionIcon onClick={handleTransposeUp} aria-label="Key up">
-						<IconArrowUp />
-					</ActionIcon>
-					<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
-						Fill chords
-					</Button>
-				</Group>
+				<BackButton />
 			</Group>
 
 			<Card withBorder shadow="sm">
@@ -161,6 +142,43 @@ export const EditSongPage = () => {
 						nothingFoundMessage="No keys"
 						checkIconPosition="right"
 					/>
+					<Group gap="0.5em" align="center">
+						<ActionIcon onClick={handleTransposeDown} aria-label="Key down">
+							<IconArrowDown />
+						</ActionIcon>
+						<Select
+							aria-label="Editing key"
+							placeholder="Select key"
+							data={ALL_KEYS}
+							value={workKey}
+							onChange={handleKeySelect}
+							w="7em"
+							searchable
+						/>
+						<ActionIcon onClick={handleTransposeUp} aria-label="Key up">
+							<IconArrowUp />
+						</ActionIcon>
+						<Tooltip
+							label="Propagates chords from the first verse/chorus to other sections"
+							multiline
+							w={220}
+							withArrow
+						>
+							<Button
+								variant="outline"
+								onClick={() => {
+									setContent((c) => fillMissingChords(c));
+									showNotification({
+										title: 'Chords filled',
+										message: 'Chords successfully propagated',
+										color: 'green',
+									});
+								}}
+							>
+								Fill chords
+							</Button>
+						</Tooltip>
+					</Group>
 					<NoWrapTextarea
 						label="Content"
 						value={content}
