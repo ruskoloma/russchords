@@ -11,6 +11,7 @@ import {
 	IconPencil,
 	IconPin,
 	IconPinFilled,
+	IconPlayerPlay,
 	IconTrash,
 	IconX,
 } from '@tabler/icons-react';
@@ -249,21 +250,32 @@ export const PlaylistPage: React.FC = () => {
 								</Text>
 							)}
 						</Stack>
-						{isOwner && (
-							<Group>
-								<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
-									Edit
-								</Button>
+						<Group>
+							{hasSongs && (
 								<Button
-									variant="default"
-									onClick={togglePin}
-									loading={isSetting}
-									leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+									leftSection={<IconPlayerPlay size={16} />}
+									component={Link}
+									to={`play`}
 								>
-									{pinned ? 'Unpin' : 'Pin'}
+									Play
 								</Button>
-							</Group>
-						)}
+							)}
+							{isOwner && (
+								<>
+									<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
+										Edit
+									</Button>
+									<Button
+										variant="default"
+										onClick={togglePin}
+										loading={isSetting}
+										leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+									>
+										{pinned ? 'Unpin' : 'Pin'}
+									</Button>
+								</>
+							)}
+						</Group>
 					</Group>
 				)}
 			</Card>
