@@ -4,12 +4,14 @@ import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, Mult
 import { showNotification } from '@mantine/notifications';
 import { modals } from '@mantine/modals';
 import {
+	IconArrowLeft,
 	IconChecks,
 	IconCopy,
 	IconGripVertical,
 	IconPencil,
 	IconPin,
 	IconPinFilled,
+	IconPlayerPlay,
 	IconTrash,
 	IconX,
 } from '@tabler/icons-react';
@@ -186,6 +188,20 @@ export const PlaylistPage: React.FC = () => {
 
 	return (
 		<Stack gap="md">
+			{!editing && (
+				<Group>
+					<Button
+						component={Link}
+						to="/my-playlists"
+						variant="subtle"
+						color="gray"
+						size="sm"
+						leftSection={<IconArrowLeft size={16} />}
+					>
+						My Playlists
+					</Button>
+				</Group>
+			)}
 			{editing && isOwner && (
 				<Group justify="flex-end">
 					<Button
@@ -234,21 +250,32 @@ export const PlaylistPage: React.FC = () => {
 								</Text>
 							)}
 						</Stack>
-						{isOwner && (
-							<Group>
-								<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
-									Edit
-								</Button>
+						<Group>
+							{hasSongs && (
 								<Button
-									variant="default"
-									onClick={togglePin}
-									loading={isSetting}
-									leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+									leftSection={<IconPlayerPlay size={16} />}
+									component={Link}
+									to={`play`}
 								>
-									{pinned ? 'Unpin' : 'Pin'}
+									Play
 								</Button>
-							</Group>
-						)}
+							)}
+							{isOwner && (
+								<>
+									<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
+										Edit
+									</Button>
+									<Button
+										variant="default"
+										onClick={togglePin}
+										loading={isSetting}
+										leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
+									>
+										{pinned ? 'Unpin' : 'Pin'}
+									</Button>
+								</>
+							)}
+						</Group>
 					</Group>
 				)}
 			</Card>
@@ -362,34 +389,17 @@ export const PlaylistPage: React.FC = () => {
 																{song.name}
 															</Text>
 														</Group>
-														<Group
-															wrap="nowrap"
-															gap="sm"
-															align="center"
-															style={{ minWidth: 0, flex: '0.5 1' }}
-														>
-															<Text
-																c="dimmed"
-																size="sm"
-																lineClamp={1}
-																style={{ minWidth: 0, flex: 1, cursor: editing ? 'default' : 'pointer' }}
-																component={(editing ? 'div' : Link) as any}
-																to={editing ? undefined : createNavigationUrl(`/song/${song.id}`, location)}
+														{isOwner && editing && (
+															<ActionIcon
+																variant="subtle"
+																color="red"
+																aria-label="Remove"
+																onClick={() => removeByButton(song.id)}
+																loading={isRemoving}
 															>
-																{song.artist ?? ''}
-															</Text>
-															{isOwner && editing && (
-																<ActionIcon
-																	variant="subtle"
-																	color="red"
-																	aria-label="Remove"
-																	onClick={() => removeByButton(song.id)}
-																	loading={isRemoving}
-																>
-																	<IconTrash size={18} />
-																</ActionIcon>
-															)}
-														</Group>
+																<IconTrash size={18} />
+															</ActionIcon>
+														)}
 													</Group>
 												</Card>
 											)}

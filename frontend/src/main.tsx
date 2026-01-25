@@ -25,6 +25,8 @@ import {
 	SongPage,
 	StarredPage,
 	starredPageLoader,
+	PlaylistPlayMode,
+	playlistPlayModeLoader,
 } from './pages';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
@@ -93,6 +95,11 @@ const router = createBrowserRouter([
 				path: 'playlist/:id',
 				loader: playlistPageLoader,
 				element: <PlaylistPage />,
+			},
+			{
+				path: 'playlist/:id/play',
+				loader: playlistPlayModeLoader,
+				element: <PlaylistPlayMode />,
 			},
 			{
 				path: '/search',
