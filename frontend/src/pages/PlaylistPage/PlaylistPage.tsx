@@ -377,34 +377,17 @@ export const PlaylistPage: React.FC = () => {
 																{song.name}
 															</Text>
 														</Group>
-														<Group
-															wrap="nowrap"
-															gap="sm"
-															align="center"
-															style={{ minWidth: 0, flex: '0.5 1' }}
-														>
-															<Text
-																c="dimmed"
-																size="sm"
-																lineClamp={1}
-																style={{ minWidth: 0, flex: 1, cursor: editing ? 'default' : 'pointer' }}
-																component={(editing ? 'div' : Link) as any}
-																to={editing ? undefined : createNavigationUrl(`/song/${song.id}`, location)}
+														{isOwner && editing && (
+															<ActionIcon
+																variant="subtle"
+																color="red"
+																aria-label="Remove"
+																onClick={() => removeByButton(song.id)}
+																loading={isRemoving}
 															>
-																{song.artist ?? ''}
-															</Text>
-															{isOwner && editing && (
-																<ActionIcon
-																	variant="subtle"
-																	color="red"
-																	aria-label="Remove"
-																	onClick={() => removeByButton(song.id)}
-																	loading={isRemoving}
-																>
-																	<IconTrash size={18} />
-																</ActionIcon>
-															)}
-														</Group>
+																<IconTrash size={18} />
+															</ActionIcon>
+														)}
 													</Group>
 												</Card>
 											)}
