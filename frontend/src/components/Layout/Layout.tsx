@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect } from 'react';
-import { NavLink as ReactNavLink, Outlet, useLocation, useNavigation } from 'react-router-dom';
+import { NavLink as ReactNavLink, Outlet, useLocation, useMatches, useNavigation } from 'react-router-dom';
 import { AppShell, Box, Burger, Group, NavLink, Stack, Text } from '@mantine/core';
 import { NavigationProgress, nprogress } from '@mantine/nprogress';
 import { useDisclosure } from '@mantine/hooks';
@@ -109,6 +109,10 @@ export const Layout: React.FC = () => {
 	const [opened, { toggle, close }] = useDisclosure();
 	const location = useLocation();
 	const navigation = useNavigation();
+	const matches = useMatches();
+
+	// Check if any active route has the 'immersiveMode' handle
+	const isImmersive = matches.some((match) => (match.handle as { immersiveMode?: boolean })?.immersiveMode);
 
 	useEffect(() => {
 		if (navigation.state === 'loading') {
@@ -130,7 +134,7 @@ export const Layout: React.FC = () => {
 
 	return (
 		<AppShell
-			header={{ height: 50 }}
+			header={{ height: 50, collapsed: isImmersive }}
 			navbar={{
 				width: 300,
 				breakpoint: 'md',
@@ -139,19 +143,21 @@ export const Layout: React.FC = () => {
 			padding="md"
 		>
 			<NavigationProgress />
-			<AppShell.Header>
-				<Group justify={'space-between'} px={'lg'} fz={'h2'} h={'100%'}>
-					<Logo />
-					<Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
-				</Group>
-			</AppShell.Header>
+			{!isImmersive && (
+				<AppShell.Header>
+					<Group justify={'space-between'} px={'lg'} fz={'h2'} h={'100%'}>
+						<Logo />
+						<Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
+					</Group>
+				</AppShell.Header>
+			)}
 
 			<AppShell.Navbar p="md">
 				<NavbarContent onNavigate={close} />
 			</AppShell.Navbar>
 
 			<AppShell.Main>
-				<Box maw={'750px'} m={'0 auto'}>
+				<Box maw={isImmersive ? '100%' : '750px'} m={'0 auto'}>
 					<Outlet />
 				</Box>
 			</AppShell.Main>

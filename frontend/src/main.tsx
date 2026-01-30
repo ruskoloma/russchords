@@ -100,6 +100,7 @@ const router = createBrowserRouter([
 				path: 'playlist/:id/play',
 				loader: playlistPlayModeLoader,
 				element: <PlaylistPlayMode />,
+				handle: { immersiveMode: true },
 			},
 			{
 				path: '/search',
