@@ -154,7 +154,12 @@ export const PlaylistPlayMode: React.FC = () => {
 				justify="space-between"
 				p="xs"
 				bg="gray.0"
-				style={{ borderBottom: '1px solid var(--mantine-color-gray-3)' }}
+				style={{
+					borderBottom: '1px solid var(--mantine-color-gray-3)',
+					position: 'sticky',
+					top: 0,
+					zIndex: 10,
+				}}
 				wrap="nowrap"
 				m="-1rem -1rem 0"
 			>
@@ -266,7 +271,9 @@ export const PlaylistPlayMode: React.FC = () => {
 
 			{/* Main Content (Scrollable) */}
 			<Box style={{ flex: 1, overflowY: 'auto' }} id="scrollable-content" mb={'4em'}>
-				<ViewerBase content={parsedContent} fontSize={settings.fontSize} hideChords={settings.hideChords} />
+				<Box maw={'750px'} mx="auto">
+					<ViewerBase content={parsedContent} fontSize={settings.fontSize} hideChords={settings.hideChords} />
+				</Box>
 			</Box>
 		</Stack>
 	);
