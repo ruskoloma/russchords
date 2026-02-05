@@ -10,4 +10,8 @@ terraform.tfstate*
 .terraform.lock.hcl
 ssm_sync.py
 terraform.tfvars
+**/secrets.hcl
+**/.env.local
 russchords-parser*.zip
+.DS_Store
+*.md
