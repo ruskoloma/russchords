@@ -54,9 +54,10 @@ export function useCreatePlaylist(opts: { onSuccess?: (created: PlaylistDto) => 
 	};
 }
 
-export function useUpdatePlaylist() {
+export function useUpdatePlaylist(opts: { notifyOnSuccess?: boolean } = {}) {
 	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
+	const notifyOnSuccess = opts.notifyOnSuccess ?? true;
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'UPDATE_PLAYLIST',
@@ -66,7 +67,9 @@ export function useUpdatePlaylist() {
 		},
 		{
 			onSuccess: async (id) => {
-				showNotification({ title: 'Playlist updated', message: 'Changes saved.', color: 'green' });
+				if (notifyOnSuccess) {
+					showNotification({ title: 'Playlist updated', message: 'Changes saved.', color: 'green' });
+				}
 				await mutate('/playlist/my');
 				await mutate(`/playlist/${id}`);
 			},
@@ -107,9 +110,10 @@ export function useDeletePlaylist() {
 	};
 }
 
-export function useAddSongToPlaylist() {
+export function useAddSongToPlaylist(opts: { notifyOnSuccess?: boolean } = {}) {
 	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
+	const notifyOnSuccess = opts.notifyOnSuccess ?? true;
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'ADD_SONG_TO_PLAYLIST',
@@ -119,7 +123,9 @@ export function useAddSongToPlaylist() {
 		},
 		{
 			onSuccess: async (playlistId) => {
-				showNotification({ title: 'Added', message: 'Song added to playlist.', color: 'green' });
+				if (notifyOnSuccess) {
+					showNotification({ title: 'Added', message: 'Song added to playlist.', color: 'green' });
+				}
 				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Add failed', message: String(err), color: 'red' }),
@@ -133,9 +139,10 @@ export function useAddSongToPlaylist() {
 	};
 }
 
-export function useRemoveSongFromPlaylist() {
+export function useRemoveSongFromPlaylist(opts: { notifyOnSuccess?: boolean } = {}) {
 	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
+	const notifyOnSuccess = opts.notifyOnSuccess ?? true;
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'REMOVE_SONG_FROM_PLAYLIST',
@@ -145,7 +152,9 @@ export function useRemoveSongFromPlaylist() {
 		},
 		{
 			onSuccess: async (playlistId) => {
-				showNotification({ title: 'Removed', message: 'Song removed from playlist.', color: 'green' });
+				if (notifyOnSuccess) {
+					showNotification({ title: 'Removed', message: 'Song removed from playlist.', color: 'green' });
+				}
 				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Remove failed', message: String(err), color: 'red' }),
@@ -185,9 +194,10 @@ export function useSetPlaylistPinned() {
 	};
 }
 
-export function useSavePlaylistOrder() {
+export function useSavePlaylistOrder(opts: { notifyOnSuccess?: boolean } = {}) {
 	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
+	const notifyOnSuccess = opts.notifyOnSuccess ?? true;
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'SAVE_PLAYLIST_ORDER',
@@ -197,7 +207,9 @@ export function useSavePlaylistOrder() {
 		},
 		{
 			onSuccess: async (playlistId) => {
-				showNotification({ title: 'Order saved', message: 'Song order updated.', color: 'green' });
+				if (notifyOnSuccess) {
+					showNotification({ title: 'Order saved', message: 'Song order updated.', color: 'green' });
+				}
 				await mutate(`/playlist/${playlistId}`);
 			},
 			onError: (err) => showNotification({ title: 'Save order failed', message: String(err), color: 'red' }),

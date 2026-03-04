@@ -2,11 +2,12 @@ import { useLoaderData, useNavigate, useSearchParams } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../components/Viewer/Viewer';
 import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
+import { showNotification } from '@mantine/notifications';
 import { CardHC } from '../../components/CardHC/CardHC';
 import { BackButton } from '../../components';
 import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../hooks/song';
 import { useStarredState } from '../../hooks/starred';
-import { IconStar, IconStarFilled } from '@tabler/icons-react';
+import { IconCopy, IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../hooks/playlists';
 import { useEffect, useMemo, useState } from 'react';
@@ -120,6 +121,21 @@ export function SongPage() {
 				musicText={songDto.content}
 				defaultKey={songDto.rootNote}
 				menuItems={[
+					<Menu.Item
+						key="share"
+						leftSection={<IconCopy size={16} />}
+						onClick={async () => {
+							await navigator.clipboard.writeText(window.location.href);
+							showNotification({
+								title: 'Copied',
+								message: 'Song link copied to clipboard',
+								color: 'green',
+								autoClose: 500,
+							});
+						}}
+					>
+						Share
+					</Menu.Item>,
 					isAuthenticated && (
 						<Menu.Item key="clone" disabled={isCloning} onClick={() => cloneSong(songDto.id)}>
 							Clone

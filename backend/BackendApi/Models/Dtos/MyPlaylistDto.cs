@@ -1,3 +1,5 @@
+using System;
+
 namespace BackendApi.Models.Dtos;
 
 public class MyPlaylistDto
@@ -7,6 +9,7 @@ public class MyPlaylistDto
     public string OwnerId { get; set; } = null!;
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
+    public DateTime CreatedAt { get; set; }
     public bool IsPinned { get; set; }
     public List<LiteSongDto> Songs { get; set; } = new();
 }

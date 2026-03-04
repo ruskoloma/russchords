@@ -136,6 +136,7 @@ public class PlaylistService : IPlaylistService
                 OwnerId = p.OwnerId,
                 Title = p.Title,
                 Description = p.Description,
+                CreatedAt = p.CreatedAt,
                 IsPinned = m.IsPinned,
                 MemberRecordId = m.Id,
                 Songs = (
@@ -234,6 +235,7 @@ public class PlaylistService : IPlaylistService
             OwnerId = playlist.OwnerId,
             Title = playlist.Title,
             Description = playlist.Description,
+            CreatedAt = playlist.CreatedAt,
             IsPinned = isPinned,
             Songs = songs,
             MemberRecordId = memberRecordId,

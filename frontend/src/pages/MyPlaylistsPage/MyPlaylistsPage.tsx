@@ -19,8 +19,12 @@ export default function MyPlaylistsPage() {
 		arr.sort((a, b) => {
 			if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
 			if (sort === 'alpha') return (a.title ?? '').localeCompare(b.title ?? '');
-			if (sort === 'new') return (b.playlistId ?? 0) - (a.playlistId ?? 0);
-			return (a.playlistId ?? 0) - (b.playlistId ?? 0);
+			const aCreated = a.createdAt ? Date.parse(a.createdAt) : Number.NaN;
+			const bCreated = b.createdAt ? Date.parse(b.createdAt) : Number.NaN;
+			const aSafe = Number.isNaN(aCreated) ? a.playlistId ?? 0 : aCreated;
+			const bSafe = Number.isNaN(bCreated) ? b.playlistId ?? 0 : bCreated;
+			if (sort === 'new') return bSafe - aSafe;
+			return aSafe - bSafe;
 		});
 		return arr;
 	}, [loaded, sort]);
@@ -94,8 +98,8 @@ export default function MyPlaylistsPage() {
 						onChange={handleSortChange}
 						data={[
 							{ value: 'alpha', label: 'Alphabetical' },
-							{ value: 'new', label: 'Newest first' },
-							{ value: 'old', label: 'Oldest first' },
+							{ value: 'new', label: 'Newest created first' },
+							{ value: 'old', label: 'Oldest created first' },
 						]}
 						w={220}
 					/>

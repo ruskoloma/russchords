@@ -19,6 +19,7 @@ export interface MyPlaylistDto {
 	ownerId: string;
 	title: string;
 	description?: string | null;
+	createdAt?: string | null;
 	isPinned: boolean;
 	songs: LiteSongDto[];
 	memberRecordId: number;

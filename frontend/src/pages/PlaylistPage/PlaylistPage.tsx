@@ -38,14 +38,16 @@ export const PlaylistPage: React.FC = () => {
 	const navigate = useNavigate();
 	const location = useLocation();
 
-	const [title, setTitle] = useState(initial.title);
-	const [description, setDescription] = useState(initial.description ?? '');
+	const [savedTitle, setSavedTitle] = useState(initial.title);
+	const [savedDescription, setSavedDescription] = useState(initial.description ?? '');
+	const [savedSongs, setSavedSongs] = useState<LiteSongDto[]>(initial.songs ?? []);
+	const [savedPinned, setSavedPinned] = useState<boolean>(initial.isPinned);
+
+	const [title, setTitle] = useState(savedTitle);
+	const [description, setDescription] = useState(savedDescription);
 	const [editing, setEditing] = useState(false);
-
-	const [songs, setSongs] = useState<LiteSongDto[]>(initial.songs ?? []);
-	useEffect(() => setSongs(initial.songs ?? []), [initial.songs]);
-
-	const [pinned, setPinned] = useState<boolean>(initial.isPinned);
+	const [songs, setSongs] = useState<LiteSongDto[]>(savedSongs);
+	const [pinned, setPinned] = useState<boolean>(savedPinned);
 	const isOwner = useIsPlaylistOwner(initial.ownerId);
 	const { isAuthenticated } = useAuth();
 	const { addToMy, isAdding } = useAddPlaylistToMy();
@@ -63,9 +65,9 @@ export const PlaylistPage: React.FC = () => {
 
 	const { removeFromMy, isRemovingFromMy } = useRemovePlaylistFromMy();
 
-	const { updatePlaylist, isUpdating } = useUpdatePlaylist();
-	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
-	const { saveOrder } = useSavePlaylistOrder();
+	const { updatePlaylist, isUpdating } = useUpdatePlaylist({ notifyOnSuccess: false });
+	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist({ notifyOnSuccess: false });
+	const { saveOrder, isSaving } = useSavePlaylistOrder({ notifyOnSuccess: false });
 	const { setPinned: setPinnedReq, isSetting } = useSetPlaylistPinned();
 	const { deletePlaylist, isDeleting: isDeletingPlaylist } = useDeletePlaylist();
 
@@ -91,9 +93,24 @@ export const PlaylistPage: React.FC = () => {
 		setSelectedIds(selectedIdsFromPlaylist);
 	}, [selectedIdsFromPlaylist, isAuthenticated]);
 
-	const { addSongToPlaylist, isAdding: isAddingSong } = useAddSongToPlaylist();
+	const { addSongToPlaylist, isAdding: isAddingSong } = useAddSongToPlaylist({ notifyOnSuccess: false });
 
-	const onChangeSelected = async (values: string[]) => {
+	useEffect(() => {
+		setSavedTitle(initial.title);
+		setSavedDescription(initial.description ?? '');
+		setSavedSongs(initial.songs ?? []);
+		setSavedPinned(initial.isPinned);
+	}, [initial.title, initial.description, initial.songs, initial.isPinned]);
+
+	useEffect(() => {
+		if (editing) return;
+		setTitle(savedTitle);
+		setDescription(savedDescription);
+		setSongs(savedSongs);
+		setPinned(savedPinned);
+	}, [editing, savedTitle, savedDescription, savedSongs, savedPinned]);
+
+	const onChangeSelected = (values: string[]) => {
 		const prev = new Set(selectedIds);
 		const next = new Set(values);
 
@@ -102,16 +119,14 @@ export const PlaylistPage: React.FC = () => {
 
 		for (const idStr of toAdd) {
 			const id = parseInt(idStr, 10);
-
-			await addSongToPlaylist(initial.playlistId, id);
 			const added = mySongs.find((s) => s.id === id);
-			if (added) setSongs((prevSongs) => [...prevSongs, added]);
+			if (added) {
+				setSongs((prevSongs) => (prevSongs.some((s) => s.id === id) ? prevSongs : [...prevSongs, added]));
+			}
 		}
 
 		for (const idStr of toRemove) {
 			const id = parseInt(idStr, 10);
-
-			await removeSongFromPlaylist(initial.playlistId, id);
 			setSongs((prevSongs) => prevSongs.filter((s) => s.id !== id));
 		}
 
@@ -131,30 +146,64 @@ export const PlaylistPage: React.FC = () => {
 	};
 
 	const onSaveMeta = async () => {
-		const orderedIds = songs.map((s) => s.id);
-		await Promise.all([
-			updatePlaylist(initial.playlistId, { title, description }),
-			saveOrder(initial.playlistId, orderedIds),
-		]);
+		const beforeIds = savedSongs.map((s) => s.id);
+		const afterIds = songs.map((s) => s.id);
+		const beforeSet = new Set(beforeIds);
+		const afterSet = new Set(afterIds);
+
+		const toAdd = afterIds.filter((id) => !beforeSet.has(id));
+		const toRemove = beforeIds.filter((id) => !afterSet.has(id));
+
+		const metaChanged = title !== savedTitle || description !== savedDescription;
+		const orderChanged =
+			beforeIds.length !== afterIds.length || beforeIds.some((id, idx) => afterIds[idx] !== id);
+		const pinChanged = pinned !== savedPinned;
+
+		if (!metaChanged && !orderChanged && !pinChanged && toAdd.length === 0 && toRemove.length === 0) {
+			setEditing(false);
+			return;
+		}
+
+		if (metaChanged) {
+			await updatePlaylist(initial.playlistId, { title, description });
+		}
+		for (const songId of toRemove) {
+			await removeSongFromPlaylist(initial.playlistId, songId);
+		}
+		for (const songId of toAdd) {
+			await addSongToPlaylist(initial.playlistId, songId);
+		}
+		if (orderChanged || toAdd.length > 0 || toRemove.length > 0) {
+			await saveOrder(initial.playlistId, afterIds);
+		}
+		if (pinChanged) {
+			await setPinnedReq(initial.playlistId, pinned);
+		}
+
+		setSavedTitle(title);
+		setSavedDescription(description);
+		setSavedSongs(songs);
+		setSavedPinned(pinned);
 		setEditing(false);
+		showNotification({
+			title: 'Playlist updated',
+			message: 'Changes saved.',
+			color: 'green',
+		});
 	};
 
 	const onCancelMeta = () => {
-		setTitle(initial.title);
-		setDescription(initial.description ?? '');
+		setTitle(savedTitle);
+		setDescription(savedDescription);
+		setSongs(savedSongs);
+		setPinned(savedPinned);
 		setEditing(false);
 	};
 
 
 
-	const togglePin = async () => {
-		const next = !pinned;
-		setPinned(next);
-		try {
-			await setPinnedReq(initial.playlistId, next);
-		} catch {
-			setPinned(!next);
-		}
+	const togglePin = () => {
+		setPinned((prev) => !prev);
 	};
 
 	const removeByButton = (songId: number) => {
@@ -165,8 +214,7 @@ export const PlaylistPage: React.FC = () => {
 			confirmProps: { color: 'red' },
 			onConfirm: async () => {
 				setSongs((prev) => prev.filter((s) => s.id !== songId));
-
-				await removeSongFromPlaylist(initial.playlistId, songId);
+				setSelectedIds((prev) => prev.filter((id) => parseInt(id, 10) !== songId));
 			},
 		});
 	};
@@ -188,7 +236,7 @@ export const PlaylistPage: React.FC = () => {
 
 	return (
 		<Stack gap="md">
-			{!editing && (
+			{!editing && isAuthenticated && (
 				<Group>
 					<Button
 						component={Link}
@@ -252,26 +300,29 @@ export const PlaylistPage: React.FC = () => {
 						</Stack>
 						<Group>
 							{hasSongs && (
-								<Button
-									leftSection={<IconPlayerPlay size={16} />}
-									component={Link}
-									to={`play`}
-								>
+								<Button leftSection={<IconPlayerPlay size={16} />} component={Link} to={`play`}>
 									Play
 								</Button>
 							)}
+							<Button
+								variant="default"
+								leftSection={<IconCopy size={16} />}
+								onClick={async () => {
+									await navigator.clipboard.writeText(window.location.href);
+									showNotification({
+										title: 'Copied',
+										message: 'Playlist link copied to clipboard',
+										color: 'green',
+										autoClose: 500,
+									});
+								}}
+							>
+								Share
+							</Button>
 							{isOwner && (
 								<>
 									<Button leftSection={<IconPencil size={16} />} onClick={() => setEditing(true)}>
 										Edit
-									</Button>
-									<Button
-										variant="default"
-										onClick={togglePin}
-										loading={isSetting}
-										leftSection={pinned ? <IconPinFilled size={16} /> : <IconPin size={16} />}
-									>
-										{pinned ? 'Unpin' : 'Pin'}
 									</Button>
 								</>
 							)}
@@ -379,15 +430,21 @@ export const PlaylistPage: React.FC = () => {
 																	<IconGripVertical size={18} />
 																</ActionIcon>
 															)}
-															<Text
-																fw={600}
-																truncate="end"
-																style={{ minWidth: 0, flex: 1, cursor: editing ? 'default' : 'pointer' }}
-																component={(editing ? 'div' : Link) as any}
-																to={editing ? undefined : createNavigationUrl(`/song/${song.id}`, location)}
-															>
-																{song.name}
-															</Text>
+															{editing ? (
+																<Text fw={600} truncate="end" style={{ minWidth: 0, flex: 1, cursor: 'default' }}>
+																	{song.name}
+																</Text>
+															) : (
+																<Text
+																	fw={600}
+																	truncate="end"
+																	style={{ minWidth: 0, flex: 1, cursor: 'pointer' }}
+																	component={Link}
+																	to={createNavigationUrl(`/song/${song.id}`, location)}
+																>
+																	{song.name}
+																</Text>
+															)}
 														</Group>
 														{isOwner && editing && (
 															<ActionIcon
@@ -419,11 +476,15 @@ export const PlaylistPage: React.FC = () => {
 							color="gray"
 							leftSection={<IconX size={16} />}
 							onClick={onCancelMeta}
-							disabled={isUpdating}
+							disabled={isUpdating || isAddingSong || isRemoving || isSaving || isSetting}
 						>
 							Cancel
 						</Button>
-						<Button leftSection={<IconChecks size={16} />} onClick={onSaveMeta} loading={isUpdating}>
+						<Button
+							leftSection={<IconChecks size={16} />}
+							onClick={onSaveMeta}
+							loading={isUpdating || isAddingSong || isRemoving || isSaving || isSetting}
+						>
 							Save changes
 						</Button>
 					</Group>
