@@ -1,11 +1,21 @@
 import { ActionIcon, Box, Button, Group, Menu, NumberInput, Stack, Switch, Text } from '@mantine/core';
-import { useLocalStorage } from '@mantine/hooks';
+import { useLocalStorage, useMediaQuery } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
-import { IconChevronLeft, IconChevronRight, IconDotsVertical, IconRefresh, IconSettings, IconX } from '@tabler/icons-react';
+import {
+	IconChevronLeft,
+	IconChevronRight,
+	IconColumns2,
+	IconColumns3,
+	IconDotsVertical,
+	IconList,
+	IconRefresh,
+	IconSettings,
+	IconX,
+} from '@tabler/icons-react';
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { type LoaderFunction, redirect, useBlocker, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
-import { ViewerBase } from '../../components/Viewer/ViewerBase';
+import { type ViewerLayoutMode, ViewerBase } from '../../components/Viewer/ViewerBase';
 import { myFetch } from '../../helpers/api';
 import { parseSongText } from '../../helpers/songParser';
 import type { MyPlaylistDto, SongDto } from '../../types';
@@ -50,12 +60,14 @@ export const playlistPlayModeLoader: LoaderFunction = async ({ params }) => {
 interface PlayModeSettings {
 	fontSize: number;
 	hideChords: boolean;
+	layoutMode: ViewerLayoutMode;
 }
 
 export const PlaylistPlayMode: React.FC = () => {
 	const { playlist, songs } = useLoaderData() as PlayModeData;
 	const navigate = useNavigate();
 	const revalidator = useRevalidator();
+	const isTablet = useMediaQuery('(min-width: 48em)');
 
 	const [currentIndex, setCurrentIndex] = useState(0);
 	const isExplicitExit = useRef(false);
@@ -94,8 +106,27 @@ export const PlaylistPlayMode: React.FC = () => {
 		defaultValue: {
 			fontSize: 18,
 			hideChords: false,
+			layoutMode: 'single',
 		},
 	});
+
+	const cycleLayout = () => {
+		setSettings((prev) => {
+			const mode = prev.layoutMode ?? 'single';
+			const next = mode === 'single' ? 'columns-song' : mode === 'columns-song' ? 'columns-sections' : 'single';
+			return { ...prev, layoutMode: next };
+		});
+	};
+
+	const currentLayoutMode = settings.layoutMode ?? 'single';
+	const layoutLabel =
+		currentLayoutMode === 'single'
+			? 'Layout: Mobile'
+			: currentLayoutMode === 'columns-song'
+				? 'Layout: 2 Columns'
+				: 'Layout: Section Split';
+	const layoutColor = currentLayoutMode === 'single' ? 'gray' : currentLayoutMode === 'columns-song' ? 'blue' : 'teal';
+	const effectiveLayoutMode: ViewerLayoutMode = isTablet ? currentLayoutMode : 'single';
 
 	// Ensure currentIndex is valid if songs change
 	useEffect(() => {
@@ -184,6 +215,23 @@ export const PlaylistPlayMode: React.FC = () => {
 							</Menu.Item>
 							<Menu.Divider />
 							<Menu.Label>Settings</Menu.Label>
+							{isTablet && (
+								<Menu.Item
+									color={layoutColor}
+									leftSection={
+										currentLayoutMode === 'single' ? (
+											<IconList size={14} />
+										) : currentLayoutMode === 'columns-song' ? (
+											<IconColumns2 size={14} />
+										) : (
+											<IconColumns3 size={14} />
+										)
+									}
+									onClick={cycleLayout}
+								>
+									{layoutLabel}
+								</Menu.Item>
+							)}
 							<Menu.Item leftSection={<IconSettings size={14} />} closeMenuOnClick={false}>
 								<Stack gap="xs">
 									<Group justify="space-between">
@@ -271,8 +319,13 @@ export const PlaylistPlayMode: React.FC = () => {
 
 			{/* Main Content (Scrollable) */}
 			<Box style={{ flex: 1, overflowY: 'auto' }} id="scrollable-content" mb={'4em'}>
-				<Box maw={'750px'} mx="auto">
-					<ViewerBase content={parsedContent} fontSize={settings.fontSize} hideChords={settings.hideChords} />
+				<Box maw={effectiveLayoutMode === 'single' ? '750px' : '1280px'} mx="auto">
+					<ViewerBase
+						content={parsedContent}
+						fontSize={settings.fontSize}
+						hideChords={settings.hideChords}
+						layoutMode={effectiveLayoutMode}
+					/>
 				</Box>
 			</Box>
 		</Stack>

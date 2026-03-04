@@ -10,15 +10,19 @@ import {
 	parseSongText,
 	transposeChordToken,
 } from '../../helpers/songParser';
-import { ViewerBase } from './ViewerBase.tsx';
+import { type ViewerLayoutMode, ViewerBase } from './ViewerBase.tsx';
 import { ActionIcon, Group, Menu, Select } from '@mantine/core';
+import { useLocalStorage, useMediaQuery } from '@mantine/hooks';
 import {
 	IconAdjustments,
 	IconAdjustmentsOff,
 	IconArrowDown,
 	IconArrowUp,
+	IconColumns2,
+	IconColumns3,
 	IconCopyright,
 	IconDotsVertical,
+	IconList,
 	IconMinus,
 	IconNoCopyright,
 	IconPlus,
@@ -33,6 +37,11 @@ interface ViewerProps {
 export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems }) => {
 	const [hideChords, setHideChords] = useState(false);
 	const [hideControls, setHideControls] = useState(false);
+	const isTablet = useMediaQuery('(min-width: 48em)');
+	const [layoutMode, setLayoutMode] = useLocalStorage<ViewerLayoutMode>({
+		key: 'russchords-viewer-layout-mode',
+		defaultValue: 'single',
+	});
 
 	const parsed = parseSongText(musicText);
 	const originalKey = getOriginalKey(parsed);
@@ -81,6 +90,21 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 		setFontSize((prev) => Math.max(prev - 1, 10));
 	};
 
+	const cycleLayout = () => {
+		setLayoutMode((prev) => {
+			if (prev === 'single') return 'columns-song';
+			if (prev === 'columns-song') return 'columns-sections';
+			return 'single';
+		});
+	};
+
+	const layoutLabel =
+		layoutMode === 'single' ? 'Layout: Mobile' : layoutMode === 'columns-song' ? 'Layout: 2 Columns' : 'Layout: Section Split';
+	const layoutColor = layoutMode === 'single' ? 'gray' : layoutMode === 'columns-song' ? 'blue' : 'teal';
+	const effectiveLayoutMode: ViewerLayoutMode = isTablet ? layoutMode : 'single';
+	const hasLayoutSwitcher = Boolean(isTablet);
+	const hasMenu = hasLayoutSwitcher || Boolean(menuItems?.length);
+
 	const handleTransposeChord = (t: ChordToken) => transposeChordToken(t, delta, toKey);
 
 	return (
@@ -117,7 +141,7 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 						</ActionIcon>
 					</Group>
 				)}
-				{!hideControls && menuItems?.length && (
+				{!hideControls && hasMenu && (
 					<Group>
 						<Menu shadow="md" width={200}>
 							<Menu.Target>
@@ -128,13 +152,33 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 
 							<Menu.Dropdown>
 								<Menu.Label>Options</Menu.Label>
+								{hasLayoutSwitcher && (
+									<>
+										<Menu.Item
+											color={layoutColor}
+											leftSection={
+												layoutMode === 'single' ? <IconList size={14} /> : layoutMode === 'columns-song' ? <IconColumns2 size={14} /> : <IconColumns3 size={14} />
+											}
+											onClick={cycleLayout}
+										>
+											{layoutLabel}
+										</Menu.Item>
+										{menuItems?.length ? <Menu.Divider /> : null}
+									</>
+								)}
 								{menuItems}
 							</Menu.Dropdown>
 						</Menu>
 					</Group>
 				)}
 			</Group>
-			<ViewerBase content={parsed} transposeChord={handleTransposeChord} hideChords={hideChords} fontSize={fontSize} />
+			<ViewerBase
+				content={parsed}
+				transposeChord={handleTransposeChord}
+				hideChords={hideChords}
+				fontSize={fontSize}
+				layoutMode={effectiveLayoutMode}
+			/>
 		</div>
 	);
 };

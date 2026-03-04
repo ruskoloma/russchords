@@ -207,16 +207,8 @@ export const PlaylistPage: React.FC = () => {
 	};
 
 	const removeByButton = (songId: number) => {
-		modals.openConfirmModal({
-			title: 'Remove song',
-			children: <Text size="sm">Are you sure you want to remove this song from the playlist?</Text>,
-			labels: { confirm: 'Remove', cancel: 'Cancel' },
-			confirmProps: { color: 'red' },
-			onConfirm: async () => {
-				setSongs((prev) => prev.filter((s) => s.id !== songId));
-				setSelectedIds((prev) => prev.filter((id) => parseInt(id, 10) !== songId));
-			},
-		});
+		setSongs((prev) => prev.filter((s) => s.id !== songId));
+		setSelectedIds((prev) => prev.filter((id) => parseInt(id, 10) !== songId));
 	};
 
 	const onDeletePlaylist = () => {
