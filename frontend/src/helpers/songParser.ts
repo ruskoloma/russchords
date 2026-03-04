@@ -309,6 +309,13 @@ export function getDelta(oldIndex: number, newIndex: number): number {
 	return newIndex - oldIndex;
 }
 
+function getTargetEnharmonicPreference(targetKey: Key): 'S' | 'F' | null {
+	if (targetKey.type === 'S' || targetKey.type === 'F') return targetKey.type;
+	if (targetKey.name === 'F') return 'F';
+	if (targetKey.name === 'C') return null;
+	return 'S';
+}
+
 // Determines the new key
 export function getNewKey(oldKey: string, delta: number, targetKey: Key, preferType?: 'N' | 'S' | 'F'): Key {
 	const old = getKeyByName(oldKey);
@@ -322,19 +329,18 @@ export function getNewKey(oldKey: string, delta: number, targetKey: Key, preferT
 	const tryPick = (t: 'N' | 'S' | 'F') => KEYS.find((k) => k.value === keyValue && k.type === t);
 
 	if (ENHARMONIC_VALUES.includes(keyValue)) {
-		// 1) Prefer per-token accidental if provided
-		if (preferType) {
+		// 1) Prefer spelling that matches the destination tonality.
+		const targetPref = getTargetEnharmonicPreference(targetKey);
+		if (targetPref) {
+			const t = tryPick(targetPref);
+			if (t) return t;
+		}
+		// 2) In neutral keys, keep source accidental direction if it exists.
+		if (preferType === 'S' || preferType === 'F') {
 			const p = tryPick(preferType);
 			if (p) return p;
 		}
-		// 2) Then prefer target key's style
-		if (targetKey.type) {
-			const t = tryPick(targetKey.type);
-			if (t) return t;
-		}
-		// 3) Fallbacks: natural -> sharp -> flat
-		const natural = tryPick('N');
-		if (natural) return natural;
+		// 3) Fallbacks
 		const anySharp = tryPick('S');
 		if (anySharp) return anySharp;
 		const anyFlat = tryPick('F');
