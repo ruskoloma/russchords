@@ -13,7 +13,10 @@ import { usePlayModeNavigation } from '../../features/playmode/hooks/usePlayMode
 import { useExitBlocker } from '../../features/playmode/hooks/useExitBlocker';
 import { useWakeLock } from '../../features/playmode/hooks/useWakeLock';
 import { useAutoScroll } from '../../features/playmode/hooks/useAutoScroll';
+import { useSwipeNavigation } from '../../features/playmode/hooks/useSwipeNavigation';
 import { PlayModeTopBar } from '../../features/playmode/components/PlayModeTopBar';
+import { UpNextCard } from '../../features/playmode/components/UpNextCard';
+import { KeyboardShortcutsOverlay } from '../../features/playmode/components/KeyboardShortcutsOverlay';
 
 export const playlistPlayModeLoader: LoaderFunction = async ({ params }) => {
 	try {
@@ -77,6 +80,9 @@ export const PlaylistPlayMode: React.FC = () => {
 	// bottom of the current song, then stops.
 	useAutoScroll({ enabled: settings.autoScrollEnabled, speed: settings.autoScrollSpeed });
 
+	// Touch-gesture navigation: swipe left → next, swipe right → previous.
+	useSwipeNavigation({ onSwipeLeft: nav.handleNext, onSwipeRight: nav.handlePrev });
+
 	// Force the document color scheme to dark while in stage mode, then
 	// restore whatever it was on cleanup. This is independent of the global
 	// color-scheme manager — we set the Mantine data attribute directly on
@@ -93,6 +99,7 @@ export const PlaylistPlayMode: React.FC = () => {
 	}, [settings.stageMode]);
 
 	const currentSong = songs[nav.currentIndex];
+	const nextSong = songs[nav.currentIndex + 1] ?? null;
 	const parsedContent = useMemo(
 		() => (currentSong ? parseSongText(currentSong.content) : []),
 		[currentSong],
@@ -147,8 +154,11 @@ export const PlaylistPlayMode: React.FC = () => {
 			<Box style={{ flex: 1, overflowY: 'auto' }} id="scrollable-content" mb={'4em'}>
 				<Box maw={820} mx="auto">
 					<ViewerBase content={parsedContent} fontSize={settings.fontSize} hideChords={settings.hideChords} />
+					<UpNextCard nextSong={nextSong} onAdvance={nav.handleNext} />
 				</Box>
 			</Box>
+
+			<KeyboardShortcutsOverlay />
 		</Stack>
 	);
 };
