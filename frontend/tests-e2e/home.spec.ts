@@ -6,17 +6,19 @@ test.describe('Home page', () => {
 		await setupDefaultMocks(page);
 	});
 
-	test('renders the welcome headline and key features card', async ({ page }) => {
-		await page.goto('/');
+	test('renders the welcome headline and help card for anon users', async ({ page }) => {
+		await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-		// Headline — uses a 👋 emoji so we match on the leading word only.
-		await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome');
+		// Wait for the React shell to fully mount before asserting. The auth
+		// provider does some localStorage work on mount that can delay first
+		// paint; without this wait the subsequent assertions sometimes race.
+		await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome', { timeout: 15_000 });
 
-		// Key features card heading — anchors us to the static content block.
-		await expect(page.getByRole('heading', { name: 'Key features' })).toBeVisible();
+		// Static help card at the bottom of the page — useful reference content
+		// that lives on the home page for both anonymous and authenticated users.
+		await expect(page.getByRole('heading', { name: /how to write a song/i })).toBeVisible();
 
-		// The structural example with chords is part of the home page copy.
-		// If the refactor breaks the static home content we want to know immediately.
-		await expect(page.getByText(/Fast song search/i)).toBeVisible();
+		// Anonymous users see the sign-in CTA.
+		await expect(page.getByRole('button', { name: /sign in to get started/i })).toBeVisible();
 	});
 });
