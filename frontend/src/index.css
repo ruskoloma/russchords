@@ -1,3 +1,10 @@
 .hide-multiselect-tags .mantine-MultiSelect-pillsList span {
     display: none;
 }
+
+/* Skip-to-content link: hidden above the viewport until keyboard-focused. */
+.russchords-skip-link:focus {
+    transform: translateY(0) !important;
+    outline: 2px solid var(--mantine-color-brand-filled);
+    outline-offset: 2px;
+}

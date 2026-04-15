@@ -10,6 +10,7 @@ import {
 	Group,
 	List,
 	SimpleGrid,
+	Skeleton,
 	Stack,
 	Text,
 	ThemeIcon,
@@ -78,9 +79,11 @@ export const HomePage = () => {
 								</Button>
 							</Group>
 							{isPlaylistsLoading ? (
-								<Text c="dimmed" size="sm">
-									Loading your playlists…
-								</Text>
+								<SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+									{[0, 1, 2, 3].map((i) => (
+										<Skeleton key={i} height={78} radius="md" />
+									))}
+								</SimpleGrid>
 							) : featuredPlaylists.length === 0 ? (
 								<Stack gap="xs" align="flex-start">
 									<Text c="dimmed" size="sm">

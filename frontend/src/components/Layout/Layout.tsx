@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { useEffect } from 'react';
 import { NavLink as ReactNavLink, Outlet, useLocation, useMatches, useNavigation } from 'react-router-dom';
-import { AppShell, Box, Burger, Group, NavLink, Stack, Text } from '@mantine/core';
+import { Anchor, AppShell, Box, Burger, Group, NavLink, Stack, Text } from '@mantine/core';
 import { NavigationProgress, nprogress } from '@mantine/nprogress';
 import { useDisclosure } from '@mantine/hooks';
 import { Logo } from './Logo.tsx';
@@ -23,6 +23,10 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 	const { login, logout } = useAuthActions();
 	const location = useLocation();
 
+	// Set aria-current="page" on the link whose `to` matches the current path
+	// so screen readers announce the user's location in the nav tree.
+	const isCurrent = (match: (pathname: string) => boolean) => (match(location.pathname) ? 'page' : undefined);
+
 	return (
 		<Stack h={'100%'}>
 			<Box>
@@ -32,6 +36,7 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 					component={ReactNavLink}
 					to="/"
 					onClick={onNavigate}
+					aria-current={isCurrent((p) => p === '/')}
 					leftSection={<IconHome2 size={16} stroke={1.5} />}
 				/>
 				{isAuthenticated && (
@@ -42,14 +47,16 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 							component={ReactNavLink}
 							to="/my-songs"
 							onClick={onNavigate}
+							aria-current={isCurrent((p) => p.includes('song'))}
 							leftSection={<IconListLetters size={16} stroke={1.5} />}
 						/>
 						<NavLink
 							label="Starred"
-							active={location.pathname === 'starred'}
+							active={location.pathname === '/starred'}
 							component={ReactNavLink}
 							to="/starred"
 							onClick={onNavigate}
+							aria-current={isCurrent((p) => p === '/starred')}
 							leftSection={<IconStar size={16} stroke={1.5} />}
 						/>
 						<NavLink
@@ -58,6 +65,7 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 							component={ReactNavLink}
 							to="/my-playlists"
 							onClick={onNavigate}
+							aria-current={isCurrent((p) => p.includes('playlist'))}
 							leftSection={<IconPlaylist size={16} stroke={1.5} />}
 						/>
 					</>
@@ -68,6 +76,7 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 					component={ReactNavLink}
 					to="/search"
 					onClick={onNavigate}
+					aria-current={isCurrent((p) => p.includes('search'))}
 					leftSection={<IconSearch size={16} stroke={1.5} />}
 				/>
 			</Box>
@@ -163,6 +172,26 @@ export const Layout: React.FC = () => {
 			}}
 			padding="md"
 		>
+			{/* Skip-to-content link for keyboard + screen-reader users. Hidden
+			    until focused (visuallyHidden) then pops into view at top-left. */}
+			<Anchor
+				href="#main-content"
+				className="russchords-skip-link"
+				style={{
+					position: 'absolute',
+					top: 0,
+					left: 0,
+					padding: '0.5rem 1rem',
+					background: 'var(--mantine-color-brand-filled)',
+					color: 'var(--mantine-color-white)',
+					borderRadius: '0 0 var(--mantine-radius-md) 0',
+					zIndex: 1000,
+					transform: 'translateY(-200%)',
+					transition: 'transform 150ms ease',
+				}}
+			>
+				Skip to content
+			</Anchor>
 			<NavigationProgress />
 			{!isImmersive && (
 				<AppShell.Header>
@@ -180,7 +209,7 @@ export const Layout: React.FC = () => {
 				<NavbarContent onNavigate={close} />
 			</AppShell.Navbar>
 
-			<AppShell.Main>
+			<AppShell.Main id="main-content">
 				<Box maw={isImmersive ? '100%' : (routeMaxWidth ?? DEFAULT_CONTENT_MAX_WIDTH)} m={'0 auto'}>
 					<Outlet />
 				</Box>
