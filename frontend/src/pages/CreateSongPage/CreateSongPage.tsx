@@ -1,11 +1,17 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
-import { KEYS, fillMissingChords } from '../../features/song/helpers/songParser';
+import { Button, Card, Group, Stack, Text } from '@mantine/core';
+import { fillMissingChords } from '../../features/song/helpers/songParser';
 import { parseChordPro } from '../../features/song/helpers/chordPro';
 import { useCreateSong } from '../../features/song/hooks/song';
+import { SongMetaFields } from '../../features/song/components/SongMetaFields';
 import { NoWrapTextarea, BackButton } from '../../components';
 
+/**
+ * Create song page. Reuses SongMetaFields with Create-local state plus a
+ * ChordPro file import path that pre-populates the fields. No transpose
+ * toolbar here — new songs start empty, there's nothing to transpose yet.
+ */
 export const CreateSongPage = () => {
 	const navigate = useNavigate();
 
@@ -30,8 +36,6 @@ export const CreateSongPage = () => {
 
 	const { createSong, isCreating } = useCreateSong({ onSuccess: (id) => navigate(`/song/${id}`) });
 
-	const keyOptions = KEYS.map((k) => ({ value: k.name, label: k.name }));
-
 	const onSave = async () => {
 		if (!name.trim()) return;
 		await createSong({
@@ -42,18 +46,18 @@ export const CreateSongPage = () => {
 		});
 	};
 
-	const onCancel = () => {
-		navigate('/my-songs');
-	};
+	const onCancel = () => navigate('/my-songs');
 
 	return (
 		<Stack gap="md">
-			<Group justify="space-between" align="center">
-				<BackButton />
-				<Text fw={700} size="xl">
-					Create song
-				</Text>
-				<Group>
+			<Group justify="space-between" align="center" wrap="wrap">
+				<Group gap="xs">
+					<BackButton />
+					<Text fw={700} size="xl">
+						Create song
+					</Text>
+				</Group>
+				<Group gap="xs">
 					<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
 						Fill chords
 					</Button>
@@ -72,18 +76,13 @@ export const CreateSongPage = () => {
 
 			<Card withBorder shadow="sm">
 				<Stack gap="md">
-					<TextInput label="Name" value={name} onChange={(e) => setName(e.currentTarget.value)} required />
-					<TextInput label="Artist" value={artist} onChange={(e) => setArtist(e.currentTarget.value)} />
-					<Select
-						label="Root note"
-						placeholder="Not set"
-						data={keyOptions}
-						value={rootNote}
-						onChange={setRootNote}
-						searchable
-						clearable
-						nothingFoundMessage="No keys"
-						checkIconPosition="right"
+					<SongMetaFields
+						name={name}
+						artist={artist}
+						rootNote={rootNote}
+						onNameChange={setName}
+						onArtistChange={setArtist}
+						onRootNoteChange={setRootNote}
 					/>
 					<NoWrapTextarea
 						label="Content"
