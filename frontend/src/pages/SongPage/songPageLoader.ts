@@ -1,6 +1,6 @@
 import { type LoaderFunction } from 'react-router-dom';
 import type { SongDto } from '../../types';
-import { myFetch } from '../../helpers/api';
+import { myFetch } from '../../lib/api';
 
 export const songLoader: LoaderFunction = async ({ params }) => {
 	try {

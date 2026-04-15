@@ -1,6 +1,6 @@
 import { type LoaderFunction, redirect } from 'react-router-dom';
 import type { SongDto } from '../../types';
-import { myFetch } from '../../helpers/api';
+import { myFetch } from '../../lib/api';
 import axios from 'axios';
 
 export const starredPageLoader: LoaderFunction = async () => {

@@ -5,9 +5,9 @@ import { IconChevronLeft, IconChevronRight, IconDotsVertical, IconRefresh, IconS
 import axios from 'axios';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { type LoaderFunction, redirect, useBlocker, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
-import { ViewerBase } from '../../components/Viewer/ViewerBase';
-import { myFetch } from '../../helpers/api';
-import { parseSongText } from '../../helpers/songParser';
+import { ViewerBase } from '../../features/song/components/Viewer/ViewerBase';
+import { myFetch } from '../../lib/api';
+import { parseSongText } from '../../features/song/helpers/songParser';
 import type { MyPlaylistDto, SongDto } from '../../types';
 
 interface PlayModeData {

@@ -1,5 +1,5 @@
 import { Group, Image, Paper, Text, Stack, Box, Anchor } from '@mantine/core';
-import hcimage from '../../assets/hc.png';
+import hcimage from '../../../../assets/hc.png';
 
 interface CardHCProps {
 	name: string;

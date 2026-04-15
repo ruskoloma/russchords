@@ -15,7 +15,7 @@ import {
 	IconUser,
 } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
-import { useAuthActions } from '../../hooks/auth.ts';
+import { useAuthActions } from '../../features/auth/hooks/auth.ts';
 import { ColorSchemeToggle } from './ColorSchemeToggle.tsx';
 
 const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {

@@ -1,7 +1,7 @@
 import type { LoaderFunction } from 'react-router-dom';
 import { redirect } from 'react-router-dom';
 import axios from 'axios';
-import { myFetch } from '../../helpers/api';
+import { myFetch } from '../../lib/api';
 import type { SongDto } from '../../types';
 
 export const editSongPageLoader: LoaderFunction = async ({ params }) => {

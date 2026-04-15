@@ -1,12 +1,12 @@
 import { useLoaderData, Link, useSearchParams, useLocation } from 'react-router-dom';
 import type { CachedSongDto } from '../../types';
-import { Viewer } from '../../components/Viewer/Viewer';
+import { Viewer } from '../../features/song/components/Viewer/Viewer';
 import { Box, Divider, Menu, Text, Card, Group, Badge, Stack, Title } from '@mantine/core';
-import { CardHC } from '../../components/CardHC/CardHC';
+import { CardHC } from '../../features/song/components/CardHC/CardHC';
 import { BackButton } from '../../components/BackButton/BackButton';
-import { useForkSong, useMyForksByOriginalId } from '../../hooks/song';
+import { useForkSong, useMyForksByOriginalId } from '../../features/song/hooks/song';
 import { useAuth } from 'react-oidc-context';
-import { createNavigationUrl } from '../../helpers/navigation';
+import { createNavigationUrl } from '../../lib/navigation';
 
 export function CachedSongPage() {
 	const songDto = useLoaderData() as CachedSongDto;

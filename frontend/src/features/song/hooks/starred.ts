@@ -1,9 +1,9 @@
 import useSWR, { useSWRConfig } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { showNotification } from '@mantine/notifications';
-import { apiClient as client } from '../helpers/api';
+import { apiClient as client } from '../../../lib/api';
 import { useEffect, useState } from 'react';
-import type { SongDto } from '../types';
+import type { SongDto } from '../../../types';
 import { useAuth } from 'react-oidc-context';
 
 export function useMyStarred() {

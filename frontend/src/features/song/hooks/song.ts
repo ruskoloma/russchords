@@ -1,11 +1,11 @@
 import useSWRMutation from 'swr/mutation';
 import useSWR from 'swr';
-import type { CreateSongDto, LiteSongDto, UpdateSongDto } from '../types';
+import type { CreateSongDto, LiteSongDto, UpdateSongDto } from '../../../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { apiClient as client } from '../helpers/api';
+import { apiClient as client } from '../../../lib/api';
 import { useAuth } from 'react-oidc-context';
-import { createNavigationUrl } from '../helpers/navigation';
+import { createNavigationUrl } from '../../../lib/navigation';
 
 export function useDeleteSongs(params: { navigateOnSuccess?: boolean } = { navigateOnSuccess: false }) {
 	const { navigateOnSuccess } = params;

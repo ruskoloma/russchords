@@ -1,14 +1,14 @@
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import type { SongDto } from '../../types';
-import { Viewer } from '../../components/Viewer/Viewer';
+import { Viewer } from '../../features/song/components/Viewer/Viewer';
 import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
-import { CardHC } from '../../components/CardHC/CardHC';
+import { CardHC } from '../../features/song/components/CardHC/CardHC';
 import { BackButton } from '../../components';
-import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../hooks/song';
-import { useStarredState } from '../../hooks/starred';
+import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../features/song/hooks/song';
+import { useStarredState } from '../../features/song/hooks/starred';
 import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
-import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../hooks/playlists';
+import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../features/playlist/hooks/playlists';
 import { useEffect, useMemo, useState } from 'react';
 
 export function SongPage() {

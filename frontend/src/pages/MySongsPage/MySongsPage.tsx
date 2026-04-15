@@ -5,10 +5,10 @@ import { ActionIcon, Button, Group, Stack, Text, TextInput } from '@mantine/core
 import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
 import { modals } from '@mantine/modals';
 import type { LiteSongDto } from '../../types';
-import { useDeleteSongs } from '../../hooks/song';
+import { useDeleteSongs } from '../../features/song/hooks/song';
 import { IconStar } from '@tabler/icons-react';
-import { useStarSongs } from '../../hooks/starred.ts';
-import { createNavigationUrl } from '../../helpers/navigation';
+import { useStarSongs } from '../../features/song/hooks/starred.ts';
+import { createNavigationUrl } from '../../lib/navigation';
 
 export const MySongsPage: React.FC = () => {
 	const loaded = useLoaderData() as LiteSongDto[];

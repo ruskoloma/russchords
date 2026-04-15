@@ -1,7 +1,8 @@
 import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
 import { showNotification } from '@mantine/notifications';
 import { userManager } from '../AuthProvider';
-import { API_URL } from '../constants/api.ts';
+
+const API_URL = import.meta.env.VITE_API_URL;
 
 /**
  * Single module-level axios client for every frontend → backend call.

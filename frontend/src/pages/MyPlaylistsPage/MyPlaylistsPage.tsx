@@ -3,7 +3,7 @@ import { Box, Button, Card, Divider, Group, Select, SimpleGrid, Stack, Text, Tex
 import { modals } from '@mantine/modals';
 import { useMemo, useState } from 'react';
 import type { LiteSongDto, MyPlaylistDto } from '../../types';
-import { useCreatePlaylist } from '../../hooks/playlists';
+import { useCreatePlaylist } from '../../features/playlist/hooks/playlists';
 import { IconPin, IconPlaylistAdd } from '@tabler/icons-react';
 
 type SortKey = 'alpha' | 'new' | 'old';

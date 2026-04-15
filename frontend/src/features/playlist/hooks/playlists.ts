@@ -1,8 +1,8 @@
 import useSWR, { useSWRConfig } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { showNotification } from '@mantine/notifications';
-import { apiClient as client } from '../helpers/api';
-import type { CreatePlaylistDto, MyPlaylistDto, PlaylistDto, UpdatePlaylistDto } from '../types';
+import { apiClient as client } from '../../../lib/api';
+import type { CreatePlaylistDto, MyPlaylistDto, PlaylistDto, UpdatePlaylistDto } from '../../../types';
 import { useAuth } from 'react-oidc-context';
 
 export function useMyPlaylistsWithDetails(enabled: boolean = true) {

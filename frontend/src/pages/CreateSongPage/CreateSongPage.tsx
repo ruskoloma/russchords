@@ -1,9 +1,9 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
-import { KEYS, fillMissingChords } from '../../helpers/songParser';
-import { parseChordPro } from '../../helpers/chordPro';
-import { useCreateSong } from '../../hooks/song';
+import { KEYS, fillMissingChords } from '../../features/song/helpers/songParser';
+import { parseChordPro } from '../../features/song/helpers/chordPro';
+import { useCreateSong } from '../../features/song/hooks/song';
 import { NoWrapTextarea, BackButton } from '../../components';
 
 export const CreateSongPage = () => {

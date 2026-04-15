@@ -27,11 +27,11 @@ import {
 	useMyPlaylistsWithDetails,
 	useRemovePlaylistFromMy,
 	useDeletePlaylist,
-} from '../../hooks/playlists';
-import { useMyLightSongs } from '../../hooks/song';
+} from '../../features/playlist/hooks/playlists';
+import { useMyLightSongs } from '../../features/song/hooks/song';
 import type { LiteSongDto, MyPlaylistDto } from '../../types';
 import { useAuth } from 'react-oidc-context';
-import { createNavigationUrl } from '../../helpers/navigation';
+import { createNavigationUrl } from '../../lib/navigation';
 
 export const PlaylistPage: React.FC = () => {
 	const initial = useLoaderData() as MyPlaylistDto;

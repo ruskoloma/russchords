@@ -4,10 +4,10 @@ import { Anchor, Button, Card, Flex, Group, Loader, Pagination, Stack, Text, Tex
 import { showNotification } from '@mantine/notifications';
 import { IconSearch } from '@tabler/icons-react';
 import useSWR from 'swr';
-import { type SearchItem, type SearchResponse, searchSite } from '../../hooks/search';
-import { PAGE_SIZE, parserDomain } from '../../constants/search.ts';
+import { type SearchItem, type SearchResponse, searchSite } from '../../features/search/hooks/search';
+import { PAGE_SIZE, parserDomain } from '../../features/search/constants/search.ts';
 import { MrBeanLoader } from '../../components';
-import { createNavigationUrl } from '../../helpers/navigation';
+import { createNavigationUrl } from '../../lib/navigation';
 
 export const SearchPage = () => {
 	const [searchParams, setSearchParams] = useSearchParams();

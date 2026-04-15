@@ -14,8 +14,8 @@ import {
 	transposeChordToken,
 	renderChordLine,
 	fillMissingChords,
-} from '../../helpers/songParser';
-import { useUpdateSong } from '../../hooks/song';
+} from '../../features/song/helpers/songParser';
+import { useUpdateSong } from '../../features/song/hooks/song';
 import { NoWrapTextarea, BackButton } from '../../components';
 import { IconArrowDown, IconArrowUp } from '@tabler/icons-react';
 
