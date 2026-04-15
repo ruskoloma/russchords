@@ -157,7 +157,6 @@ export const SearchPage = () => {
 						placeholder="Type your query"
 						value={q}
 						onChange={(e) => setQ(e.currentTarget.value)}
-						w={480}
 						aria-label="Search input"
 						flex={1}
 					/>

@@ -313,7 +313,7 @@ export const PlaylistPage: React.FC = () => {
 								onChange={onChangeSelected}
 								searchable
 								disabled={isLoadingMySongs || isAddingSong || isRemoving}
-								w={320}
+								w={{ base: '100%', sm: 320 }}
 								className="hide-multiselect-tags"
 							/>
 						)}

@@ -275,7 +275,7 @@ export const PlaylistPlayMode: React.FC = () => {
 
 			{/* Main Content (Scrollable) */}
 			<Box style={{ flex: 1, overflowY: 'auto' }} id="scrollable-content" mb={'4em'}>
-				<Box maw={'750px'} mx="auto">
+				<Box maw={820} mx="auto">
 					<ViewerBase content={parsedContent} fontSize={settings.fontSize} hideChords={settings.hideChords} />
 				</Box>
 			</Box>

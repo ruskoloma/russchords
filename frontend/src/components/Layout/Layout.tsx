@@ -105,6 +105,19 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 	);
 };
 
+type RouteHandle = {
+	immersiveMode?: boolean;
+	/**
+	 * Per-route max content width in pixels. Pages opt in via their route
+	 * definition in main.tsx with e.g. `handle: { maxWidth: 1200 }`. Reader
+	 * pages stay narrow (~820); table / dashboard pages open up to 1200.
+	 * Falls back to `DEFAULT_CONTENT_MAX_WIDTH` for routes that don't set it.
+	 */
+	maxWidth?: number;
+};
+
+const DEFAULT_CONTENT_MAX_WIDTH = 820;
+
 export const Layout: React.FC = () => {
 	const { isAuthenticated } = useAuth();
 	const [opened, { toggle, close }] = useDisclosure();
@@ -113,7 +126,14 @@ export const Layout: React.FC = () => {
 	const matches = useMatches();
 
 	// Check if any active route has the 'immersiveMode' handle
-	const isImmersive = matches.some((match) => (match.handle as { immersiveMode?: boolean })?.immersiveMode);
+	const isImmersive = matches.some((match) => (match.handle as RouteHandle | undefined)?.immersiveMode);
+
+	// Pick the innermost route's maxWidth, if any. `useMatches()` returns from
+	// outer to inner so we walk backwards to the nearest override.
+	const routeMaxWidth = [...matches]
+		.reverse()
+		.map((m) => (m.handle as RouteHandle | undefined)?.maxWidth)
+		.find((w) => typeof w === 'number');
 
 	useEffect(() => {
 		if (navigation.state === 'loading') {
@@ -161,7 +181,7 @@ export const Layout: React.FC = () => {
 			</AppShell.Navbar>
 
 			<AppShell.Main>
-				<Box maw={isImmersive ? '100%' : '750px'} m={'0 auto'}>
+				<Box maw={isImmersive ? '100%' : (routeMaxWidth ?? DEFAULT_CONTENT_MAX_WIDTH)} m={'0 auto'}>
 					<Outlet />
 				</Box>
 			</AppShell.Main>

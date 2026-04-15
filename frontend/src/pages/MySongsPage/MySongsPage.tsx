@@ -179,7 +179,7 @@ export const MySongsPage: React.FC = () => {
 						title: 'Name',
 						sortable: true,
 						render: (r) => (
-							<Text truncate maw={'50vw'}>
+							<Text truncate maw={{ base: 180, xs: 240, sm: 320, md: 420, lg: 520 }}>
 								{r.name ?? '—'}
 							</Text>
 						),
@@ -189,7 +189,7 @@ export const MySongsPage: React.FC = () => {
 						title: 'Artist',
 						sortable: true,
 						render: (r) => (
-							<Text truncate maw={'30vw'}>
+							<Text truncate maw={{ base: 120, xs: 160, sm: 220, md: 280, lg: 360 }}>
 								{r.artist ?? '—'}
 							</Text>
 						),

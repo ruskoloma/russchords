@@ -63,18 +63,20 @@ export function SongPage() {
 
 	return (
 		<>
-			<Group justify="space-between">
-				<Box maw={'350px'}>
+			<Group justify="space-between" wrap="wrap">
+				<Box style={{ flex: '1 1 260px', minWidth: 0 }}>
 					<Text size="xl" fw={700} truncate>
 						{songDto.name}
 					</Text>
-					<Text size="md" truncate>{songDto.artist}</Text>
+					<Text size="md" truncate>
+						{songDto.artist}
+					</Text>
 				</Box>
-				<Group wrap="nowrap" maw={'100%'}>
+				<Group wrap="nowrap" gap="xs">
 					{isAuthenticated && (
 						<ActionIcon
 							variant={'subtle'}
-							color="yellow"
+							color="accent"
 							onClick={isStarred ? unstarSong : starSong}
 							disabled={isLoading}
 							aria-label={isStarred ? 'Unstar' : 'Star'}
@@ -90,16 +92,13 @@ export function SongPage() {
 							value={selectedPlaylists}
 							onChange={onChangePlaylists}
 							searchable
-							miw={180}
-							maw={280}
+							w={{ base: 160, xs: 200, sm: 260 }}
 							disabled={isAdding || isRemoving}
 							placeholder="Add to playlists..."
 							className="hide-multiselect-tags"
-							flex={'1 1 auto'}
 						/>
 					)}
-					<Box flex={'0 0'}>
-						<BackButton /></Box>
+					<BackButton />
 				</Group>
 			</Group>
 

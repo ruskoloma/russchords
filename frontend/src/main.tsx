@@ -46,9 +46,11 @@ const router = createBrowserRouter([
 			{
 				index: true,
 				element: <HomePage />,
+				handle: { maxWidth: 900 },
 			},
 			{
 				path: 'song/:id',
+				handle: { maxWidth: 820 },
 				lazy: async () => {
 					const mod = await import('./pages/SongPage');
 					return { Component: mod.SongPage, loader: mod.songLoader };
@@ -56,6 +58,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'song/cached/:id',
+				handle: { maxWidth: 820 },
 				lazy: async () => {
 					const mod = await import('./pages/CachedSongPage');
 					return { Component: mod.CachedSongPage, loader: mod.cachedSongLoader };
@@ -63,6 +66,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'my-songs',
+				handle: { maxWidth: 1200 },
 				lazy: async () => {
 					const mod = await import('./pages/MySongsPage');
 					return { Component: mod.MySongsPage, loader: mod.mySongsLoader };
@@ -70,6 +74,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'song/edit/:id',
+				handle: { maxWidth: 900 },
 				lazy: async () => {
 					const mod = await import('./pages/EditSongPage');
 					return { Component: mod.EditSongPage, loader: mod.editSongPageLoader };
@@ -77,6 +82,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'song/create',
+				handle: { maxWidth: 900 },
 				lazy: async () => {
 					const mod = await import('./pages/CreateSongPage');
 					return { Component: mod.CreateSongPage };
@@ -84,6 +90,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'starred',
+				handle: { maxWidth: 1200 },
 				lazy: async () => {
 					const mod = await import('./pages/StarredPage');
 					return { Component: mod.StarredPage, loader: mod.starredPageLoader };
@@ -91,6 +98,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'my-playlists',
+				handle: { maxWidth: 1200 },
 				lazy: async () => {
 					const mod = await import('./pages/MyPlaylistsPage');
 					return { Component: mod.MyPlaylistsPage, loader: mod.myPlaylistsPageLoader };
@@ -98,6 +106,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'playlist/:id',
+				handle: { maxWidth: 1000 },
 				lazy: async () => {
 					const mod = await import('./pages/PlaylistPage');
 					return { Component: mod.PlaylistPage, loader: mod.playlistPageLoader };
@@ -113,6 +122,7 @@ const router = createBrowserRouter([
 			},
 			{
 				path: '/search',
+				handle: { maxWidth: 900 },
 				lazy: async () => {
 					const mod = await import('./pages/SearchPage');
 					return { Component: mod.SearchPage };
