@@ -1,5 +1,5 @@
-import { Button, Card, Group, Stack, Text, Textarea, TextInput } from '@mantine/core';
-import { IconPencil, IconPin, IconPinFilled, IconPlayerPlay } from '@tabler/icons-react';
+import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
+import { IconPencil, IconPin, IconPinFilled, IconPlayerPlay, IconPrinter } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 interface PlaylistMetaCardProps {
@@ -66,6 +66,19 @@ export function PlaylistMetaCard({
 							<Button leftSection={<IconPlayerPlay size={16} />} component={Link} to="play">
 								Play
 							</Button>
+						)}
+						{hasSongs && (
+							<Tooltip label="Print / Save as PDF" withArrow>
+								<ActionIcon
+									variant="default"
+									size="lg"
+									component={Link}
+									to="print"
+									aria-label="Print playlist"
+								>
+									<IconPrinter size={18} />
+								</ActionIcon>
+							</Tooltip>
 						)}
 						{isOwner && (
 							<>
