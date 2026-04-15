@@ -1,5 +1,5 @@
 import { ActionIcon, Group } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconMinus, IconPlus } from '@tabler/icons-react';
 import type { SongDto } from '../../../types';
 import type { PlayModeSettings } from '../types';
 import { PlayModeSettingsMenu } from './PlayModeSettingsMenu';
@@ -76,6 +76,26 @@ export function PlayModeTopBar({
 					onSyncReload={onSyncReload}
 					onExit={onExit}
 				/>
+				<ActionIcon
+					variant="subtle"
+					color="gray"
+					onClick={() => onFontSizeChange(Math.max(10, settings.fontSize - 2))}
+					disabled={settings.fontSize <= 10}
+					aria-label="Smaller font"
+					size="lg"
+				>
+					<IconMinus size={20} />
+				</ActionIcon>
+				<ActionIcon
+					variant="subtle"
+					color="gray"
+					onClick={() => onFontSizeChange(Math.min(40, settings.fontSize + 2))}
+					disabled={settings.fontSize >= 40}
+					aria-label="Larger font"
+					size="lg"
+				>
+					<IconPlus size={20} />
+				</ActionIcon>
 				<ActionIcon
 					variant="subtle"
 					color="gray"

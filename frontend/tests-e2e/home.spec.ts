@@ -6,19 +6,16 @@ test.describe('Home page', () => {
 		await setupDefaultMocks(page);
 	});
 
-	test('renders the welcome headline and help card for anon users', async ({ page }) => {
+	test('renders the welcome headline and key features card', async ({ page }) => {
 		await page.goto('/', { waitUntil: 'domcontentloaded' });
 
-		// Wait for the React shell to fully mount before asserting. The auth
-		// provider does some localStorage work on mount that can delay first
-		// paint; without this wait the subsequent assertions sometimes race.
+		// Headline is the first thing that should render — give it a generous
+		// timeout so the auth provider has time to initialize on slow machines.
 		await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome', { timeout: 15_000 });
 
-		// Static help card at the bottom of the page — useful reference content
-		// that lives on the home page for both anonymous and authenticated users.
+		// Both the Key features card and the How to write... card are static
+		// content the home page is expected to render for everyone.
+		await expect(page.getByRole('heading', { name: 'Key features' })).toBeVisible();
 		await expect(page.getByRole('heading', { name: /how to write a song/i })).toBeVisible();
-
-		// Anonymous users see the sign-in CTA.
-		await expect(page.getByRole('button', { name: /sign in to get started/i })).toBeVisible();
 	});
 });

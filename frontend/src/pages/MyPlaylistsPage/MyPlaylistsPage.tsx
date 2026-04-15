@@ -138,8 +138,8 @@ export function MyPlaylistsPage() {
 								) : (
 									<Stack gap={2}>
 										{firstFive.map((s) => (
-											<Box>
-												<Text key={s.id} size="sm" c="dimmed" truncate>
+											<Box key={s.id}>
+												<Text size="sm" c="dimmed" truncate>
 													{s.name}
 												</Text>
 												<Divider />

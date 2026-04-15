@@ -1,12 +1,10 @@
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../features/song/components/Viewer/Viewer';
-import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
+import { Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
 import { CardHC } from '../../features/song/components/CardHC/CardHC';
 import { BackButton } from '../../components';
 import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../features/song/hooks/song';
-import { useStarredState } from '../../features/song/hooks/starred';
-import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../features/playlist/hooks/playlists';
 import { useEffect, useMemo, useState } from 'react';
@@ -18,8 +16,6 @@ export function SongPage() {
 	const me = user?.profile?.sub;
 	const navigate = useNavigate();
 	const isOwner = useIsSongOwner(songDto.authorId);
-
-	const { isStarred, isLoading, unstarSong, starSong } = useStarredState(songDto.id);
 
 	const { cloneSong, isCloning } = useCloneSong({ navigateOnSuccess: true });
 	const { deleteSongs, isDeleting } = useDeleteSongs();
@@ -73,19 +69,6 @@ export function SongPage() {
 					</Text>
 				</Box>
 				<Group wrap="nowrap" gap="xs">
-					{isAuthenticated && (
-						<ActionIcon
-							variant={'subtle'}
-							color="accent"
-							onClick={isStarred ? unstarSong : starSong}
-							disabled={isLoading}
-							aria-label={isStarred ? 'Unstar' : 'Star'}
-							w={36}
-							h={36}
-						>
-							{isStarred ? <IconStarFilled size={24} /> : <IconStar size={24} />}
-						</ActionIcon>
-					)}
 					{isAuthenticated && (
 						<MultiSelect
 							data={options}

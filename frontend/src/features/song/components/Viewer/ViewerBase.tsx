@@ -24,7 +24,7 @@ export const ViewerBase: React.FC<ViewerBaseProps> = memo(function ViewerBase({
 	return (
 		<Box
 			component="pre"
-			ff="monospace"
+			ff="text"
 			fz={fontSize}
 			style={{
 				maxWidth: '100%',

@@ -22,7 +22,6 @@ export const MySongsPage: React.FC = () => {
 	const table = useMySongsTableState(loaded ?? []);
 	const actions = useBulkSongActions({
 		onAfterDelete: (deletedIds) => table.removeFromData(deletedIds),
-		onAfterStar: table.clearSelection,
 	});
 
 	return (
@@ -33,10 +32,8 @@ export const MySongsPage: React.FC = () => {
 				onNewSong={() => navigate('/song/create')}
 				selectedCount={table.selected.length}
 				isDeleting={actions.isDeleting}
-				isStarring={actions.isStarring}
 				isMobile={!!isMobile}
 				onDeleteSelected={() => actions.confirmDelete(table.selected)}
-				onStarSelected={() => actions.confirmStar(table.selected)}
 			/>
 
 			<DataTable<LiteSongDto>

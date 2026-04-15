@@ -15,16 +15,13 @@ import {
 import { useMyLightSongs } from '../../song/hooks/song';
 
 /**
- * Owns every piece of state the playlist detail page needs to manage:
- *  - local copy of title / description / songs for in-place edit
- *  - pinned flag
- *  - drag-and-drop reorder state
- *  - the "add/remove from my songs" multi-select selection
- *  - confirmation modal flows (remove song, delete playlist)
+ * Owns every piece of state the playlist detail page needs to manage.
  *
- * Returning everything as a single object keeps the page component a thin
- * composition of presentational children. Callers never destructure the full
- * shape; they usually forward sub-slices to their respective child component.
+ * Edit semantics: all song add/remove/reorder actions are staged locally.
+ * Nothing hits the backend until the user clicks Save. Cancel restores the
+ * original loaded state. This matches the "edit until you save" mental
+ * model users expect — and removes the need for a confirmation popup on
+ * every individual song removal.
  */
 export function usePlaylistEditor(initial: MyPlaylistDto, isAuthenticated: boolean, onDeleted: () => void) {
 	const [title, setTitle] = useState(initial.title);
@@ -34,8 +31,13 @@ export function usePlaylistEditor(initial: MyPlaylistDto, isAuthenticated: boole
 	const [pinned, setPinned] = useState<boolean>(initial.isPinned);
 
 	// Keep the local song list in sync when the loader reruns (e.g. after
-	// navigating back and the SWR cache returns fresh data).
-	useEffect(() => setSongs(initial.songs ?? []), [initial.songs]);
+	// navigating back and the SWR cache returns fresh data) BUT only when
+	// we're not in the middle of editing — otherwise mutations from other
+	// tabs would clobber the user's in-progress changes.
+	useEffect(() => {
+		if (editing) return;
+		setSongs(initial.songs ?? []);
+	}, [initial.songs, editing]);
 
 	const { updatePlaylist, isUpdating } = useUpdatePlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
@@ -56,41 +58,47 @@ export function usePlaylistEditor(initial: MyPlaylistDto, isAuthenticated: boole
 		[mySongs],
 	);
 
-	const selectedIdsFromPlaylist = useMemo(
-		() => songs.filter((s) => mySongs.some((ms) => ms.id === s.id)).map((s) => String(s.id)),
-		[songs, mySongs],
-	);
-
-	const [selectedIds, setSelectedIds] = useState<string[]>(selectedIdsFromPlaylist);
-	useEffect(() => {
-		if (!isAuthenticated) return;
-		setSelectedIds(selectedIdsFromPlaylist);
-	}, [selectedIdsFromPlaylist, isAuthenticated]);
+	// `selectedIds` mirrors the staged `songs` list, filtered to entries that
+	// also exist in the user's personal song library (so the MultiSelect can
+	// display them as selected pills). When `songs` changes via drag, trash,
+	// or multi-select, selectedIds stays in sync.
+	const selectedIds = useMemo(() => {
+		const mySongIds = new Set(mySongs.map((s) => s.id));
+		return songs.filter((s) => mySongIds.has(s.id)).map((s) => String(s.id));
+	}, [songs, mySongs]);
 
 	const onChangeSelected = useCallback(
-		async (values: string[]) => {
-			const prev = new Set(selectedIds);
-			const next = new Set(values);
+		(values: string[]) => {
+			// Purely local — no API calls. Compute diff vs. currently staged
+			// songs and update the local list, which triggers selectedIds via
+			// the useMemo above.
+			const nextSet = new Set(values);
+			const currentSet = new Set(songs.map((s) => String(s.id)));
 
-			const toAdd = [...next].filter((id) => !prev.has(id));
-			const toRemove = [...prev].filter((id) => !next.has(id));
-
-			for (const idStr of toAdd) {
-				const id = parseInt(idStr, 10);
-				await addSongToPlaylist(initial.playlistId, id);
-				const added = mySongs.find((s) => s.id === id);
-				if (added) setSongs((prevSongs) => [...prevSongs, added]);
-			}
-
-			for (const idStr of toRemove) {
-				const id = parseInt(idStr, 10);
-				await removeSongFromPlaylist(initial.playlistId, id);
-				setSongs((prevSongs) => prevSongs.filter((s) => s.id !== id));
-			}
-
-			setSelectedIds(values);
+			setSongs((prev) => {
+				let next = prev;
+				// Add newly selected songs (push to end of list).
+				for (const idStr of values) {
+					if (!currentSet.has(idStr)) {
+						const added = mySongs.find((s) => s.id === parseInt(idStr, 10));
+						if (added && !next.some((s) => s.id === added.id)) {
+							next = [...next, added];
+						}
+					}
+				}
+				// Remove songs that were in "my library" but got deselected.
+				next = next.filter((s) => {
+					const idStr = String(s.id);
+					// Only drop it if it was selected via the MultiSelect before
+					// (i.e. it lives in mySongs). Songs not in the user's library
+					// can only be removed via the trash button.
+					if (!mySongs.some((ms) => ms.id === s.id)) return true;
+					return nextSet.has(idStr);
+				});
+				return next;
+			});
 		},
-		[selectedIds, addSongToPlaylist, removeSongFromPlaylist, initial.playlistId, mySongs],
+		[songs, mySongs],
 	);
 
 	const onDragEnd = useCallback((result: DropResult) => {
@@ -107,20 +115,48 @@ export function usePlaylistEditor(initial: MyPlaylistDto, isAuthenticated: boole
 
 	const onEnterEdit = useCallback(() => setEditing(true), []);
 
+	/**
+	 * Diffs the current staged `songs` against `initial.songs` and fires
+	 * every add/remove API call needed to reach the staged state. Finishes
+	 * with updatePlaylist (title/description) + saveOrder (reorder) in
+	 * parallel. Only called when the user clicks Save changes.
+	 */
 	const onSaveMeta = useCallback(async () => {
+		const initialIds = new Set((initial.songs ?? []).map((s) => s.id));
+		const currentIds = new Set(songs.map((s) => s.id));
+
+		const toAdd = [...currentIds].filter((id) => !initialIds.has(id));
+		const toRemove = [...initialIds].filter((id) => !currentIds.has(id));
+
+		// Run adds/removes sequentially — SWR mutation hooks aren't safe to
+		// fan out in parallel because each one bumps a shared cache.
+		for (const id of toAdd) await addSongToPlaylist(initial.playlistId, id);
+		for (const id of toRemove) await removeSongFromPlaylist(initial.playlistId, id);
+
 		const orderedIds = songs.map((s) => s.id);
 		await Promise.all([
 			updatePlaylist(initial.playlistId, { title, description }),
 			saveOrder(initial.playlistId, orderedIds),
 		]);
 		setEditing(false);
-	}, [songs, updatePlaylist, initial.playlistId, title, description, saveOrder]);
+	}, [
+		songs,
+		initial.songs,
+		initial.playlistId,
+		addSongToPlaylist,
+		removeSongFromPlaylist,
+		updatePlaylist,
+		title,
+		description,
+		saveOrder,
+	]);
 
 	const onCancelMeta = useCallback(() => {
 		setTitle(initial.title);
 		setDescription(initial.description ?? '');
+		setSongs(initial.songs ?? []);
 		setEditing(false);
-	}, [initial.title, initial.description]);
+	}, [initial.title, initial.description, initial.songs]);
 
 	const togglePin = useCallback(async () => {
 		const next = !pinned;
@@ -132,21 +168,14 @@ export function usePlaylistEditor(initial: MyPlaylistDto, isAuthenticated: boole
 		}
 	}, [pinned, setPinnedReq, initial.playlistId]);
 
-	const removeSongByButton = useCallback(
-		(songId: number) => {
-			modals.openConfirmModal({
-				title: 'Remove song',
-				children: <Text size="sm">Are you sure you want to remove this song from the playlist?</Text>,
-				labels: { confirm: 'Remove', cancel: 'Cancel' },
-				confirmProps: { color: 'red' },
-				onConfirm: async () => {
-					setSongs((prev) => prev.filter((s) => s.id !== songId));
-					await removeSongFromPlaylist(initial.playlistId, songId);
-				},
-			});
-		},
-		[removeSongFromPlaylist, initial.playlistId],
-	);
+	/**
+	 * Trash-button removal. Purely local — just drops the song from the
+	 * staged list. No confirmation popup, no backend call. The actual
+	 * removal happens when the user clicks Save.
+	 */
+	const removeSongByButton = useCallback((songId: number) => {
+		setSongs((prev) => prev.filter((s) => s.id !== songId));
+	}, []);
 
 	const onDeletePlaylist = useCallback(() => {
 		modals.openConfirmModal({

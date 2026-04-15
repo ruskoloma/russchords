@@ -1,5 +1,4 @@
-import { ActionIcon, Button, Group, TextInput } from '@mantine/core';
-import { IconStar } from '@tabler/icons-react';
+import { Button, Group, TextInput } from '@mantine/core';
 
 interface MySongsToolbarProps {
 	query: string;
@@ -7,15 +6,13 @@ interface MySongsToolbarProps {
 	onNewSong: () => void;
 	selectedCount: number;
 	isDeleting: boolean;
-	isStarring: boolean;
 	isMobile: boolean;
 	onDeleteSelected: () => void;
-	onStarSelected: () => void;
 }
 
 /**
  * Top toolbar on the My Songs page. Left side is the filter input; right
- * side is "New Song" plus (desktop-only) bulk Delete and Star buttons. Bulk
+ * side is "New Song" plus (desktop-only) a bulk Delete button. Bulk
  * actions are hidden on mobile because the underlying DataTable doesn't
  * expose row selection on touch devices.
  */
@@ -25,10 +22,8 @@ export function MySongsToolbar({
 	onNewSong,
 	selectedCount,
 	isDeleting,
-	isStarring,
 	isMobile,
 	onDeleteSelected,
-	onStarSelected,
 }: MySongsToolbarProps) {
 	return (
 		<Group justify="space-between" wrap="wrap">
@@ -42,28 +37,15 @@ export function MySongsToolbar({
 			<Group gap="xs">
 				<Button onClick={onNewSong}>New song</Button>
 				{!isMobile && (
-					<>
-						<Button
-							variant="light"
-							color="red"
-							disabled={selectedCount === 0 || isDeleting}
-							onClick={onDeleteSelected}
-							loading={isDeleting}
-						>
-							Delete ({selectedCount})
-						</Button>
-						<ActionIcon
-							disabled={selectedCount === 0 || isStarring}
-							variant="filled"
-							color="accent"
-							onClick={onStarSelected}
-							loading={isStarring}
-							aria-label="Star selected"
-							size="lg"
-						>
-							<IconStar size={20} />
-						</ActionIcon>
-					</>
+					<Button
+						variant="light"
+						color="red"
+						disabled={selectedCount === 0 || isDeleting}
+						onClick={onDeleteSelected}
+						loading={isDeleting}
+					>
+						Delete ({selectedCount})
+					</Button>
 				)}
 			</Group>
 		</Group>
