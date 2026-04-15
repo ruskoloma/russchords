@@ -13,35 +13,17 @@ import '@mantine/core/styles.css';
 import '@mantine/nprogress/styles.css';
 import 'mantine-datatable/styles.layer.css';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { ErrorPage, Layout, NotFound } from './components';
-import {
-	AuthCallback,
-	cachedSongLoader,
-	CachedSongPage,
-	CreateSongPage,
-	EditSongPage,
-	editSongPageLoader,
-	HomePage,
-	myPlaylistsPageLoader,
-	mySongsLoader,
-	MySongsPage,
-	PlaylistPage,
-	playlistPageLoader,
-	SearchPage,
-	SilentRedirect,
-	songLoader,
-	SongPage,
-	StarredPage,
-	starredPageLoader,
-	PlaylistPlayMode,
-	playlistPlayModeLoader,
-} from './pages';
+import { ErrorPage, Layout, MrBeanLoader, NotFound } from './components';
+// Eagerly imported pages — anything that must paint instantly on first load
+// or is part of the OIDC redirect dance. Everything else is lazy-loaded via
+// route `lazy` factories to keep the initial bundle lean.
+import { HomePage } from './pages/HomePage';
+import { AuthCallback, SilentRedirect } from './pages/Auth';
 import { MantineProvider } from '@mantine/core';
 import { AuthProvider } from './AuthProvider.tsx';
 import { Notifications } from '@mantine/notifications';
 import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
-import MyPlaylistsPage from './pages/MyPlaylistsPage/MyPlaylistsPage.tsx';
 import TagManager from 'react-gtm-module';
 import { colorSchemeManager, theme } from './theme';
 
@@ -67,52 +49,74 @@ const router = createBrowserRouter([
 			},
 			{
 				path: 'song/:id',
-				loader: songLoader,
-				element: <SongPage />,
+				lazy: async () => {
+					const mod = await import('./pages/SongPage');
+					return { Component: mod.SongPage, loader: mod.songLoader };
+				},
 			},
 			{
 				path: 'song/cached/:id',
-				loader: cachedSongLoader,
-				element: <CachedSongPage />,
+				lazy: async () => {
+					const mod = await import('./pages/CachedSongPage');
+					return { Component: mod.CachedSongPage, loader: mod.cachedSongLoader };
+				},
 			},
 			{
 				path: 'my-songs',
-				loader: mySongsLoader,
-				element: <MySongsPage />,
+				lazy: async () => {
+					const mod = await import('./pages/MySongsPage');
+					return { Component: mod.MySongsPage, loader: mod.mySongsLoader };
+				},
 			},
 			{
 				path: 'song/edit/:id',
-				loader: editSongPageLoader,
-				element: <EditSongPage />,
+				lazy: async () => {
+					const mod = await import('./pages/EditSongPage');
+					return { Component: mod.EditSongPage, loader: mod.editSongPageLoader };
+				},
 			},
 			{
 				path: 'song/create',
-				element: <CreateSongPage />,
+				lazy: async () => {
+					const mod = await import('./pages/CreateSongPage');
+					return { Component: mod.CreateSongPage };
+				},
 			},
 			{
 				path: 'starred',
-				loader: starredPageLoader,
-				element: <StarredPage />,
+				lazy: async () => {
+					const mod = await import('./pages/StarredPage');
+					return { Component: mod.StarredPage, loader: mod.starredPageLoader };
+				},
 			},
 			{
 				path: 'my-playlists',
-				loader: myPlaylistsPageLoader,
-				element: <MyPlaylistsPage />,
+				lazy: async () => {
+					const mod = await import('./pages/MyPlaylistsPage');
+					return { Component: mod.MyPlaylistsPage, loader: mod.myPlaylistsPageLoader };
+				},
 			},
 			{
 				path: 'playlist/:id',
-				loader: playlistPageLoader,
-				element: <PlaylistPage />,
+				lazy: async () => {
+					const mod = await import('./pages/PlaylistPage');
+					return { Component: mod.PlaylistPage, loader: mod.playlistPageLoader };
+				},
 			},
 			{
 				path: 'playlist/:id/play',
-				loader: playlistPlayModeLoader,
-				element: <PlaylistPlayMode />,
+				lazy: async () => {
+					const mod = await import('./pages/PlaylistPlayMode');
+					return { Component: mod.PlaylistPlayMode, loader: mod.playlistPlayModeLoader };
+				},
 				handle: { immersiveMode: true },
 			},
 			{
 				path: '/search',
-				element: <SearchPage />,
+				lazy: async () => {
+					const mod = await import('./pages/SearchPage');
+					return { Component: mod.SearchPage };
+				},
 			},
 			{
 				path: '*',
@@ -132,7 +136,7 @@ createRoot(document.getElementById('root')!).render(
 			<ModalsProvider>
 				<Notifications position="top-right" />
 				<AuthProvider>
-					<Suspense fallback={<div>Loading...</div>}>
+					<Suspense fallback={<MrBeanLoader />}>
 						<RouterProvider router={router} />
 					</Suspense>
 				</AuthProvider>

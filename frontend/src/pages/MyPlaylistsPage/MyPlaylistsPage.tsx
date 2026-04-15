@@ -8,7 +8,7 @@ import { IconPin, IconPlaylistAdd } from '@tabler/icons-react';
 
 type SortKey = 'alpha' | 'new' | 'old';
 
-export default function MyPlaylistsPage() {
+export function MyPlaylistsPage() {
 	const loaded = useLoaderData() as MyPlaylistDto[];
 	const navigate = useNavigate();
 
