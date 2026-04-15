@@ -1,178 +1,62 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useLoaderData, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
-import { DataTable, type DataTableSortStatus } from 'mantine-datatable';
-import { ActionIcon, Button, Group, Stack, Text, TextInput } from '@mantine/core';
-import { useDebouncedValue, useMediaQuery } from '@mantine/hooks';
-import { modals } from '@mantine/modals';
+import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
+import { DataTable } from 'mantine-datatable';
+import { Stack, Text } from '@mantine/core';
+import { useMediaQuery } from '@mantine/hooks';
 import type { LiteSongDto } from '../../types';
-import { useDeleteSongs } from '../../features/song/hooks/song';
-import { IconStar } from '@tabler/icons-react';
-import { useStarSongs } from '../../features/song/hooks/starred.ts';
 import { createNavigationUrl } from '../../lib/navigation';
+import { useMySongsTableState } from '../../features/song/hooks/useMySongsTableState';
+import { useBulkSongActions } from '../../features/song/hooks/useBulkSongActions';
+import { MySongsToolbar } from '../../features/song/components/MySongsToolbar';
 
+/**
+ * My Songs table page. State management (filter, sort, pagination,
+ * selection) and the bulk-action confirmation flows live in feature hooks;
+ * this page is the declarative composition.
+ */
 export const MySongsPage: React.FC = () => {
 	const loaded = useLoaderData() as LiteSongDto[];
 	const navigate = useNavigate();
 	const location = useLocation();
-	const [searchParams, setSearchParams] = useSearchParams();
 	const isMobile = useMediaQuery('(max-width: 48em)');
 
-	const [data, setData] = useState<LiteSongDto[]>(loaded ?? []);
-	useEffect(() => setData(loaded ?? []), [loaded]);
-
-	const [query, setQuery] = useState('');
-	const [debouncedQuery] = useDebouncedValue(query, 250);
-
-	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<LiteSongDto>>({
-		columnAccessor: 'name',
-		direction: 'asc',
+	const table = useMySongsTableState(loaded ?? []);
+	const actions = useBulkSongActions({
+		onAfterDelete: (deletedIds) => table.removeFromData(deletedIds),
+		onAfterStar: table.clearSelection,
 	});
-
-	const page = parseInt(searchParams.get('page') || '1', 10);
-	const setPage = (p: number) => {
-		setSearchParams((prev) => {
-			prev.set('page', String(p));
-			return prev;
-		});
-	};
-
-	const [pageSize, setPageSize] = useState(() => {
-		const saved = localStorage.getItem('russchords-my-songs-size');
-		if (saved) return parseInt(saved, 10);
-		return 15;
-	});
-
-	const handlePageSizeChange = (v: number) => {
-		setPageSize(v);
-		localStorage.setItem('russchords-my-songs-size', v.toString());
-	};
-
-	const [selected, setSelected] = useState<LiteSongDto[]>([]);
-
-	const filtered = useMemo(() => {
-		if (!debouncedQuery.trim()) return data;
-		const q = debouncedQuery.trim().toLowerCase();
-		return data.filter((r) => r.name?.toLowerCase().includes(q));
-	}, [data, debouncedQuery]);
-
-	const sorted = useMemo(() => {
-		const { columnAccessor, direction } = sortStatus;
-		const key = columnAccessor as keyof LiteSongDto;
-		return [...filtered].sort((a, b) => {
-			const av = a[key] ?? '';
-			const bv = b[key] ?? '';
-			return direction === 'asc' ? String(av).localeCompare(String(bv)) : String(bv).localeCompare(String(av));
-		});
-	}, [filtered, sortStatus]);
-
-	const total = sorted.length;
-	const paginated = useMemo(() => {
-		const from = (page - 1) * pageSize;
-		return sorted.slice(from, from + pageSize);
-	}, [sorted, page, pageSize]);
-
-	const prevDeps = useRef({ query: debouncedQuery, pageSize });
-	useEffect(() => {
-		const prev = prevDeps.current;
-		if (prev.query !== debouncedQuery || prev.pageSize !== pageSize) {
-			if (page !== 1) setPage(1);
-			prevDeps.current = { query: debouncedQuery, pageSize };
-		}
-	}, [debouncedQuery, pageSize, page]);
-
-	const { deleteSongs, isDeleting } = useDeleteSongs();
-	const { starSongs, isStarring } = useStarSongs();
-
-	const onDeleteSelected = () => {
-		modals.openConfirmModal({
-			title: 'Confirm deletion',
-			children: <p>Are you sure you want to delete {selected.length} song(s)?</p>,
-			labels: { confirm: 'Delete', cancel: 'Cancel' },
-			confirmProps: { color: 'red' },
-			onConfirm: async () => {
-				const ids = selected.map((r) => r.id);
-				const deletedIds = await deleteSongs(ids);
-				setData((prev) => prev.filter((r) => !deletedIds.includes(r.id)));
-				setSelected([]);
-			},
-		});
-	};
-
-	const onStarSelected = () => {
-		if (selected.length === 0) return;
-
-		modals.openConfirmModal({
-			title: 'Add to starred',
-			children: <p>Star {selected.length} song(s)?</p>,
-			labels: { confirm: 'Star', cancel: 'Cancel' },
-			confirmProps: { color: 'yellow', loading: isStarring },
-			onConfirm: async () => {
-				const ids = selected.map((r) => r.id);
-				await starSongs(ids);
-				setSelected([]);
-			},
-		});
-	};
 
 	return (
 		<Stack gap="md">
-			<Group justify="space-between" wrap="wrap">
-				<TextInput
-					placeholder="Filter by name…"
-					value={query}
-					onChange={(e) => setQuery(e.currentTarget.value)}
-					miw={200}
-					maw={320}
-					flex={'1 0 auto'}
-				/>
-				<Group>
-					<Button onClick={() => navigate('/song/create')}>New Song</Button>
-					{!isMobile && (
-						<>
-							<Button
-								variant="light"
-								color="red"
-								disabled={selected.length === 0 || isDeleting}
-								onClick={onDeleteSelected}
-								loading={isDeleting}
-							>
-								Delete ({selected.length})
-							</Button>
-							<ActionIcon
-								disabled={selected.length === 0 || isStarring}
-								variant={'filled'}
-								color="yellow"
-								onClick={onStarSelected}
-								loading={isStarring}
-								aria-label={'Star'}
-								w={'3rem'}
-								h={36}
-							>
-								<IconStar size={20} />
-							</ActionIcon>
-						</>
-					)}
-				</Group>
-			</Group>
+			<MySongsToolbar
+				query={table.query}
+				onQueryChange={table.setQuery}
+				onNewSong={() => navigate('/song/create')}
+				selectedCount={table.selected.length}
+				isDeleting={actions.isDeleting}
+				isStarring={actions.isStarring}
+				isMobile={!!isMobile}
+				onDeleteSelected={() => actions.confirmDelete(table.selected)}
+				onStarSelected={() => actions.confirmStar(table.selected)}
+			/>
 
 			<DataTable<LiteSongDto>
 				striped
 				idAccessor="id"
-				records={paginated}
-				totalRecords={total}
+				records={table.paginated}
+				totalRecords={table.total}
 				withTableBorder
 				withColumnBorders
 				highlightOnHover
-				sortStatus={sortStatus}
-				onSortStatusChange={setSortStatus}
-				page={page}
-				onPageChange={setPage}
-				recordsPerPage={pageSize}
-				onRecordsPerPageChange={handlePageSizeChange}
-				recordsPerPageOptions={isMobile ? undefined as any as number[] : [15, 25, 50, 100]}
+				sortStatus={table.sortStatus}
+				onSortStatusChange={table.setSortStatus}
+				page={table.page}
+				onPageChange={table.setPage}
+				recordsPerPage={table.pageSize}
+				onRecordsPerPageChange={table.handlePageSizeChange}
+				recordsPerPageOptions={isMobile ? [15] : [15, 25, 50, 100]}
 				paginationText={({ from, to, totalRecords }) => `${from}–${to} of ${totalRecords}`}
-				selectedRecords={isMobile ? undefined : selected}
-				onSelectedRecordsChange={isMobile ? undefined : setSelected}
+				selectedRecords={isMobile ? undefined : table.selected}
+				onSelectedRecordsChange={isMobile ? undefined : table.setSelected}
 				columns={[
 					{
 						accessor: 'name',
@@ -195,7 +79,7 @@ export const MySongsPage: React.FC = () => {
 						),
 					},
 				]}
-				noRecordsText={debouncedQuery ? 'No matches' : 'No songs'}
+				noRecordsText={table.debouncedQuery ? 'No matches' : 'No songs'}
 				onRowClick={(row) => navigate(createNavigationUrl(`/song/${row.record.id}`, location))}
 				minHeight={'600px'}
 			/>
