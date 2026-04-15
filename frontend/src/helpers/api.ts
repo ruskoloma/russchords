@@ -1,88 +1,108 @@
-import axios, { type AxiosInstance } from 'axios';
+import axios, { type AxiosError, type AxiosInstance, type InternalAxiosRequestConfig } from 'axios';
+import { showNotification } from '@mantine/notifications';
 import { userManager } from '../AuthProvider';
 import { API_URL } from '../constants/api.ts';
-import { showNotification } from '@mantine/notifications';
+
+/**
+ * Single module-level axios client for every frontend → backend call.
+ *
+ * Previous design:
+ *   - `hooks/api.ts` → `useMyFetch()` created a *new* axios instance on every
+ *     render, which rebuilt fetchers for every SWR hook consumer and cascaded
+ *     re-renders across the app. This was the biggest perf regression source
+ *     identified in the refactor audit.
+ *   - `helpers/api.ts` → `myFetch()` also created a new instance per call,
+ *     just from loaders.
+ *
+ * Current design:
+ *   - One shared `apiClient` for the whole app. Stable reference across
+ *     renders, so SWR fetcher identity is stable and hooks don't recompute.
+ *   - The request interceptor reads the ID token *lazily* from `userManager`
+ *     on every request, so tokens are always fresh without needing the hook.
+ *   - The response interceptor handles 401 → silent-refresh → retry, and
+ *     surfaces non-auth errors via `showNotification` (same UX as before).
+ *   - `myFetch()` is kept as a thin async wrapper so existing loaders keep
+ *     compiling unchanged; it simply resolves to `apiClient`. Prefer importing
+ *     `apiClient` directly in new code.
+ */
 
 let refreshPromise: Promise<void> | null = null;
 
-const refreshToken = async (): Promise<void> => {
-	if (refreshPromise) {
-		return refreshPromise;
-	}
-
+async function refreshToken(): Promise<void> {
+	if (refreshPromise) return refreshPromise;
 	refreshPromise = (async () => {
 		try {
 			await userManager.signinSilent();
 		} catch (err) {
-			console.error('Token refresh failed:', err);
+			console.error('[api] silent refresh failed:', err);
+			throw err;
 		} finally {
 			refreshPromise = null;
 		}
 	})();
-
 	return refreshPromise;
-};
+}
 
-export const myFetch = async (): Promise<AxiosInstance> => {
-	const user = await userManager.getUser();
+export const apiClient: AxiosInstance = axios.create({
+	baseURL: API_URL,
+	headers: { 'Content-Type': 'application/json' },
+});
 
-	const headers: Record<string, string> = {
-		'Content-Type': 'application/json',
-	};
-
-	if (user?.id_token) {
-		headers['Authorization'] = `Bearer ${user.id_token}`;
+apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+	try {
+		const user = await userManager.getUser();
+		if (user?.id_token && !user.expired) {
+			config.headers.set('Authorization', `Bearer ${user.id_token}`);
+		} else {
+			config.headers.delete('Authorization');
+		}
+	} catch (err) {
+		// Reading the user from storage should never throw, but log defensively
+		// so a corrupt storage entry can't silently break every request.
+		console.error('[api] failed to read user before request:', err);
 	}
+	return config;
+});
 
-	const instance = axios.create({
-		baseURL: API_URL,
-		headers,
-	});
+apiClient.interceptors.response.use(
+	(response) => response,
+	async (error: AxiosError) => {
+		const original = error.config as
+			| (InternalAxiosRequestConfig & { _retry?: boolean })
+			| undefined;
 
-	instance.interceptors.response.use(
-		(response) => response,
-		async (error) => {
-			const originalRequest = error.config;
-
-			// If we get a 401 and haven't already tried to refresh, attempt token refresh
-			if (error.response?.status === 401 && !originalRequest._retry) {
-				originalRequest._retry = true;
-
-				try {
-					// Wait for token refresh to complete
-					await refreshToken();
-
-					// Get the refreshed user
-					const refreshedUser = await userManager.getUser();
-
-					// Update the authorization header with the new token
-					if (refreshedUser?.id_token) {
-						originalRequest.headers['Authorization'] = `Bearer ${refreshedUser.id_token}`;
-					}
-
-					// Retry the original request with the new token
-					return instance(originalRequest);
-				} catch (refreshError) {
-					console.error('Token refresh failed:', refreshError);
-					// If refresh fails, redirect to login
-					await userManager.signinRedirect();
-					return Promise.reject(refreshError);
+		// 401 → try a silent refresh, then retry the original request exactly once.
+		if (error.response?.status === 401 && original && !original._retry) {
+			original._retry = true;
+			try {
+				await refreshToken();
+				const refreshed = await userManager.getUser();
+				if (refreshed?.id_token) {
+					original.headers.set('Authorization', `Bearer ${refreshed.id_token}`);
 				}
+				return apiClient.request(original);
+			} catch (refreshErr) {
+				console.error('[api] token refresh failed:', refreshErr);
+				await userManager.signinRedirect();
+				return Promise.reject(refreshErr);
 			}
+		}
 
-			const message = error.response?.data?.message || error.response?.statusText || 'Unexpected error occurred';
+		const data = error.response?.data as { message?: string } | undefined;
+		const message = data?.message || error.response?.statusText || 'Unexpected error occurred';
+		console.error('[api]', message);
+		showNotification({
+			title: 'Error',
+			message,
+			color: 'red',
+		});
+		return Promise.reject(error);
+	},
+);
 
-			console.error(message);
-
-			showNotification({
-				title: 'Error',
-				message,
-				color: 'red',
-			});
-
-			return Promise.reject(error);
-		},
-	);
-
-	return instance;
-};
+/**
+ * Backwards-compatible async wrapper used by router loaders that were written
+ * against the previous `myFetch()` signature. Always resolves to `apiClient`
+ * — no per-call instantiation, no token baking.
+ */
+export const myFetch = async (): Promise<AxiosInstance> => apiClient;

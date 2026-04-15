@@ -1,13 +1,12 @@
 import useSWR, { useSWRConfig } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { showNotification } from '@mantine/notifications';
-import { useMyFetch } from './api';
+import { apiClient as client } from '../helpers/api';
 import { useEffect, useState } from 'react';
 import type { SongDto } from '../types';
 import { useAuth } from 'react-oidc-context';
 
 export function useMyStarred() {
-	const client = useMyFetch();
 	const auth = useAuth();
 
 	const key = auth?.isAuthenticated ? '/starred/my' : null;
@@ -30,7 +29,6 @@ export function useMyStarred() {
 }
 
 export function useStarSongs() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -54,7 +52,6 @@ export function useStarSongs() {
 }
 
 export function useUnstarSong() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(

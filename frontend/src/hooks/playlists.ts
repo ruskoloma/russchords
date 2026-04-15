@@ -1,12 +1,11 @@
 import useSWR, { useSWRConfig } from 'swr';
 import useSWRMutation from 'swr/mutation';
 import { showNotification } from '@mantine/notifications';
-import { useMyFetch } from './api';
+import { apiClient as client } from '../helpers/api';
 import type { CreatePlaylistDto, MyPlaylistDto, PlaylistDto, UpdatePlaylistDto } from '../types';
 import { useAuth } from 'react-oidc-context';
 
 export function useMyPlaylistsWithDetails(enabled: boolean = true) {
-	const client = useMyFetch();
 	const fetcher = (url: string) => client.get<MyPlaylistDto[]>(url).then((r) => r.data);
 	const key = enabled ? '/playlist/my' : null;
 	const { data, error, isLoading, mutate } = useSWR<MyPlaylistDto[]>(key, fetcher, {
@@ -16,7 +15,6 @@ export function useMyPlaylistsWithDetails(enabled: boolean = true) {
 }
 
 export function usePlaylistFull(id: number | null | undefined) {
-	const client = useMyFetch();
 	const key = id ? `/playlist/${id}` : null;
 	const fetcher = (url: string) => client.get<MyPlaylistDto>(url).then((r) => r.data);
 
@@ -28,7 +26,6 @@ export function usePlaylistFull(id: number | null | undefined) {
 }
 
 export function useCreatePlaylist(opts: { onSuccess?: (created: PlaylistDto) => void } = {}) {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -55,7 +52,6 @@ export function useCreatePlaylist(opts: { onSuccess?: (created: PlaylistDto) => 
 }
 
 export function useUpdatePlaylist() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -82,7 +78,6 @@ export function useUpdatePlaylist() {
 }
 
 export function useDeletePlaylist() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -108,7 +103,6 @@ export function useDeletePlaylist() {
 }
 
 export function useAddSongToPlaylist() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -134,7 +128,6 @@ export function useAddSongToPlaylist() {
 }
 
 export function useRemoveSongFromPlaylist() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -160,7 +153,6 @@ export function useRemoveSongFromPlaylist() {
 }
 
 export function useSetPlaylistPinned() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -186,7 +178,6 @@ export function useSetPlaylistPinned() {
 }
 
 export function useSavePlaylistOrder() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(
@@ -212,7 +203,6 @@ export function useSavePlaylistOrder() {
 }
 
 export function useAddPlaylistToMy() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 	const auth = useAuth();
 
@@ -246,7 +236,6 @@ export function useAddPlaylistToMy() {
 }
 
 export function useRemovePlaylistFromMy() {
-	const client = useMyFetch();
 	const { mutate } = useSWRConfig();
 
 	const { trigger, isMutating, error } = useSWRMutation(

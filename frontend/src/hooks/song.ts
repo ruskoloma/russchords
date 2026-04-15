@@ -3,7 +3,7 @@ import useSWR from 'swr';
 import type { CreateSongDto, LiteSongDto, UpdateSongDto } from '../types';
 import { showNotification } from '@mantine/notifications';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useMyFetch } from './api';
+import { apiClient as client } from '../helpers/api';
 import { useAuth } from 'react-oidc-context';
 import { createNavigationUrl } from '../helpers/navigation';
 
@@ -11,7 +11,6 @@ export function useDeleteSongs(params: { navigateOnSuccess?: boolean } = { navig
 	const { navigateOnSuccess } = params;
 
 	const navigate = useNavigate();
-	const client = useMyFetch();
 
 	const { data, trigger, isMutating, error } = useSWRMutation(
 		'DELETE_SONGS',
@@ -44,7 +43,6 @@ export function useDeleteSongs(params: { navigateOnSuccess?: boolean } = { navig
 }
 
 export function useAddSongsToPlaylist() {
-	const client = useMyFetch();
 
 	type Arg = { playlistId: string; songIds: number[] };
 
@@ -70,7 +68,6 @@ export function useAddSongsToPlaylist() {
 export function useForkSong(params: { navigateOnSuccess?: boolean; preserveSource?: boolean } = { navigateOnSuccess: false, preserveSource: false }) {
 	const { navigateOnSuccess, preserveSource } = params;
 
-	const client = useMyFetch();
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -109,7 +106,6 @@ export function useForkSong(params: { navigateOnSuccess?: boolean; preserveSourc
 export function useCloneSong(params: { navigateOnSuccess?: boolean } = { navigateOnSuccess: false }) {
 	const { navigateOnSuccess } = params;
 
-	const client = useMyFetch();
 	const navigate = useNavigate();
 	const location = useLocation();
 
@@ -149,7 +145,6 @@ export function useIsSongOwner(ownerId?: string) {
 }
 
 export function useMyLightSongs(enabled: boolean = true) {
-	const client = useMyFetch();
 	const key = enabled ? '/song/my/light' : null;
 
 	const { data, error, isLoading, mutate } = useSWR(
@@ -170,7 +165,6 @@ export function useMyLightSongs(enabled: boolean = true) {
 }
 
 export function useMyForksByOriginalId(originalId?: number | string, enabled: boolean = true) {
-	const client = useMyFetch();
 	const key = enabled && originalId != null ? `/song/my/forks/${originalId}` : null;
 
 	const { data, error, isLoading, mutate } = useSWR(
@@ -191,7 +185,6 @@ export function useMyForksByOriginalId(originalId?: number | string, enabled: bo
 }
 
 export function useUpdateSong(opts: { onSuccess?: (id: number) => void } = {}) {
-	const client = useMyFetch();
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'UPDATE_SONG',
@@ -218,7 +211,6 @@ export function useUpdateSong(opts: { onSuccess?: (id: number) => void } = {}) {
 }
 
 export function useCreateSong(opts: { onSuccess?: (id: number) => void } = {}) {
-	const client = useMyFetch();
 
 	const { trigger, isMutating, error } = useSWRMutation(
 		'CREATE_SONG',
