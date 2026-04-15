@@ -12,6 +12,7 @@ import {
 } from '../../helpers/songParser';
 import { ViewerBase } from './ViewerBase.tsx';
 import { ActionIcon, Group, Menu, Select } from '@mantine/core';
+import { modals } from '@mantine/modals';
 import {
 	IconAdjustments,
 	IconAdjustmentsOff,
@@ -19,11 +20,13 @@ import {
 	IconArrowUp,
 	IconCopyright,
 	IconDotsVertical,
+	IconGuitarPick,
 	IconMinus,
 	IconNoCopyright,
 	IconPlus,
 } from '@tabler/icons-react';
 import { CapoHintBadge } from '../CapoHintBadge';
+import { ChordDiagramsPanel } from '../ChordDiagramsPanel';
 
 interface ViewerProps {
 	musicText: string;
@@ -85,6 +88,14 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 	const handleFontSizeUp = useCallback(() => setFontSize((prev) => prev + 1), []);
 	const handleFontSizeDown = useCallback(() => setFontSize((prev) => Math.max(prev - 1, 10)), []);
 
+	const openChordDiagrams = useCallback(() => {
+		modals.open({
+			title: 'Chord diagrams',
+			size: 'lg',
+			children: <ChordDiagramsPanel content={parsed} />,
+		});
+	}, [parsed]);
+
 	return (
 		<div>
 			<Group justify="space-between" h={'2.25em'}>
@@ -120,9 +131,9 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 						<CapoHintBadge songKey={key} />
 					</Group>
 				)}
-				{!hideControls && menuItems?.length && (
+				{!hideControls && (
 					<Group>
-						<Menu shadow="md" width={200}>
+						<Menu shadow="md" width={220}>
 							<Menu.Target>
 								<ActionIcon aria-label="Options">
 									<IconDotsVertical />
@@ -130,8 +141,17 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 							</Menu.Target>
 
 							<Menu.Dropdown>
-								<Menu.Label>Options</Menu.Label>
-								{menuItems}
+								<Menu.Label>Tools</Menu.Label>
+								<Menu.Item leftSection={<IconGuitarPick size={14} />} onClick={openChordDiagrams}>
+									Chord diagrams
+								</Menu.Item>
+								{menuItems && menuItems.length > 0 && (
+									<>
+										<Menu.Divider />
+										<Menu.Label>Song</Menu.Label>
+										{menuItems}
+									</>
+								)}
 							</Menu.Dropdown>
 						</Menu>
 					</Group>
