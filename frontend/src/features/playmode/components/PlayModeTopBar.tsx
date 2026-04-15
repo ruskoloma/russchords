@@ -16,6 +16,10 @@ interface PlayModeTopBarProps {
 	onPick: (index: number) => void;
 	onFontSizeChange: (size: number) => void;
 	onHideChordsChange: (hide: boolean) => void;
+	onAutoScrollEnabledChange: (enabled: boolean) => void;
+	onAutoScrollSpeedChange: (speed: number) => void;
+	onStageModeChange: (stage: boolean) => void;
+	onResetSettings: () => void;
 	onSyncReload: () => void;
 	onExit: () => void;
 }
@@ -39,6 +43,10 @@ export function PlayModeTopBar({
 	onPick,
 	onFontSizeChange,
 	onHideChordsChange,
+	onAutoScrollEnabledChange,
+	onAutoScrollSpeedChange,
+	onStageModeChange,
+	onResetSettings,
 	onSyncReload,
 	onExit,
 }: PlayModeTopBarProps) {
@@ -61,6 +69,10 @@ export function PlayModeTopBar({
 					settings={settings}
 					onFontSizeChange={onFontSizeChange}
 					onHideChordsChange={onHideChordsChange}
+					onAutoScrollEnabledChange={onAutoScrollEnabledChange}
+					onAutoScrollSpeedChange={onAutoScrollSpeedChange}
+					onStageModeChange={onStageModeChange}
+					onReset={onResetSettings}
 					onSyncReload={onSyncReload}
 					onExit={onExit}
 				/>

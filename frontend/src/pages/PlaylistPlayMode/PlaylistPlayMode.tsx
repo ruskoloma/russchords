@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { type LoaderFunction, redirect, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { Box, Button, Stack, Text } from '@mantine/core';
@@ -11,6 +11,8 @@ import type { PlayModeData } from '../../features/playmode/types';
 import { usePlayModeSettings } from '../../features/playmode/hooks/usePlayModeSettings';
 import { usePlayModeNavigation } from '../../features/playmode/hooks/usePlayModeNavigation';
 import { useExitBlocker } from '../../features/playmode/hooks/useExitBlocker';
+import { useWakeLock } from '../../features/playmode/hooks/useWakeLock';
+import { useAutoScroll } from '../../features/playmode/hooks/useAutoScroll';
 import { PlayModeTopBar } from '../../features/playmode/components/PlayModeTopBar';
 
 export const playlistPlayModeLoader: LoaderFunction = async ({ params }) => {
@@ -46,8 +48,8 @@ export const playlistPlayModeLoader: LoaderFunction = async ({ params }) => {
 
 /**
  * Immersive full-screen play mode. The page itself is a thin composition
- * over `features/playmode/*` — navigation, settings, exit-blocker, and the
- * top-bar component all live under that feature folder.
+ * over `features/playmode/*` — navigation, settings, exit-blocker, wake
+ * lock, auto-scroll, and the top-bar component all live under that folder.
  */
 export const PlaylistPlayMode: React.FC = () => {
 	const { playlist, songs } = useLoaderData() as PlayModeData;
@@ -55,8 +57,40 @@ export const PlaylistPlayMode: React.FC = () => {
 	const revalidator = useRevalidator();
 
 	const nav = usePlayModeNavigation({ total: songs.length });
-	const { settings, setFontSize, setHideChords } = usePlayModeSettings();
+	const {
+		settings,
+		setFontSize,
+		setHideChords,
+		setAutoScrollSpeed,
+		setAutoScrollEnabled,
+		setStageMode,
+		reset,
+	} = usePlayModeSettings();
 	const { markExplicitExit } = useExitBlocker();
+
+	// Request a screen wake lock for the full session — performers shouldn't
+	// have to tap the screen between songs to keep the page awake.
+	useWakeLock(true);
+
+	// Hands-off auto-scroll. `useAutoScroll` starts when `enabled` flips true
+	// and scrolls the window at the configured speed until it reaches the
+	// bottom of the current song, then stops.
+	useAutoScroll({ enabled: settings.autoScrollEnabled, speed: settings.autoScrollSpeed });
+
+	// Force the document color scheme to dark while in stage mode, then
+	// restore whatever it was on cleanup. This is independent of the global
+	// color-scheme manager — we set the Mantine data attribute directly on
+	// <html> so the CSS variables flip for this session only.
+	useEffect(() => {
+		if (!settings.stageMode) return;
+		const prev = document.documentElement.getAttribute('data-mantine-color-scheme');
+		document.documentElement.setAttribute('data-mantine-color-scheme', 'dark');
+		return () => {
+			if (prev) {
+				document.documentElement.setAttribute('data-mantine-color-scheme', prev);
+			}
+		};
+	}, [settings.stageMode]);
 
 	const currentSong = songs[nav.currentIndex];
 	const parsedContent = useMemo(
@@ -101,6 +135,10 @@ export const PlaylistPlayMode: React.FC = () => {
 				onPick={nav.goTo}
 				onFontSizeChange={setFontSize}
 				onHideChordsChange={setHideChords}
+				onAutoScrollEnabledChange={setAutoScrollEnabled}
+				onAutoScrollSpeedChange={setAutoScrollSpeed}
+				onStageModeChange={setStageMode}
+				onResetSettings={reset}
 				onSyncReload={handleSyncReload}
 				onExit={handleExit}
 			/>
