@@ -1,5 +1,13 @@
 import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
+// Brand typography — shipped ourselves via @fontsource/* so the app works
+// offline (PWA) and doesn't depend on Google Fonts.
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
 import './index.css';
 import '@mantine/core/styles.css';
 import '@mantine/nprogress/styles.css';
@@ -36,6 +44,7 @@ import { ModalsProvider } from '@mantine/modals';
 import MyPlaylistsPage from './pages/MyPlaylistsPage/MyPlaylistsPage.tsx';
 import TagManager from 'react-gtm-module';
 import { SourceProvider } from './contexts/SourceContext';
+import { colorSchemeManager, theme } from './theme';
 
 // Initialize Google Tag Manager
 const gtmId = import.meta.env.VITE_GTM_ID;
@@ -120,11 +129,7 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
-		<MantineProvider
-			theme={{
-				primaryColor: 'gray',
-			}}
-		>
+		<MantineProvider theme={theme} defaultColorScheme="auto" colorSchemeManager={colorSchemeManager}>
 			<ModalsProvider>
 				<Notifications position="top-right" />
 				<AuthProvider>

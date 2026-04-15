@@ -153,9 +153,9 @@ export const PlaylistPlayMode: React.FC = () => {
 			<Group
 				justify="space-between"
 				p="xs"
-				bg="gray.0"
 				style={{
-					borderBottom: '1px solid var(--mantine-color-gray-3)',
+					backgroundColor: 'var(--mantine-color-body)',
+					borderBottom: '1px solid var(--mantine-color-default-border)',
 					position: 'sticky',
 					top: 0,
 					zIndex: 10,
@@ -231,7 +231,7 @@ export const PlaylistPlayMode: React.FC = () => {
 					<Menu.Target>
 						<Button
 							variant="subtle"
-							c="dark"
+							color="gray"
 							fw={700}
 							size="md"
 							style={{ flex: 1, textAlign: 'center', height: 'auto', minWidth: 0 }}
@@ -249,7 +249,11 @@ export const PlaylistPlayMode: React.FC = () => {
 										setCurrentIndex(i);
 										window.scrollTo({ top: 0, behavior: 'smooth' });
 									}}
-									bg={i === currentIndex ? 'blue.0' : undefined}
+									style={
+										i === currentIndex
+											? { backgroundColor: 'var(--mantine-color-brand-light)', fontWeight: 600 }
+											: undefined
+									}
 								>
 									{i + 1}. {s.name}
 								</Menu.Item>

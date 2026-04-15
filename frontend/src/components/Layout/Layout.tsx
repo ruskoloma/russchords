@@ -16,6 +16,7 @@ import {
 } from '@tabler/icons-react';
 import { useAuth } from 'react-oidc-context';
 import { useAuthActions } from '../../hooks/auth.ts';
+import { ColorSchemeToggle } from './ColorSchemeToggle.tsx';
 
 const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 	const { isAuthenticated, user } = useAuth();
@@ -147,7 +148,10 @@ export const Layout: React.FC = () => {
 				<AppShell.Header>
 					<Group justify={'space-between'} px={'lg'} fz={'h2'} h={'100%'}>
 						<Logo />
-						<Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
+						<Group gap="xs" wrap="nowrap">
+							<ColorSchemeToggle />
+							<Burger opened={opened} onClick={toggle} hiddenFrom="md" size="md" />
+						</Group>
 					</Group>
 				</AppShell.Header>
 			)}

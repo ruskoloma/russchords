@@ -191,10 +191,10 @@ export const SearchPage = () => {
 								<Group gap={6} align="center" wrap="nowrap">
 									<Text
 										fw={600}
+										c="brand"
 										onClick={() => onTitleClick(it.link)}
 										style={{
 											cursor: redirectingLink ? 'progress' : 'pointer',
-											color: 'blue',
 											opacity: redirectingLink === it.link ? 0.6 : 1,
 										}}
 										role="button"

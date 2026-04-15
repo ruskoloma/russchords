@@ -16,6 +16,8 @@
     "ci": "tsc -b && vitest run && playwright test"
   },
   "dependencies": {
+    "@fontsource/inter": "^5.2.8",
+    "@fontsource/jetbrains-mono": "^5.2.8",
     "@hello-pangea/dnd": "^18.0.1",
     "@mantine/core": "^8.2.4",
     "@mantine/form": "^8.1.2",

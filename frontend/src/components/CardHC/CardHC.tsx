@@ -16,10 +16,8 @@ export const CardHC: React.FC<CardHCProps> = ({ name, artist, url }) => {
 						<Image height={70} width={70} src={hcimage} radius="md" />
 					</Box>
 					<Stack maw={'calc(100% - 85px)'} gap={'xs'}>
-						<Text truncate c={'dark'}>
-							{name}
-						</Text>
-						<Text truncate c={'dark'}>
+						<Text truncate>{name}</Text>
+						<Text truncate c="dimmed">
 							{artist}
 						</Text>
 					</Stack>

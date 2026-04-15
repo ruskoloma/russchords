@@ -17,7 +17,7 @@ export const ViewerBase: React.FC<ViewerBaseProps> = ({
 	return (
 		<Box
 			component="pre"
-			ff="text"
+			ff="monospace"
 			fz={fontSize}
 			style={{
 				maxWidth: '100%',
@@ -31,7 +31,7 @@ export const ViewerBase: React.FC<ViewerBaseProps> = ({
 						return <></>;
 					}
 					return (
-						<Text key={i} c="blue.8" component="div" size={fontSize + 'px'}>
+						<Text key={i} c="chord.7" component="div" size={fontSize + 'px'}>
 							{renderChordLine(line.tokens.map((t) => transposeChord?.(t) ?? t))}
 						</Text>
 					);

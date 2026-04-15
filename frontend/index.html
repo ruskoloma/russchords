@@ -9,6 +9,21 @@
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>russchords</title>
+  <!-- Zero-flash color scheme: read persisted choice BEFORE React mounts so the
+       <html> tag gets the right data attribute and Mantine variables resolve
+       correctly on first paint. Keep this script in sync with the theme's
+       `localStorageColorSchemeManager` key. -->
+  <script>
+    (function () {
+      try {
+        var key = 'russchords-color-scheme';
+        var stored = localStorage.getItem(key);
+        var scheme = stored === 'dark' || stored === 'light' ? stored
+          : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+        document.documentElement.setAttribute('data-mantine-color-scheme', scheme);
+      } catch (e) { /* localStorage disabled — ignore */ }
+    })();
+  </script>
   <!-- Google Tag Manager -->
   <script>(function (w, d, s, l, i) {
       w[l] = w[l] || []; w[l].push({
