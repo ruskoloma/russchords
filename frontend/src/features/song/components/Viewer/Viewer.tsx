@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
 	ALL_ACTUAL_KEYS,
 	ALL_KEYS,
@@ -34,54 +34,55 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 	const [hideChords, setHideChords] = useState(false);
 	const [hideControls, setHideControls] = useState(false);
 
-	const parsed = parseSongText(musicText);
-	const originalKey = getOriginalKey(parsed);
+	// `parseSongText` walks the whole song content character-by-character. Prior
+	// to memoization it ran on every render (key change, font-size tick, etc.)
+	// which made transpose feel laggy for long songs. Key the memo on the raw
+	// text: the parsed structure never depends on UI state.
+	const parsed = useMemo(() => parseSongText(musicText), [musicText]);
+	const originalKey = useMemo(() => getOriginalKey(parsed), [parsed]);
+
 	const [displayRoot, setDisplayRoot] = useState<string>(defaultKey ?? originalKey ?? 'C');
+	const [key, setKey] = useState(displayRoot);
+	const [fontSize, setFontSize] = useState(16);
+
 	useEffect(() => {
 		const baseline = defaultKey ?? originalKey ?? 'C';
 		setDisplayRoot(baseline);
 		setKey(baseline);
 	}, [defaultKey, originalKey]);
-	const [key, setKey] = useState(displayRoot);
-	const [fontSize, setFontSize] = useState(16);
 
-	const toKey = getKeyByName(key)!;
+	const toKey = useMemo(() => getKeyByName(key)!, [key]);
+	const delta = useMemo(
+		() => getDelta(getKeyByName(displayRoot).value, toKey.value),
+		[displayRoot, toKey],
+	);
 
-	const delta = getDelta(getKeyByName(displayRoot).value, getKeyByName(key).value);
+	// `ViewerBase` is memoized — it only re-renders when `transposeChord`'s
+	// identity changes. Keeping this stable across renders means the chord
+	// content map only re-runs when the transpose delta actually moves.
+	const handleTransposeChord = useCallback(
+		(t: ChordToken) => transposeChordToken(t, delta, toKey),
+		[delta, toKey],
+	);
 
-	const handleChangeHideChords = () => {
-		setHideChords((prev) => !prev);
-	};
+	const handleChangeHideChords = useCallback(() => setHideChords((prev) => !prev), []);
+	const handleChangeHideControls = useCallback(() => setHideControls((prev) => !prev), []);
+	const handleChangeKey = useCallback((value: string | null) => setKey(value!), []);
 
-	const handleChangeHideControls = () => {
-		setHideControls((prev) => !prev);
-	};
-
-	const handleChangeKey = (value: string | null) => {
-		setKey(value!);
-	};
-
-	const handleKeyDown = () => {
+	const handleKeyDown = useCallback(() => {
 		const currentKey = getKeyByName(key);
 		const newKey = [...KEYS].reverse().find((k) => k.value == currentKey.value - 1 && ALL_ACTUAL_KEYS.includes(k.name));
 		return newKey ? setKey(newKey.name) : setKey(KEYS.at(-1)!.name);
-	};
+	}, [key]);
 
-	const handleKeyUp = () => {
+	const handleKeyUp = useCallback(() => {
 		const currentKey = getKeyByName(key);
 		const newKey = KEYS.find((k) => k.value == currentKey.value + 1 && ALL_ACTUAL_KEYS.includes(k.name));
 		return newKey ? setKey(newKey.name) : setKey(KEYS[1].name!);
-	};
+	}, [key]);
 
-	const handleFontSizeUp = () => {
-		setFontSize((prev) => prev + 1);
-	};
-
-	const handleFontSizeDown = () => {
-		setFontSize((prev) => Math.max(prev - 1, 10));
-	};
-
-	const handleTransposeChord = (t: ChordToken) => transposeChordToken(t, delta, toKey);
+	const handleFontSizeUp = useCallback(() => setFontSize((prev) => prev + 1), []);
+	const handleFontSizeDown = useCallback(() => setFontSize((prev) => Math.max(prev - 1, 10)), []);
 
 	return (
 		<div>

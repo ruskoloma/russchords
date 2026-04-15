@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type ChordToken, type Line, renderChordLine } from '../../helpers/songParser.ts';
 import { Box, Text } from '@mantine/core';
 
@@ -8,12 +9,18 @@ interface ViewerBaseProps {
 	fontSize?: number;
 }
 
-export const ViewerBase: React.FC<ViewerBaseProps> = ({
+/**
+ * Pure chord/lyric renderer. Memoized because its parent (Viewer) re-renders
+ * on key change, font-size change, etc. — and the chord content map is the
+ * most expensive visual work on a song page. Pair this memo with stable
+ * callbacks in Viewer (see `handleTransposeChord` wrapped in useCallback).
+ */
+export const ViewerBase: React.FC<ViewerBaseProps> = memo(function ViewerBase({
 	content,
 	hideChords = false,
 	transposeChord,
 	fontSize = 16,
-}) => {
+}) {
 	return (
 		<Box
 			component="pre"
@@ -49,4 +56,4 @@ export const ViewerBase: React.FC<ViewerBaseProps> = ({
 			})}
 		</Box>
 	);
-};
+});
