@@ -23,6 +23,7 @@ import {
 	IconNoCopyright,
 	IconPlus,
 } from '@tabler/icons-react';
+import { CapoHintBadge } from '../CapoHintBadge';
 
 interface ViewerProps {
 	musicText: string;
@@ -108,7 +109,7 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 					</Group>
 				)}
 				{!hideControls && (
-					<Group gap="0.25em">
+					<Group gap="0.25em" wrap="nowrap">
 						<ActionIcon onClick={handleKeyDown} aria-label="Down">
 							<IconArrowDown />
 						</ActionIcon>
@@ -116,6 +117,7 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 						<ActionIcon onClick={handleKeyUp} aria-label="Up">
 							<IconArrowUp />
 						</ActionIcon>
+						<CapoHintBadge songKey={key} />
 					</Group>
 				)}
 				{!hideControls && menuItems?.length && (
