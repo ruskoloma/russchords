@@ -84,6 +84,7 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 			<Box flex={'2 0 auto'}></Box>
 
 			<Box>
+				<ColorSchemeToggle />
 				{isAuthenticated ? (
 					<>
 						<NavLink
@@ -109,7 +110,6 @@ const NavbarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
 						label="Login"
 					/>
 				)}
-				<ColorSchemeToggle />
 			</Box>
 		</Stack>
 	);

@@ -38,7 +38,7 @@ export const ViewerBase: React.FC<ViewerBaseProps> = memo(function ViewerBase({
 						return <></>;
 					}
 					return (
-						<Text key={i} c="chord" component="div" size={fontSize + 'px'}>
+						<Text key={i} c="var(--chord-color)" component="div" size={fontSize + 'px'}>
 							{renderChordLine(line.tokens.map((t) => transposeChord?.(t) ?? t))}
 						</Text>
 					);

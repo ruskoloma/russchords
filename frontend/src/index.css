@@ -2,6 +2,14 @@
     display: none;
 }
 
+/* Chord color: blue in light mode, teal in dark mode for contrast */
+:root, [data-mantine-color-scheme="light"] {
+    --chord-color: #1971c2;
+}
+[data-mantine-color-scheme="dark"] {
+    --chord-color: #3a9973;
+}
+
 /* Skip-to-content link: hidden above the viewport until keyboard-focused. */
 .russchords-skip-link:focus {
     transform: translateY(0) !important;
