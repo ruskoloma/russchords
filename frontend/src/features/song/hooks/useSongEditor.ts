@@ -3,11 +3,11 @@ import { getOriginalKey, parseSongText } from '../helpers/songParser';
 import { deltaBetweenKeys, nextKeyDown, nextKeyUp, transposeWholeText } from '../helpers/transposeText';
 import type { SongDto } from '../../../types';
 
-type InitialSong = Pick<SongDto, 'name' | 'content' | 'rootNote'> & { artist?: string };
+type InitialSong = Pick<SongDto, 'name' | 'content' | 'rootNote' | 'description'> & { artist?: string };
 
 /**
  * Owns every piece of state the song editor needs:
- *  - form fields (name, artist, content, rootNote)
+ *  - form fields (name, artist, content, rootNote, notes)
  *  - the "working key" separate from the saved root note, so users can
  *    transpose to try out a different key without committing a rootNote
  *    change until they explicitly pick a new root
@@ -16,12 +16,17 @@ type InitialSong = Pick<SongDto, 'name' | 'content' | 'rootNote'> & { artist?: s
  *
  * Shared between CreateSongPage and EditSongPage so the same set of
  * controls behaves identically in both places.
+ *
+ * The "notes" field is stored under `description` on the backend — the
+ * column already exists on SongEntity / SongDto / UpdateSongDto from
+ * the AddDescriptionToSong migration, so no new migration is needed.
  */
 export function useSongEditor(initial: InitialSong) {
 	const [name, setName] = useState(initial.name);
 	const [artist, setArtist] = useState(initial.artist ?? '');
 	const [content, setContent] = useState(initial.content);
 	const [rootNote, setRootNote] = useState<string | null>(initial.rootNote ?? null);
+	const [notes, setNotes] = useState<string>(initial.description ?? '');
 
 	const [workKey, setWorkKey] = useState<string>(
 		initial.rootNote ?? getOriginalKey(parseSongText(initial.content)) ?? 'C',
@@ -82,6 +87,8 @@ export function useSongEditor(initial: InitialSong) {
 		setContent,
 		rootNote,
 		handleRootNoteChange,
+		notes,
+		setNotes,
 		// transposition
 		workKey,
 		handleTransposeUp,

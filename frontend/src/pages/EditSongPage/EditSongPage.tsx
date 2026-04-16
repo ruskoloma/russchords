@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Stack, Text } from '@mantine/core';
+import { Button, Card, Group, Stack, Text, Textarea } from '@mantine/core';
 import type { SongDto } from '../../types';
 import { useUpdateSong } from '../../features/song/hooks/song';
 import { useSongEditor } from '../../features/song/hooks/useSongEditor';
@@ -25,6 +25,7 @@ export const EditSongPage = () => {
 			artist: editor.artist || null,
 			content: editor.content,
 			rootNote: editor.rootNote || null,
+			description: editor.notes.trim() || null,
 		});
 	};
 
@@ -63,6 +64,15 @@ export const EditSongPage = () => {
 						autosize
 						minRows={16}
 						spellCheck={false}
+					/>
+					<Textarea
+						label="Notes"
+						description="Private notes about this song — arrangement hints, capo tips, vocal reminders."
+						placeholder="Optional"
+						value={editor.notes}
+						onChange={(e) => editor.setNotes(e.currentTarget.value)}
+						autosize
+						minRows={3}
 					/>
 					<Group justify="flex-end">
 						<Button variant="light" color="gray" onClick={onCancel}>

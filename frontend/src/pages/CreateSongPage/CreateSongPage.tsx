@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Stack, Text } from '@mantine/core';
+import { Button, Card, Group, Stack, Text, Textarea } from '@mantine/core';
 import { fillMissingChords } from '../../features/song/helpers/songParser';
 import { parseChordPro } from '../../features/song/helpers/chordPro';
 import { useCreateSong } from '../../features/song/hooks/song';
@@ -19,6 +19,7 @@ export const CreateSongPage = () => {
 	const [artist, setArtist] = useState('');
 	const [content, setContent] = useState('');
 	const [rootNote, setRootNote] = useState<string | null>(null);
+	const [notes, setNotes] = useState('');
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const onPickFile = () => fileInputRef.current?.click();
@@ -43,6 +44,7 @@ export const CreateSongPage = () => {
 			artist: artist.trim() ? artist : null,
 			content,
 			rootNote: rootNote || null,
+			description: notes.trim() ? notes.trim() : null,
 		});
 	};
 
@@ -91,6 +93,15 @@ export const CreateSongPage = () => {
 						autosize
 						minRows={16}
 						spellCheck={false}
+					/>
+					<Textarea
+						label="Notes"
+						description="Private notes about this song — arrangement hints, capo tips, vocal reminders."
+						placeholder="Optional"
+						value={notes}
+						onChange={(e) => setNotes(e.currentTarget.value)}
+						autosize
+						minRows={3}
 					/>
 					<Group justify="flex-end">
 						<Button variant="light" color="gray" onClick={onCancel}>

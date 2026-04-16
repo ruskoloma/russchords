@@ -3,6 +3,8 @@ export interface SongDto {
 	name: string;
 	content: string;
 	artist?: string;
+	/** Free-form personal notes about the song — performance tips, arrangement reminders, etc. */
+	description?: string | null;
 	parentId?: number;
 	originalId?: number;
 	sourceUrl?: string;
@@ -22,5 +24,6 @@ export interface CreateSongDto {
 	name: string;
 	content: string;
 	artist?: string | null;
+	description?: string | null;
 	rootNote?: string | null;
 }

@@ -177,6 +177,15 @@ export function SongPage() {
 				].filter(Boolean)}
 			/>
 
+			{songDto.description && songDto.description.trim() && (
+				<>
+					<Divider my="sm" label="Notes" labelPosition="left" />
+					<Text size="sm" c="dimmed" style={{ whiteSpace: 'pre-wrap' }}>
+						{songDto.description}
+					</Text>
+				</>
+			)}
+
 			<Divider />
 
 			{songDto.sourceUrl && <CardHC url={songDto.sourceUrl} name={songDto.name} artist={songDto.artist} />}
