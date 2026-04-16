@@ -1,60 +1,63 @@
 import type { MantineColorsTuple } from '@mantine/core';
 
 /**
- * Brand palettes for russchords.
+ * Brand palettes for russchords — "printed hymnal" direction.
  *
- * Both palettes are 10-stop tuples (index 0 = lightest, index 9 = darkest)
- * conforming to Mantine's `MantineColorsTuple`. Each was hand-tuned for:
- *  - AA contrast against light and dark backgrounds at shade 6/7 (the default
- *    filled-button shade)
- *  - Good separation between neighbouring stops so hover/active states feel
- *    distinct
- *  - Non-garish saturation so chord sheets on-stage remain readable
+ * Away from saturated indigo + rounded corporate aesthetic. These tuples
+ * lean into warm neutrals and earthy accents so the app feels more like
+ * a worn paper songbook than a productivity dashboard. Still 10-stop
+ * Mantine tuples (index 0 = lightest, 9 = darkest).
  *
- * Use `brand` as the primary color (indigo family) and `accent` for star
- * / pinned / now-playing affordances (amber family).
+ *  - `brand`   — muted warm ink (charcoal-with-a-hint-of-brown). Primary
+ *                surfaces, focused controls, default buttons.
+ *  - `accent`  — burnt terracotta for starred / pinned / active items.
+ *                Reads as a warm highlight against the neutral brand.
+ *  - `chord`   — subdued olive ink for chord lines above lyrics. Reads
+ *                clearly on both cream and slate backgrounds without
+ *                screaming "link" the way pure blue does.
  */
 
-// Indigo-ish brand — stage-readable, professional, works on dark background.
+// Warm ink — main brand color. Nearly neutral; shade 7 is almost-black
+// with a whisper of warmth so filled buttons feel tactile, not digital.
 export const brandColor: MantineColorsTuple = [
-	'#eef1ff',
-	'#dae0f7',
-	'#b1bde9',
-	'#8497db',
-	'#5f77cf',
-	'#4864c9',
-	'#3c5ac6',
-	'#2e4bae',
-	'#26439d',
-	'#183989',
+	'#f5f3f0',
+	'#e4e0d9',
+	'#c5c0b5',
+	'#a69e90',
+	'#8a806f',
+	'#6e6454',
+	'#544b3d',
+	'#3a3327',
+	'#22201a',
+	'#12110e',
 ];
 
-// Warm amber — reserved for "starred", "pinned", "now playing", "new".
+// Burnt terracotta — accent for stars, pins, badges, "now playing".
+// Warm, earthy, readable on cream AND on dark slate.
 export const accentColor: MantineColorsTuple = [
-	'#fff8e1',
-	'#ffefcc',
-	'#ffdd9c',
-	'#ffca66',
-	'#ffba3a',
-	'#ffb01e',
-	'#ffab10',
-	'#e39500',
-	'#ca8500',
-	'#af7200',
+	'#fbeee7',
+	'#f4d8c9',
+	'#eab79d',
+	'#de9371',
+	'#d37551',
+	'#cc603f',
+	'#c85333',
+	'#a94125',
+	'#8b331b',
+	'#6b2712',
 ];
 
-// "Chord" virtual color — referenced throughout ViewerBase so chord text
-// auto-adjusts for dark mode. Slightly more saturated than the brand to
-// read well as highlighted text inside lyric blocks.
+// Muted olive — chord lines inside the song viewer.
+// Intentionally low-chroma so stage reading isn't visually fatiguing.
 export const chordColor: MantineColorsTuple = [
-	'#eaf2ff',
-	'#d1def6',
-	'#a1bbe8',
-	'#6f96db',
-	'#4677d0',
-	'#2c64ca',
-	'#1b5bc8',
-	'#0e4cb2',
-	'#004393',
-	'#003a87',
+	'#f2f2eb',
+	'#dcdccc',
+	'#bdbea0',
+	'#9ba074',
+	'#7e8452',
+	'#6c7241',
+	'#636738',
+	'#52562a',
+	'#454824',
+	'#363919',
 ];

@@ -6,16 +6,18 @@ import { fontFamily, fontFamilyMonospace, headings } from './typography';
 /**
  * The russchords Mantine theme.
  *
- * This file is the single source of truth for brand colors, typography,
- * spacing scale, breakpoints, and component defaults. Adding a new design
- * token? Edit this file (or one of its siblings in `src/theme/`) — never
- * hardcode a color in a component again.
+ * Design direction: "printed hymnal" — warm neutrals, sharp corners,
+ * minimal shadows. Intentionally moves away from the saturated indigo +
+ * rounded-everything aesthetic; closer to a worn paper songbook than a
+ * productivity dashboard.
  */
 export const theme = createTheme({
 	primaryColor: 'brand',
-	primaryShade: { light: 6, dark: 5 },
+	primaryShade: { light: 7, dark: 4 },
 	autoContrast: true,
-	defaultRadius: 'md',
+	// Sharper corners everywhere. `sm` is the new default (4px) with a
+	// tighter overall scale — see `radius` below.
+	defaultRadius: 'sm',
 	cursorType: 'pointer',
 
 	fontFamily,
@@ -26,6 +28,24 @@ export const theme = createTheme({
 		brand: brandColor,
 		accent: accentColor,
 		chord: chordColor,
+	},
+
+	radius: {
+		xs: '2px',
+		sm: '4px',
+		md: '6px',
+		lg: '8px',
+		xl: '12px',
+	},
+
+	// Very restrained shadow scale — the hymnal direction avoids the
+	// "floating card" look. `sm` is a 1px hairline; `xs` is almost nothing.
+	shadows: {
+		xs: '0 0 0 1px rgba(0, 0, 0, 0.04)',
+		sm: '0 1px 0 rgba(0, 0, 0, 0.06)',
+		md: '0 1px 2px rgba(0, 0, 0, 0.08)',
+		lg: '0 2px 4px rgba(0, 0, 0, 0.08)',
+		xl: '0 4px 8px rgba(0, 0, 0, 0.08)',
 	},
 
 	breakpoints: {
@@ -42,9 +62,6 @@ export const theme = createTheme({
 /**
  * Color-scheme manager persists the user's light/dark/auto choice in
  * localStorage. Consumed by <MantineProvider /> in main.tsx.
- *
- * The `key` is namespaced so a single browser profile using multiple Mantine
- * apps doesn't collide.
  */
 export const colorSchemeManager = localStorageColorSchemeManager({
 	key: 'russchords-color-scheme',

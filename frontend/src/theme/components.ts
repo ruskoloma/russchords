@@ -1,57 +1,58 @@
 import { ActionIcon, Button, Card, Modal, Paper, Select, TextInput, Textarea } from '@mantine/core';
 
 /**
- * Centralised component defaults for russchords.
+ * Component defaults for the "printed hymnal" theme direction.
  *
- * Each entry uses Mantine v7+ `defaultProps` so every callsite of the given
- * component inherits the brand's look without having to pass props manually.
- * Override locally when a specific screen needs a different treatment.
+ * All radius defaults are `sm` (4px) instead of the previous `md` (6px)
+ * so Buttons, Cards, Inputs, etc. feel sharper and more tactile. Cards
+ * drop their shadow entirely and rely only on a 1px border so the page
+ * reads flat, like printed paper.
  */
 export const components = {
 	Button: Button.extend({
 		defaultProps: {
-			radius: 'md',
+			radius: 'sm',
 		},
 	}),
 	ActionIcon: ActionIcon.extend({
 		defaultProps: {
 			variant: 'subtle',
-			radius: 'md',
+			radius: 'sm',
 		},
 	}),
 	Card: Card.extend({
 		defaultProps: {
-			radius: 'md',
-			shadow: 'sm',
+			radius: 'sm',
+			shadow: undefined,
 			withBorder: true,
 			padding: 'lg',
 		},
 	}),
 	Paper: Paper.extend({
 		defaultProps: {
-			radius: 'md',
+			radius: 'sm',
 		},
 	}),
 	Modal: Modal.extend({
 		defaultProps: {
-			radius: 'lg',
+			radius: 'md',
 			centered: true,
-			overlayProps: { blur: 2 },
+			overlayProps: { blur: 0 },
 		},
 	}),
 	TextInput: TextInput.extend({
 		defaultProps: {
-			radius: 'md',
+			radius: 'sm',
 		},
 	}),
 	Textarea: Textarea.extend({
 		defaultProps: {
-			radius: 'md',
+			radius: 'sm',
 		},
 	}),
 	Select: Select.extend({
 		defaultProps: {
-			radius: 'md',
+			radius: 'sm',
 		},
 	}),
 };
