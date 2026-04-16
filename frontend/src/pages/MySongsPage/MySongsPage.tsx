@@ -1,6 +1,7 @@
+import { useEffect, useRef } from 'react';
 import { useLoaderData, useNavigate, useLocation } from 'react-router-dom';
 import { DataTable } from 'mantine-datatable';
-import { Stack, Text } from '@mantine/core';
+import { Box, Loader, Stack, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
 import type { LiteSongDto } from '../../types';
 import { createNavigationUrl } from '../../lib/navigation';
@@ -9,9 +10,9 @@ import { useBulkSongActions } from '../../features/song/hooks/useBulkSongActions
 import { MySongsToolbar } from '../../features/song/components/MySongsToolbar';
 
 /**
- * My Songs table page. State management (filter, sort, pagination,
- * selection) and the bulk-action confirmation flows live in feature hooks;
- * this page is the declarative composition.
+ * My Songs page. Uses a DataTable without pagination — instead an
+ * IntersectionObserver sentinel at the bottom bumps the visible window
+ * via `table.loadMore()` whenever the user scrolls near the end.
  */
 export const MySongsPage: React.FC = () => {
 	const loaded = useLoaderData() as LiteSongDto[];
@@ -23,6 +24,25 @@ export const MySongsPage: React.FC = () => {
 	const actions = useBulkSongActions({
 		onAfterDelete: (deletedIds) => table.removeFromData(deletedIds),
 	});
+
+	// Sentinel element at the bottom of the list. When it enters the viewport
+	// we call `loadMore()` which extends the visible window by a chunk.
+	const sentinelRef = useRef<HTMLDivElement | null>(null);
+	useEffect(() => {
+		const el = sentinelRef.current;
+		if (!el) return;
+		if (!table.hasMore) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (entries.some((e) => e.isIntersecting)) {
+					table.loadMore();
+				}
+			},
+			{ rootMargin: '200px' },
+		);
+		observer.observe(el);
+		return () => observer.disconnect();
+	}, [table.hasMore, table.loadMore, table.visibleRecords.length]);
 
 	return (
 		<Stack gap="md">
@@ -39,19 +59,12 @@ export const MySongsPage: React.FC = () => {
 			<DataTable<LiteSongDto>
 				striped
 				idAccessor="id"
-				records={table.paginated}
-				totalRecords={table.total}
+				records={table.visibleRecords}
 				withTableBorder
 				withColumnBorders
 				highlightOnHover
 				sortStatus={table.sortStatus}
 				onSortStatusChange={table.setSortStatus}
-				page={table.page}
-				onPageChange={table.setPage}
-				recordsPerPage={table.pageSize}
-				onRecordsPerPageChange={table.handlePageSizeChange}
-				recordsPerPageOptions={isMobile ? [15] : [15, 25, 50, 100]}
-				paginationText={({ from, to, totalRecords }) => `${from}–${to} of ${totalRecords}`}
 				selectedRecords={isMobile ? undefined : table.selected}
 				onSelectedRecordsChange={isMobile ? undefined : table.setSelected}
 				columns={[
@@ -78,8 +91,19 @@ export const MySongsPage: React.FC = () => {
 				]}
 				noRecordsText={table.debouncedQuery ? 'No matches' : 'No songs'}
 				onRowClick={(row) => navigate(createNavigationUrl(`/song/${row.record.id}`, location))}
-				minHeight={'600px'}
+				minHeight={table.total === 0 ? '200px' : undefined}
 			/>
+
+			{/* Sentinel + feedback footer */}
+			<Box ref={sentinelRef} py="sm" ta="center">
+				{table.hasMore ? (
+					<Loader size="sm" />
+				) : table.total > 0 ? (
+					<Text size="xs" c="dimmed">
+						{table.total} song{table.total === 1 ? '' : 's'}
+					</Text>
+				) : null}
+			</Box>
 		</Stack>
 	);
 };
