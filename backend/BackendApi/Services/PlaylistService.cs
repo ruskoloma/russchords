@@ -138,6 +138,8 @@ public class PlaylistService : IPlaylistService
                 Description = p.Description,
                 IsPinned = m.IsPinned,
                 MemberRecordId = m.Id,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
                 Songs = (
                     from ps in _context.PlaylistSongs
                     where ps.PlaylistId == p.Id
@@ -237,6 +239,8 @@ public class PlaylistService : IPlaylistService
             IsPinned = isPinned,
             Songs = songs,
             MemberRecordId = memberRecordId,
+            CreatedAt = playlist.CreatedAt,
+            UpdatedAt = playlist.UpdatedAt,
         };
     }
 }

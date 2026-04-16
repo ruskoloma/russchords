@@ -8,5 +8,7 @@ public class MyPlaylistDto
     public string Title { get; set; } = null!;
     public string? Description { get; set; }
     public bool IsPinned { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
     public List<LiteSongDto> Songs { get; set; } = new();
 }

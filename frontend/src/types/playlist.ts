@@ -22,6 +22,10 @@ export interface MyPlaylistDto {
 	isPinned: boolean;
 	songs: LiteSongDto[];
 	memberRecordId: number;
+	/** ISO 8601 UTC timestamp from the backend. Optional so cached responses don't crash. */
+	createdAt?: string;
+	/** ISO 8601 UTC timestamp from the backend. */
+	updatedAt?: string;
 }
 
 export interface CreatePlaylistDto {

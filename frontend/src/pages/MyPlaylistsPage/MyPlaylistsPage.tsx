@@ -8,26 +8,46 @@ import { IconPin, IconPlaylistAdd } from '@tabler/icons-react';
 
 type SortKey = 'alpha' | 'new' | 'old';
 
+const SORT_STORAGE_KEY = 'russchords-my-playlists-sort';
+
+/**
+ * Backward-compatible "created order" for a playlist. Prefers the real
+ * backend `createdAt` timestamp; falls back to `playlistId` for responses
+ * cached before the backend started sending it (playlistId is auto-
+ * incremented so it gives the same ordering, just not as precise).
+ */
+function createdOrder(p: MyPlaylistDto): number {
+	if (p.createdAt) return Date.parse(p.createdAt);
+	return p.playlistId ?? 0;
+}
+
 export function MyPlaylistsPage() {
 	const loaded = useLoaderData() as MyPlaylistDto[];
 	const navigate = useNavigate();
 
-	const [sort, setSort] = useState<SortKey>('alpha');
+	const [sort, setSort] = useState<SortKey>(() => {
+		const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(SORT_STORAGE_KEY) : null;
+		if (saved === 'alpha' || saved === 'new' || saved === 'old') return saved;
+		// New default: newest first. Users who want alphabetical can still pick
+		// it from the dropdown and their choice gets persisted below.
+		return 'new';
+	});
 
 	const playlists = useMemo(() => {
 		const arr = [...(loaded ?? [])];
 		arr.sort((a, b) => {
 			if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
 			if (sort === 'alpha') return (a.title ?? '').localeCompare(b.title ?? '');
-			if (sort === 'new') return (b.playlistId ?? 0) - (a.playlistId ?? 0);
-			return (a.playlistId ?? 0) - (b.playlistId ?? 0);
+			if (sort === 'new') return createdOrder(b) - createdOrder(a);
+			return createdOrder(a) - createdOrder(b);
 		});
 		return arr;
 	}, [loaded, sort]);
 
 	const handleSortChange = (v: string | null) => {
-		if (v === 'alpha' || v === 'new' || v === 'old') setSort(v);
-		else setSort('alpha');
+		const next: SortKey = v === 'alpha' || v === 'new' || v === 'old' ? v : 'new';
+		setSort(next);
+		localStorage.setItem(SORT_STORAGE_KEY, next);
 	};
 
 	const { createPlaylist, isCreating } = useCreatePlaylist({
