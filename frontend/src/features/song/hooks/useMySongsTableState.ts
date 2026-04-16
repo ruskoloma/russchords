@@ -24,6 +24,8 @@ export function useMySongsTableState(initial: LiteSongDto[]) {
 	const [query, setQuery] = useState('');
 	const [debouncedQuery] = useDebouncedValue(query, 250);
 
+	const [selectedTags, setSelectedTags] = useState<string[]>([]);
+
 	const [sortStatus, setSortStatus] = useState<DataTableSortStatus<LiteSongDto>>({
 		columnAccessor: 'name',
 		direction: 'asc',
@@ -31,11 +33,36 @@ export function useMySongsTableState(initial: LiteSongDto[]) {
 
 	const [selected, setSelected] = useState<LiteSongDto[]>([]);
 
+	// Union of every tag present across the loaded songs. Case-preserved
+	// from the first occurrence; deduped case-insensitively so "Worship"
+	// and "worship" collapse into a single filter option.
+	const availableTags = useMemo(() => {
+		const seen = new Map<string, string>();
+		for (const song of data) {
+			for (const t of song.tags ?? []) {
+				const key = t.toLowerCase();
+				if (!seen.has(key)) seen.set(key, t);
+			}
+		}
+		return [...seen.values()].sort((a, b) => a.localeCompare(b));
+	}, [data]);
+
 	const filtered = useMemo(() => {
-		if (!debouncedQuery.trim()) return data;
-		const q = debouncedQuery.trim().toLowerCase();
-		return data.filter((r) => r.name?.toLowerCase().includes(q));
-	}, [data, debouncedQuery]);
+		let result = data;
+		if (selectedTags.length > 0) {
+			const selectedLower = selectedTags.map((t) => t.toLowerCase());
+			result = result.filter((r) => {
+				const rowTags = (r.tags ?? []).map((t) => t.toLowerCase());
+				// A song matches if it has EVERY selected tag (AND semantics).
+				return selectedLower.every((sel) => rowTags.includes(sel));
+			});
+		}
+		if (debouncedQuery.trim()) {
+			const q = debouncedQuery.trim().toLowerCase();
+			result = result.filter((r) => r.name?.toLowerCase().includes(q));
+		}
+		return result;
+	}, [data, debouncedQuery, selectedTags]);
 
 	const sorted = useMemo(() => {
 		const { columnAccessor, direction } = sortStatus;
@@ -54,7 +81,7 @@ export function useMySongsTableState(initial: LiteSongDto[]) {
 	// then type a filter would still see "400 visible" of a 5-row match.
 	useEffect(() => {
 		setVisible(INITIAL_VISIBLE);
-	}, [debouncedQuery, sortStatus]);
+	}, [debouncedQuery, sortStatus, selectedTags]);
 
 	const loadMore = useCallback(() => {
 		setVisible((v) => Math.min(v + CHUNK_SIZE, sorted.length));
@@ -81,6 +108,9 @@ export function useMySongsTableState(initial: LiteSongDto[]) {
 		query,
 		setQuery,
 		debouncedQuery,
+		selectedTags,
+		setSelectedTags,
+		availableTags,
 		// sort
 		sortStatus,
 		setSortStatus,

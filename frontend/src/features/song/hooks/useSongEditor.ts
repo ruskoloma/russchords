@@ -3,7 +3,9 @@ import { getOriginalKey, parseSongText } from '../helpers/songParser';
 import { deltaBetweenKeys, nextKeyDown, nextKeyUp, transposeWholeText } from '../helpers/transposeText';
 import type { SongDto } from '../../../types';
 
-type InitialSong = Pick<SongDto, 'name' | 'content' | 'rootNote' | 'description'> & { artist?: string };
+type InitialSong = Pick<SongDto, 'name' | 'content' | 'rootNote' | 'description' | 'tags'> & {
+	artist?: string;
+};
 
 /**
  * Owns every piece of state the song editor needs:
@@ -27,6 +29,7 @@ export function useSongEditor(initial: InitialSong) {
 	const [content, setContent] = useState(initial.content);
 	const [rootNote, setRootNote] = useState<string | null>(initial.rootNote ?? null);
 	const [notes, setNotes] = useState<string>(initial.description ?? '');
+	const [tags, setTags] = useState<string[]>(initial.tags ?? []);
 
 	const [workKey, setWorkKey] = useState<string>(
 		initial.rootNote ?? getOriginalKey(parseSongText(initial.content)) ?? 'C',
@@ -89,6 +92,8 @@ export function useSongEditor(initial: InitialSong) {
 		handleRootNoteChange,
 		notes,
 		setNotes,
+		tags,
+		setTags,
 		// transposition
 		workKey,
 		handleTransposeUp,

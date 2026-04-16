@@ -1,5 +1,5 @@
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Stack, Text, Textarea } from '@mantine/core';
+import { Button, Card, Group, Stack, TagsInput, Text, Textarea } from '@mantine/core';
 import type { SongDto } from '../../types';
 import { useUpdateSong } from '../../features/song/hooks/song';
 import { useSongEditor } from '../../features/song/hooks/useSongEditor';
@@ -26,6 +26,7 @@ export const EditSongPage = () => {
 			content: editor.content,
 			rootNote: editor.rootNote || null,
 			description: editor.notes.trim() || null,
+			tags: editor.tags,
 		});
 	};
 
@@ -49,6 +50,14 @@ export const EditSongPage = () => {
 						onNameChange={editor.setName}
 						onArtistChange={editor.setArtist}
 						onRootNoteChange={editor.handleRootNoteChange}
+					/>
+					<TagsInput
+						label="Tags"
+						description="Press Enter to add a tag. Used for filtering your songs."
+						placeholder={editor.tags.length === 0 ? 'e.g. worship, slow, easy' : ''}
+						value={editor.tags}
+						onChange={editor.setTags}
+						clearable
 					/>
 					<SongEditorToolbar
 						workKey={editor.workKey}

@@ -152,7 +152,8 @@ public class PlaylistService : IPlaylistService
                         Artist = s.Artist,
                         SourceUrl = s.SourceUrl,
                         RootNote = s.RootNote,
-                        Order = ps.Order
+                        Order = ps.Order,
+                        Tags = s.Tags
                     }
                 ).ToList()
             };
@@ -225,7 +226,8 @@ public class PlaylistService : IPlaylistService
                 Artist = s.Artist,
                 SourceUrl = s.SourceUrl,
                 RootNote = s.RootNote,
-                Order = ps.Order
+                Order = ps.Order,
+                Tags = s.Tags
             };
 
         var songs = await songsQuery.ToListAsync();

@@ -1,7 +1,7 @@
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../features/song/components/Viewer/Viewer';
-import { ActionIcon, Box, Button, Divider, Group, Menu, MultiSelect, Stack, Text, TextInput, Tooltip } from '@mantine/core';
+import { ActionIcon, Badge, Box, Button, Divider, Group, Menu, MultiSelect, Stack, Text, TextInput, Tooltip } from '@mantine/core';
 import { modals } from '@mantine/modals';
 import { IconPlaylistAdd } from '@tabler/icons-react';
 import { CardHC } from '../../features/song/components/CardHC/CardHC';
@@ -152,6 +152,16 @@ export function SongPage() {
 					<BackButton />
 				</Group>
 			</Group>
+
+			{songDto.tags && songDto.tags.length > 0 && (
+				<Group gap={6} mt={4}>
+					{songDto.tags.map((t) => (
+						<Badge key={t} variant="light" color="brand" size="sm" radius="sm">
+							{t}
+						</Badge>
+					))}
+				</Group>
+			)}
 
 			<Divider my="sm" />
 

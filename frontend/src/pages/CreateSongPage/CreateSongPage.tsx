@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Stack, Text, Textarea } from '@mantine/core';
+import { Button, Card, Group, Stack, TagsInput, Text, Textarea } from '@mantine/core';
 import { fillMissingChords } from '../../features/song/helpers/songParser';
 import { parseChordPro } from '../../features/song/helpers/chordPro';
 import { useCreateSong } from '../../features/song/hooks/song';
@@ -20,6 +20,7 @@ export const CreateSongPage = () => {
 	const [content, setContent] = useState('');
 	const [rootNote, setRootNote] = useState<string | null>(null);
 	const [notes, setNotes] = useState('');
+	const [tags, setTags] = useState<string[]>([]);
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const onPickFile = () => fileInputRef.current?.click();
@@ -45,6 +46,7 @@ export const CreateSongPage = () => {
 			content,
 			rootNote: rootNote || null,
 			description: notes.trim() ? notes.trim() : null,
+			tags,
 		});
 	};
 
@@ -85,6 +87,14 @@ export const CreateSongPage = () => {
 						onNameChange={setName}
 						onArtistChange={setArtist}
 						onRootNoteChange={setRootNote}
+					/>
+					<TagsInput
+						label="Tags"
+						description="Press Enter to add a tag. Used for filtering your songs."
+						placeholder={tags.length === 0 ? 'e.g. worship, slow, easy' : ''}
+						value={tags}
+						onChange={setTags}
+						clearable
 					/>
 					<NoWrapTextarea
 						label="Content"

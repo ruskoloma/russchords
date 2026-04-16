@@ -12,6 +12,7 @@ export interface LiteSongDto {
 	sourceUrl?: string | null;
 	rootNote?: string | null;
 	order?: number | null;
+	tags?: string[];
 }
 
 export interface MyPlaylistDto {
