@@ -49,18 +49,38 @@ export const apiClient: AxiosInstance = axios.create({
 	headers: { 'Content-Type': 'application/json' },
 });
 
-apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
+/**
+ * Request interceptor — attaches the ID token synchronously from the
+ * in-memory user store. Key insight: `userManager.getUser()` is async
+ * because it reads from the configured `userStore` (localStorage), and
+ * `oidc-client-ts` internally checks expiry and may trigger a silent
+ * renew before resolving. That silent renew round-trips to Cognito via
+ * an iframe and can block for 2–5 seconds — which is why the first
+ * authenticated page load (e.g. My Songs) felt painfully slow.
+ *
+ * Fix: read the stored user object directly from localStorage (pure
+ * sync, ~0ms) and attach whatever token is there — even if technically
+ * expired. If the backend rejects it with a 401, the *response*
+ * interceptor below already handles silent refresh + retry. This way
+ * the common case (valid token) fires instantly, and the uncommon case
+ * (expired token) still works via one extra round-trip instead of
+ * pre-emptively blocking every single request.
+ */
+apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 	try {
-		const user = await userManager.getUser();
-		if (user?.id_token && !user.expired) {
-			config.headers.set('Authorization', `Bearer ${user.id_token}`);
-		} else {
-			config.headers.delete('Authorization');
+		// `oidc-client-ts` stores the user JSON under a key like
+		// `oidc.user:<authority>:<client_id>` in the configured store.
+		const storageKey = `oidc.user:${import.meta.env.VITE_COGNITO_AUTHORITY}:${import.meta.env.VITE_COGNITO_CLIENT_ID}`;
+		const raw = localStorage.getItem(storageKey);
+		if (raw) {
+			const stored = JSON.parse(raw) as { id_token?: string };
+			if (stored.id_token) {
+				config.headers.set('Authorization', `Bearer ${stored.id_token}`);
+			}
 		}
-	} catch (err) {
-		// Reading the user from storage should never throw, but log defensively
-		// so a corrupt storage entry can't silently break every request.
-		console.error('[api] failed to read user before request:', err);
+	} catch {
+		// localStorage read or JSON parse failed — proceed without token.
+		// The response interceptor will handle the 401.
 	}
 	return config;
 });
