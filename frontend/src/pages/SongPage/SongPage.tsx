@@ -1,9 +1,7 @@
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import type { SongDto } from '../../types';
 import { Viewer } from '../../features/song/components/Viewer/Viewer';
-import { ActionIcon, Badge, Box, Button, Divider, Group, Menu, MultiSelect, Stack, Text, TextInput, Tooltip } from '@mantine/core';
-import { modals } from '@mantine/modals';
-import { IconPlaylistAdd } from '@tabler/icons-react';
+import { Badge, Box, Divider, Group, Menu, MultiSelect, Text } from '@mantine/core';
 import { CardHC } from '../../features/song/components/CardHC/CardHC';
 import { BackButton } from '../../components';
 import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../features/song/hooks/song';
@@ -14,7 +12,9 @@ import {
 	useMyPlaylistsWithDetails,
 	useRemoveSongFromPlaylist,
 } from '../../features/playlist/hooks/playlists';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+const CREATE_PREFIX = '__create__:';
 
 export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
@@ -32,7 +32,7 @@ export function SongPage() {
 
 	const { playlists: myPlaylists } = useMyPlaylistsWithDetails(isAuthenticated);
 	const ownedPlaylists = useMemo(() => myPlaylists.filter((p) => p.ownerId === me), [myPlaylists, me]);
-	const options = useMemo(
+	const baseOptions = useMemo(
 		() => ownedPlaylists.map((p) => ({ value: String(p.playlistId), label: p.title })),
 		[ownedPlaylists],
 	);
@@ -42,76 +42,61 @@ export function SongPage() {
 		[ownedPlaylists, songDto.id],
 	);
 	const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(initiallySelected);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	useEffect(() => {
 		if (!isAuthenticated) return;
 		setSelectedPlaylists(initiallySelected);
 	}, [initiallySelected, isAuthenticated]);
 
+	// Build options dynamically: real playlists + a "Create ..." virtual entry
+	// when the search text doesn't match any existing playlist name.
+	const options = useMemo(() => {
+		const trimmed = searchQuery.trim();
+		if (!trimmed) return baseOptions;
+		const matchesExisting = baseOptions.some(
+			(o) => o.label.toLowerCase() === trimmed.toLowerCase(),
+		);
+		if (matchesExisting) return baseOptions;
+		return [
+			{ value: `${CREATE_PREFIX}${trimmed}`, label: `Create "${trimmed}"` },
+			...baseOptions,
+		];
+	}, [baseOptions, searchQuery]);
+
 	const { addSongToPlaylist, isAdding } = useAddSongToPlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
-	const { createPlaylist, isCreating } = useCreatePlaylist();
+	const { createPlaylist } = useCreatePlaylist();
 
-	const onChangePlaylists = async (values: string[]) => {
-		const prev = new Set(selectedPlaylists);
-		const next = new Set(values);
-		const toAdd = [...next].filter((id) => !prev.has(id));
-		const toRemove = [...prev].filter((id) => !next.has(id));
-		for (const id of toAdd) {
-			await addSongToPlaylist(parseInt(id, 10), songDto.id);
-		}
-		for (const id of toRemove) {
-			await removeSongFromPlaylist(parseInt(id, 10), songDto.id);
-		}
-		setSelectedPlaylists(values);
-	};
-
-	/**
-	 * Opens a small "just a name" modal to create a new playlist and immediately
-	 * adds the current song to it. Saves the user from navigating to /my-playlists,
-	 * creating a playlist, navigating back, and then adding the song.
-	 */
-	const openQuickCreatePlaylist = () => {
-		let title = '';
-		const onSubmit = async () => {
-			const trimmed = title.trim();
-			if (!trimmed) return;
-			const created = await createPlaylist({ title: trimmed, description: null });
-			if (created?.id) {
-				await addSongToPlaylist(created.id, songDto.id);
-				setSelectedPlaylists((prev) => [...prev, String(created.id)]);
+	const onChangePlaylists = useCallback(
+		async (values: string[]) => {
+			// Check if the user clicked the "Create ..." virtual option.
+			const createEntry = values.find((v) => v.startsWith(CREATE_PREFIX));
+			if (createEntry) {
+				const name = createEntry.slice(CREATE_PREFIX.length);
+				const created = await createPlaylist({ title: name, description: null });
+				if (created?.id) {
+					await addSongToPlaylist(created.id, songDto.id);
+					setSelectedPlaylists((prev) => [...prev, String(created.id)]);
+				}
+				setSearchQuery('');
+				return;
 			}
-			modals.closeAll();
-		};
-		modals.open({
-			title: 'New playlist',
-			size: 'sm',
-			children: (
-				<Stack gap="sm">
-					<TextInput
-						label="Playlist name"
-						placeholder="My new playlist"
-						autoFocus
-						onChange={(e) => (title = e.currentTarget.value)}
-						onKeyDown={(e) => {
-							if (e.key === 'Enter') void onSubmit();
-						}}
-					/>
-					<Text size="xs" c="dimmed">
-						"{songDto.name}" will be added to the new playlist automatically.
-					</Text>
-					<Group justify="flex-end" mt="xs">
-						<Button variant="light" color="gray" onClick={() => modals.closeAll()}>
-							Cancel
-						</Button>
-						<Button onClick={onSubmit} loading={isCreating || isAdding}>
-							Create
-						</Button>
-					</Group>
-				</Stack>
-			),
-		});
-	};
+
+			const prev = new Set(selectedPlaylists);
+			const next = new Set(values);
+			const toAdd = [...next].filter((id) => !prev.has(id));
+			const toRemove = [...prev].filter((id) => !next.has(id));
+			for (const id of toAdd) {
+				await addSongToPlaylist(parseInt(id, 10), songDto.id);
+			}
+			for (const id of toRemove) {
+				await removeSongFromPlaylist(parseInt(id, 10), songDto.id);
+			}
+			setSelectedPlaylists(values);
+		},
+		[selectedPlaylists, addSongToPlaylist, removeSongFromPlaylist, createPlaylist, songDto.id],
+	);
 
 	return (
 		<>
@@ -126,28 +111,19 @@ export function SongPage() {
 				</Box>
 				<Group wrap="nowrap" gap="xs">
 					{isAuthenticated && (
-						<>
-							<MultiSelect
-								data={options}
-								value={selectedPlaylists}
-								onChange={onChangePlaylists}
-								searchable
-								w={{ base: 160, xs: 200, sm: 260 }}
-								disabled={isAdding || isRemoving}
-								placeholder="Add to playlists..."
-								className="hide-multiselect-tags"
-							/>
-							<Tooltip label="New playlist" withArrow>
-								<ActionIcon
-									variant="subtle"
-									size="lg"
-									onClick={openQuickCreatePlaylist}
-									aria-label="Create new playlist and add this song"
-								>
-									<IconPlaylistAdd size={20} />
-								</ActionIcon>
-							</Tooltip>
-						</>
+						<MultiSelect
+							data={options}
+							value={selectedPlaylists}
+							onChange={onChangePlaylists}
+							searchable
+							searchValue={searchQuery}
+							onSearchChange={setSearchQuery}
+							w={{ base: 180, xs: 220, sm: 280 }}
+							disabled={isAdding || isRemoving}
+							placeholder="Add to playlists..."
+							className="hide-multiselect-tags"
+							nothingFoundMessage="Type to create a new playlist"
+						/>
 					)}
 					<BackButton />
 				</Group>

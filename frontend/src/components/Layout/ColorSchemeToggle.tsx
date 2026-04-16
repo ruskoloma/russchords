@@ -1,13 +1,12 @@
-import { ActionIcon, Tooltip, useMantineColorScheme } from '@mantine/core';
+import { NavLink, useMantineColorScheme } from '@mantine/core';
 import { IconDeviceDesktop, IconMoon, IconSun } from '@tabler/icons-react';
 
 /**
- * Cycles through auto → light → dark → auto, persisting via the Mantine
+ * Cycles through auto -> light -> dark -> auto, persisting via the Mantine
  * color-scheme manager configured in `src/theme/index.ts`.
  *
- * The icon reflects the *currently active* scheme (not the next state) so a
- * user glancing at the header can immediately tell what mode the app is in.
- * An accessible label describes the *next* action for keyboard users.
+ * Renders as a sidebar NavLink so it sits at the bottom of the nav panel
+ * on desktop and inside the burger menu on mobile.
  */
 export function ColorSchemeToggle() {
 	const { colorScheme, setColorScheme } = useMantineColorScheme();
@@ -15,25 +14,26 @@ export function ColorSchemeToggle() {
 	const next = colorScheme === 'auto' ? 'light' : colorScheme === 'light' ? 'dark' : 'auto';
 	const label =
 		colorScheme === 'auto'
-			? 'Using system color scheme — click for light mode'
+			? 'Theme: system'
 			: colorScheme === 'light'
-				? 'Light mode — click for dark mode'
-				: 'Dark mode — click for system mode';
+				? 'Theme: light'
+				: 'Theme: dark';
 
 	const icon =
-		colorScheme === 'light' ? <IconSun size={20} /> : colorScheme === 'dark' ? <IconMoon size={20} /> : <IconDeviceDesktop size={20} />;
+		colorScheme === 'light' ? (
+			<IconSun size={16} stroke={1.5} />
+		) : colorScheme === 'dark' ? (
+			<IconMoon size={16} stroke={1.5} />
+		) : (
+			<IconDeviceDesktop size={16} stroke={1.5} />
+		);
 
 	return (
-		<Tooltip label={label} position="bottom-end" withArrow>
-			<ActionIcon
-				onClick={() => setColorScheme(next)}
-				aria-label={label}
-				size="lg"
-				variant="subtle"
-				color="gray"
-			>
-				{icon}
-			</ActionIcon>
-		</Tooltip>
+		<NavLink
+			onClick={() => setColorScheme(next)}
+			label={label}
+			leftSection={icon}
+			aria-label={label}
+		/>
 	);
 }

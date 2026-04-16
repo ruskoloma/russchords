@@ -54,9 +54,6 @@ export const MySongsPage: React.FC = () => {
 				isDeleting={actions.isDeleting}
 				isMobile={!!isMobile}
 				onDeleteSelected={() => actions.confirmDelete(table.selected)}
-				availableTags={table.availableTags}
-				selectedTags={table.selectedTags}
-				onTagsChange={table.setSelectedTags}
 			/>
 
 			<DataTable<LiteSongDto>

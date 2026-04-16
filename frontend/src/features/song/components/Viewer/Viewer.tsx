@@ -98,63 +98,61 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 
 	return (
 		<div>
-			<Group justify="space-between" h={'2.25em'}>
-				<Group gap="0.25em">
-					<ActionIcon onClick={handleChangeHideControls} aria-label={hideChords ? 'Unhide' : 'Hide'}>
-						{hideControls ? <IconAdjustments /> : <IconAdjustmentsOff />}
+			<Group justify="space-between" h={'2.25em'} wrap="nowrap" gap="xs">
+				<Group gap={4} wrap="nowrap">
+					<ActionIcon onClick={handleChangeHideControls} aria-label={hideChords ? 'Unhide' : 'Hide'} size="sm">
+						{hideControls ? <IconAdjustments size={18} /> : <IconAdjustmentsOff size={18} />}
 					</ActionIcon>
 					{!hideControls && (
-						<ActionIcon onClick={handleChangeHideChords} aria-label={hideChords ? 'Unhide' : 'Hide'}>
-							{hideChords ? <IconCopyright /> : <IconNoCopyright />}
+						<ActionIcon onClick={handleChangeHideChords} aria-label={hideChords ? 'Unhide' : 'Hide'} size="sm">
+							{hideChords ? <IconCopyright size={18} /> : <IconNoCopyright size={18} />}
 						</ActionIcon>
 					)}
 				</Group>
 				{!hideControls && (
-					<Group gap="0.25em">
-						<ActionIcon onClick={handleFontSizeDown} aria-label="Smaller font" disabled={fontSize < 5}>
-							<IconMinus />
+					<Group gap={4} wrap="nowrap">
+						<ActionIcon onClick={handleFontSizeDown} aria-label="Smaller font" disabled={fontSize < 5} size="sm">
+							<IconMinus size={16} />
 						</ActionIcon>
-						<ActionIcon onClick={handleFontSizeUp} aria-label="Larger font" disabled={fontSize > 40}>
-							<IconPlus />
+						<ActionIcon onClick={handleFontSizeUp} aria-label="Larger font" disabled={fontSize > 40} size="sm">
+							<IconPlus size={16} />
 						</ActionIcon>
 					</Group>
 				)}
 				{!hideControls && (
-					<Group gap="0.25em" wrap="nowrap">
-						<ActionIcon onClick={handleKeyDown} aria-label="Down">
-							<IconArrowDown />
+					<Group gap={4} wrap="nowrap">
+						<ActionIcon onClick={handleKeyDown} aria-label="Down" size="sm">
+							<IconArrowDown size={16} />
 						</ActionIcon>
-						<Select placeholder="Select key" data={ALL_KEYS} value={key} onChange={handleChangeKey} w="5em" />
-						<ActionIcon onClick={handleKeyUp} aria-label="Up">
-							<IconArrowUp />
+						<Select placeholder="Key" data={ALL_KEYS} value={key} onChange={handleChangeKey} w="4.5em" size="xs" />
+						<ActionIcon onClick={handleKeyUp} aria-label="Up" size="sm">
+							<IconArrowUp size={16} />
 						</ActionIcon>
 						<CapoHintBadge songKey={key} />
 					</Group>
 				)}
 				{!hideControls && (
-					<Group>
-						<Menu shadow="md" width={220}>
-							<Menu.Target>
-								<ActionIcon aria-label="Options">
-									<IconDotsVertical />
-								</ActionIcon>
-							</Menu.Target>
+					<Menu shadow="md" width={220}>
+						<Menu.Target>
+							<ActionIcon aria-label="Options" size="sm">
+								<IconDotsVertical size={18} />
+							</ActionIcon>
+						</Menu.Target>
 
-							<Menu.Dropdown>
-								<Menu.Label>Tools</Menu.Label>
-								<Menu.Item leftSection={<IconGuitarPick size={14} />} onClick={openChordDiagrams}>
-									Chord diagrams
-								</Menu.Item>
-								{menuItems && menuItems.length > 0 && (
-									<>
-										<Menu.Divider />
-										<Menu.Label>Song</Menu.Label>
-										{menuItems}
-									</>
-								)}
-							</Menu.Dropdown>
-						</Menu>
-					</Group>
+						<Menu.Dropdown>
+							<Menu.Label>Tools</Menu.Label>
+							<Menu.Item leftSection={<IconGuitarPick size={14} />} onClick={openChordDiagrams}>
+								Chord diagrams
+							</Menu.Item>
+							{menuItems && menuItems.length > 0 && (
+								<>
+									<Menu.Divider />
+									<Menu.Label>Song</Menu.Label>
+									{menuItems}
+								</>
+							)}
+						</Menu.Dropdown>
+					</Menu>
 				)}
 			</Group>
 			<ViewerBase content={parsed} transposeChord={handleTransposeChord} hideChords={hideChords} fontSize={fontSize} />

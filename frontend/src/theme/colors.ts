@@ -47,17 +47,20 @@ export const accentColor: MantineColorsTuple = [
 	'#6b2712',
 ];
 
-// Muted olive — chord lines inside the song viewer.
-// Intentionally low-chroma so stage reading isn't visually fatiguing.
+// Chord lines — needs good contrast on BOTH light and dark backgrounds.
+// Light mode uses shade 7 (dark teal-green on cream) via primaryShade.
+// Dark mode uses shade 4 (bright teal on slate) via primaryShade.
+// Shifted from the old muted olive to a more saturated teal-green so
+// chords pop against lyrics in both schemes without fatiguing the eye.
 export const chordColor: MantineColorsTuple = [
-	'#f2f2eb',
-	'#dcdccc',
-	'#bdbea0',
-	'#9ba074',
-	'#7e8452',
-	'#6c7241',
-	'#636738',
-	'#52562a',
-	'#454824',
-	'#363919',
+	'#e8f5f0',
+	'#c8e6da',
+	'#93ccb4',
+	'#5fb08e',
+	'#3a9973',
+	'#2d8562',
+	'#267555',
+	'#1e6146',
+	'#175239',
+	'#10412d',
 ];
