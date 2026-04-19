@@ -1,2 +1,2 @@
 export * from './MyPlaylistsPage';
-export * from './myPlaylistsPageLoader';
+export * from './myPlaylistsPageLoader.ts';

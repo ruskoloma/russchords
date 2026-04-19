@@ -12,6 +12,7 @@ export interface LiteSongDto {
 	sourceUrl?: string | null;
 	rootNote?: string | null;
 	order?: number | null;
+	tags?: string[];
 }
 
 export interface MyPlaylistDto {
@@ -19,10 +20,13 @@ export interface MyPlaylistDto {
 	ownerId: string;
 	title: string;
 	description?: string | null;
-	createdAt?: string | null;
 	isPinned: boolean;
 	songs: LiteSongDto[];
 	memberRecordId: number;
+	/** ISO 8601 UTC timestamp from the backend. Optional so cached responses don't crash. */
+	createdAt?: string | null;
+	/** ISO 8601 UTC timestamp from the backend. */
+	updatedAt?: string | null;
 }
 
 export interface CreatePlaylistDto {

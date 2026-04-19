@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Option 2: Open book with a musical note rising from the pages -->
+  <rect width="512" height="512" rx="64" fill="#f5f3f0"/>
+  <!-- Book spine (center fold) -->
+  <line x1="256" y1="140" x2="256" y2="400" stroke="#3a3327" stroke-width="4"/>
+  <!-- Left page -->
+  <path d="M100 160 Q178 140 256 160 V380 Q178 360 100 380 Z" fill="none" stroke="#3a3327" stroke-width="10" stroke-linejoin="round"/>
+  <!-- Right page -->
+  <path d="M412 160 Q334 140 256 160 V380 Q334 360 412 380 Z" fill="none" stroke="#3a3327" stroke-width="10" stroke-linejoin="round"/>
+  <!-- Stave lines on left page (subtle) -->
+  <g stroke="#c5c0b5" stroke-width="2">
+    <line x1="130" y1="220" x2="240" y2="210"/>
+    <line x1="130" y1="240" x2="240" y2="230"/>
+    <line x1="130" y1="260" x2="240" y2="250"/>
+    <line x1="130" y1="280" x2="240" y2="270"/>
+  </g>
+  <!-- Musical note rising from the right page (terracotta) -->
+  <g fill="#cc603f">
+    <ellipse cx="320" cy="300" rx="22" ry="16" transform="rotate(-15 320 300)"/>
+    <rect x="340" y="180" width="6" height="122" rx="3"/>
+    <path d="M346 180 Q370 170 360 200 Q350 220 346 210 Z"/>
+  </g>
+</svg>

@@ -11,3 +11,4 @@ terraform.tfstate*
 ssm_sync.py
 terraform.tfvars
 russchords-parser*.zip
+.claude

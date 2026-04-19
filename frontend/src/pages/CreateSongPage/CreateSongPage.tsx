@@ -1,11 +1,17 @@
-import { useState, useRef } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Group, Select, Stack, Text, TextInput } from '@mantine/core';
-import { KEYS, fillMissingChords } from '../../helpers/songParser';
-import { parseChordPro } from '../../helpers/chordPro';
-import { useCreateSong } from '../../hooks/song';
+import { Button, Card, Group, Stack, TagsInput, Text, Textarea } from '@mantine/core';
+import { fillMissingChords } from '../../features/song/helpers/songParser';
+import { parseChordPro } from '../../features/song/helpers/chordPro';
+import { useCreateSong } from '../../features/song/hooks/song';
+import { SongMetaFields } from '../../features/song/components/SongMetaFields';
 import { NoWrapTextarea, BackButton } from '../../components';
 
+/**
+ * Create song page. Reuses SongMetaFields with Create-local state plus a
+ * ChordPro file import path that pre-populates the fields. No transpose
+ * toolbar here — new songs start empty, there's nothing to transpose yet.
+ */
 export const CreateSongPage = () => {
 	const navigate = useNavigate();
 
@@ -13,6 +19,8 @@ export const CreateSongPage = () => {
 	const [artist, setArtist] = useState('');
 	const [content, setContent] = useState('');
 	const [rootNote, setRootNote] = useState<string | null>(null);
+	const [notes, setNotes] = useState('');
+	const [tags, setTags] = useState<string[]>([]);
 
 	const fileInputRef = useRef<HTMLInputElement | null>(null);
 	const onPickFile = () => fileInputRef.current?.click();
@@ -30,8 +38,6 @@ export const CreateSongPage = () => {
 
 	const { createSong, isCreating } = useCreateSong({ onSuccess: (id) => navigate(`/song/${id}`) });
 
-	const keyOptions = KEYS.map((k) => ({ value: k.name, label: k.name }));
-
 	const onSave = async () => {
 		if (!name.trim()) return;
 		await createSong({
@@ -39,21 +45,23 @@ export const CreateSongPage = () => {
 			artist: artist.trim() ? artist : null,
 			content,
 			rootNote: rootNote || null,
+			description: notes.trim() ? notes.trim() : null,
+			tags,
 		});
 	};
 
-	const onCancel = () => {
-		navigate('/my-songs');
-	};
+	const onCancel = () => navigate('/my-songs');
 
 	return (
 		<Stack gap="md">
-			<Group justify="space-between" align="center">
-				<BackButton />
-				<Text fw={700} size="xl">
-					Create song
-				</Text>
-				<Group>
+			<Group justify="space-between" align="center" wrap="wrap">
+				<Group gap="xs">
+					<BackButton />
+					<Text fw={700} size="xl">
+						Create song
+					</Text>
+				</Group>
+				<Group gap="xs">
 					<Button variant="outline" onClick={() => setContent((c) => fillMissingChords(c))}>
 						Fill chords
 					</Button>
@@ -72,18 +80,21 @@ export const CreateSongPage = () => {
 
 			<Card withBorder shadow="sm">
 				<Stack gap="md">
-					<TextInput label="Name" value={name} onChange={(e) => setName(e.currentTarget.value)} required />
-					<TextInput label="Artist" value={artist} onChange={(e) => setArtist(e.currentTarget.value)} />
-					<Select
-						label="Root note"
-						placeholder="Not set"
-						data={keyOptions}
-						value={rootNote}
-						onChange={setRootNote}
-						searchable
+					<SongMetaFields
+						name={name}
+						artist={artist}
+						rootNote={rootNote}
+						onNameChange={setName}
+						onArtistChange={setArtist}
+						onRootNoteChange={setRootNote}
+					/>
+					<TagsInput
+						label="Tags"
+						description="Press Enter to add a tag. Used for filtering your songs."
+						placeholder={tags.length === 0 ? 'e.g. worship, slow, easy' : ''}
+						value={tags}
+						onChange={setTags}
 						clearable
-						nothingFoundMessage="No keys"
-						checkIconPosition="right"
 					/>
 					<NoWrapTextarea
 						label="Content"
@@ -92,6 +103,15 @@ export const CreateSongPage = () => {
 						autosize
 						minRows={16}
 						spellCheck={false}
+					/>
+					<Textarea
+						label="Notes"
+						description="Private notes about this song — arrangement hints, capo tips, vocal reminders."
+						placeholder="Optional"
+						value={notes}
+						onChange={(e) => setNotes(e.currentTarget.value)}
+						autosize
+						minRows={3}
 					/>
 					<Group justify="flex-end">
 						<Button variant="light" color="gray" onClick={onCancel}>

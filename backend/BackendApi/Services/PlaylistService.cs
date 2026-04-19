@@ -139,6 +139,8 @@ public class PlaylistService : IPlaylistService
                 CreatedAt = p.CreatedAt,
                 IsPinned = m.IsPinned,
                 MemberRecordId = m.Id,
+                CreatedAt = p.CreatedAt,
+                UpdatedAt = p.UpdatedAt,
                 Songs = (
                     from ps in _context.PlaylistSongs
                     where ps.PlaylistId == p.Id
@@ -151,7 +153,8 @@ public class PlaylistService : IPlaylistService
                         Artist = s.Artist,
                         SourceUrl = s.SourceUrl,
                         RootNote = s.RootNote,
-                        Order = ps.Order
+                        Order = ps.Order,
+                        Tags = s.Tags
                     }
                 ).ToList()
             };
@@ -224,7 +227,8 @@ public class PlaylistService : IPlaylistService
                 Artist = s.Artist,
                 SourceUrl = s.SourceUrl,
                 RootNote = s.RootNote,
-                Order = ps.Order
+                Order = ps.Order,
+                Tags = s.Tags
             };
 
         var songs = await songsQuery.ToListAsync();
@@ -239,6 +243,8 @@ public class PlaylistService : IPlaylistService
             IsPinned = isPinned,
             Songs = songs,
             MemberRecordId = memberRecordId,
+            CreatedAt = playlist.CreatedAt,
+            UpdatedAt = playlist.UpdatedAt,
         };
     }
 }

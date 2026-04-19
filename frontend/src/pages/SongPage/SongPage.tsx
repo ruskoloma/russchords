@@ -1,17 +1,23 @@
-import { useLoaderData, useNavigate, useSearchParams } from 'react-router-dom';
+import { useLoaderData, useNavigate } from 'react-router-dom';
 import type { SongDto } from '../../types';
-import { Viewer } from '../../components/Viewer/Viewer';
-import { ActionIcon, Box, Divider, Group, Menu, Text, MultiSelect } from '@mantine/core';
+import { Viewer } from '../../features/song/components/Viewer/Viewer';
+import { ActionIcon, Badge, Box, Divider, Group, Menu, MultiSelect, Text } from '@mantine/core';
 import { showNotification } from '@mantine/notifications';
-import { CardHC } from '../../components/CardHC/CardHC';
+import { CardHC } from '../../features/song/components/CardHC/CardHC';
 import { BackButton } from '../../components';
-import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../hooks/song';
-import { useStarredState } from '../../hooks/starred';
-import { IconCopy, IconStar, IconStarFilled } from '@tabler/icons-react';
+import { useCloneSong, useDeleteSongs, useIsSongOwner } from '../../features/song/hooks/song';
+import { useStarredState } from '../../features/song/hooks/starred';
 import { useAuth } from 'react-oidc-context';
-import { useMyPlaylistsWithDetails, useAddSongToPlaylist, useRemoveSongFromPlaylist } from '../../hooks/playlists';
-import { useEffect, useMemo, useState } from 'react';
-import { useSourceContext } from '../../contexts/SourceContext';
+import {
+	useAddSongToPlaylist,
+	useCreatePlaylist,
+	useMyPlaylistsWithDetails,
+	useRemoveSongFromPlaylist,
+} from '../../features/playlist/hooks/playlists';
+import { IconCopy, IconStar, IconStarFilled } from '@tabler/icons-react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+
+const CREATE_PREFIX = '__create__:';
 
 export function SongPage() {
 	const songDto = useLoaderData() as SongDto;
@@ -20,11 +26,8 @@ export function SongPage() {
 	const me = user?.profile?.sub;
 	const navigate = useNavigate();
 	const isOwner = useIsSongOwner(songDto.authorId);
-	const [searchParams] = useSearchParams();
-	const { setLastSongPageSource } = useSourceContext();
 
 	const { isStarred, isLoading, unstarSong, starSong } = useStarredState(songDto.id);
-
 	const { cloneSong, isCloning } = useCloneSong({ navigateOnSuccess: true });
 	const { deleteSongs, isDeleting } = useDeleteSongs();
 
@@ -33,7 +36,7 @@ export function SongPage() {
 
 	const { playlists: myPlaylists } = useMyPlaylistsWithDetails(isAuthenticated);
 	const ownedPlaylists = useMemo(() => myPlaylists.filter((p) => p.ownerId === me), [myPlaylists, me]);
-	const options = useMemo(
+	const baseOptions = useMemo(
 		() => ownedPlaylists.map((p) => ({ value: String(p.playlistId), label: p.title })),
 		[ownedPlaylists],
 	);
@@ -43,49 +46,69 @@ export function SongPage() {
 		[ownedPlaylists, songDto.id],
 	);
 	const [selectedPlaylists, setSelectedPlaylists] = useState<string[]>(initiallySelected);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	useEffect(() => {
 		if (!isAuthenticated) return;
 		setSelectedPlaylists(initiallySelected);
 	}, [initiallySelected, isAuthenticated]);
 
-	// Store the source in context when this song page loads
-	useEffect(() => {
-		const source = searchParams.get('source');
-		if (source) {
-			setLastSongPageSource(source);
-		}
-	}, [searchParams, setLastSongPageSource]);
+	const options = useMemo(() => {
+		const trimmed = searchQuery.trim();
+		if (!trimmed) return baseOptions;
+		const matchesExisting = baseOptions.some((o) => o.label.toLowerCase() === trimmed.toLowerCase());
+		if (matchesExisting) return baseOptions;
+		return [{ value: `${CREATE_PREFIX}${trimmed}`, label: `Create "${trimmed}"` }, ...baseOptions];
+	}, [baseOptions, searchQuery]);
 
 	const { addSongToPlaylist, isAdding } = useAddSongToPlaylist();
 	const { removeSongFromPlaylist, isRemoving } = useRemoveSongFromPlaylist();
-	const onChangePlaylists = async (values: string[]) => {
-		const prev = new Set(selectedPlaylists);
-		const next = new Set(values);
-		const toAdd = [...next].filter((id) => !prev.has(id));
-		const toRemove = [...prev].filter((id) => !next.has(id));
-		for (const id of toAdd) {
-			await addSongToPlaylist(parseInt(id, 10), songDto.id);
-		}
-		for (const id of toRemove) {
-			await removeSongFromPlaylist(parseInt(id, 10), songDto.id);
-		}
-		setSelectedPlaylists(values);
-	};
+	const { createPlaylist } = useCreatePlaylist();
+
+	const onChangePlaylists = useCallback(
+		async (values: string[]) => {
+			const createEntry = values.find((v) => v.startsWith(CREATE_PREFIX));
+			if (createEntry) {
+				const name = createEntry.slice(CREATE_PREFIX.length);
+				const created = await createPlaylist({ title: name, description: null });
+				if (created?.id) {
+					await addSongToPlaylist(created.id, songDto.id);
+					setSelectedPlaylists((prev) => [...prev, String(created.id)]);
+				}
+				setSearchQuery('');
+				return;
+			}
+
+			const prev = new Set(selectedPlaylists);
+			const next = new Set(values);
+			const toAdd = [...next].filter((id) => !prev.has(id));
+			const toRemove = [...prev].filter((id) => !next.has(id));
+			for (const id of toAdd) {
+				await addSongToPlaylist(parseInt(id, 10), songDto.id);
+			}
+			for (const id of toRemove) {
+				await removeSongFromPlaylist(parseInt(id, 10), songDto.id);
+			}
+			setSelectedPlaylists(values);
+		},
+		[selectedPlaylists, addSongToPlaylist, removeSongFromPlaylist, createPlaylist, songDto.id],
+	);
 
 	return (
 		<>
-			<Group justify="space-between">
-				<Box maw={'350px'}>
+			<Group justify="space-between" wrap="wrap">
+				<Box style={{ flex: '1 1 260px', minWidth: 0 }}>
 					<Text size="xl" fw={700} truncate>
 						{songDto.name}
 					</Text>
-					<Text size="md" truncate>{songDto.artist}</Text>
+					<Text size="md" truncate>
+						{songDto.artist}
+					</Text>
 				</Box>
-				<Group wrap="nowrap" maw={'100%'}>
+				<Group wrap="nowrap" gap="xs">
 					{isAuthenticated && (
 						<ActionIcon
-							variant={'subtle'}
+							variant="subtle"
 							color="yellow"
 							onClick={isStarred ? unstarSong : starSong}
 							disabled={isLoading}
@@ -102,18 +125,28 @@ export function SongPage() {
 							value={selectedPlaylists}
 							onChange={onChangePlaylists}
 							searchable
-							miw={180}
-							maw={280}
+							searchValue={searchQuery}
+							onSearchChange={setSearchQuery}
+							w={{ base: 180, xs: 220, sm: 280 }}
 							disabled={isAdding || isRemoving}
 							placeholder="Add to playlists..."
 							className="hide-multiselect-tags"
-							flex={'1 1 auto'}
+							nothingFoundMessage="Type to create a new playlist"
 						/>
 					)}
-					<Box flex={'0 0'}>
-						<BackButton /></Box>
+					<BackButton />
 				</Group>
 			</Group>
+
+			{songDto.tags && songDto.tags.length > 0 && (
+				<Group gap={6} mt={4}>
+					{songDto.tags.map((t) => (
+						<Badge key={t} variant="light" color="brand" size="sm" radius="sm">
+							{t}
+						</Badge>
+					))}
+				</Group>
+			)}
 
 			<Divider my="sm" />
 
@@ -153,6 +186,15 @@ export function SongPage() {
 					),
 				].filter(Boolean)}
 			/>
+
+			{songDto.description && songDto.description.trim() && (
+				<>
+					<Divider my="sm" label="Notes" labelPosition="left" />
+					<Text size="sm" c="dimmed" style={{ whiteSpace: 'pre-wrap' }}>
+						{songDto.description}
+					</Text>
+				</>
+			)}
 
 			<Divider />
 

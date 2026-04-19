@@ -3,35 +3,49 @@ import { Box, Button, Card, Divider, Group, Select, SimpleGrid, Stack, Text, Tex
 import { modals } from '@mantine/modals';
 import { useMemo, useState } from 'react';
 import type { LiteSongDto, MyPlaylistDto } from '../../types';
-import { useCreatePlaylist } from '../../hooks/playlists';
+import { useCreatePlaylist } from '../../features/playlist/hooks/playlists';
 import { IconPin, IconPlaylistAdd } from '@tabler/icons-react';
 
 type SortKey = 'alpha' | 'new' | 'old';
 
-export default function MyPlaylistsPage() {
+const SORT_STORAGE_KEY = 'russchords-my-playlists-sort';
+
+/**
+ * Backward-compatible "created order" for a playlist. Prefers the real
+ * backend `createdAt` timestamp; falls back to `playlistId` for responses
+ * cached before the backend started sending it (playlistId is auto-
+ * incremented so it gives the same ordering, just not as precise).
+ */
+function createdOrder(p: MyPlaylistDto): number {
+	if (p.createdAt) return Date.parse(p.createdAt);
+	return p.playlistId ?? 0;
+}
+
+export function MyPlaylistsPage() {
 	const loaded = useLoaderData() as MyPlaylistDto[];
 	const navigate = useNavigate();
 
-	const [sort, setSort] = useState<SortKey>('alpha');
+	const [sort, setSort] = useState<SortKey>(() => {
+		const saved = typeof localStorage !== 'undefined' ? localStorage.getItem(SORT_STORAGE_KEY) : null;
+		if (saved === 'alpha' || saved === 'new' || saved === 'old') return saved;
+		return 'new';
+	});
 
 	const playlists = useMemo(() => {
 		const arr = [...(loaded ?? [])];
 		arr.sort((a, b) => {
 			if (a.isPinned !== b.isPinned) return a.isPinned ? -1 : 1;
 			if (sort === 'alpha') return (a.title ?? '').localeCompare(b.title ?? '');
-			const aCreated = a.createdAt ? Date.parse(a.createdAt) : Number.NaN;
-			const bCreated = b.createdAt ? Date.parse(b.createdAt) : Number.NaN;
-			const aSafe = Number.isNaN(aCreated) ? a.playlistId ?? 0 : aCreated;
-			const bSafe = Number.isNaN(bCreated) ? b.playlistId ?? 0 : bCreated;
-			if (sort === 'new') return bSafe - aSafe;
-			return aSafe - bSafe;
+			if (sort === 'new') return createdOrder(b) - createdOrder(a);
+			return createdOrder(a) - createdOrder(b);
 		});
 		return arr;
 	}, [loaded, sort]);
 
 	const handleSortChange = (v: string | null) => {
-		if (v === 'alpha' || v === 'new' || v === 'old') setSort(v);
-		else setSort('alpha');
+		const next: SortKey = v === 'alpha' || v === 'new' || v === 'old' ? v : 'new';
+		setSort(next);
+		localStorage.setItem(SORT_STORAGE_KEY, next);
 	};
 
 	const { createPlaylist, isCreating } = useCreatePlaylist({
@@ -98,8 +112,8 @@ export default function MyPlaylistsPage() {
 						onChange={handleSortChange}
 						data={[
 							{ value: 'alpha', label: 'Alphabetical' },
-							{ value: 'new', label: 'Newest created first' },
-							{ value: 'old', label: 'Oldest created first' },
+							{ value: 'new', label: 'Newest first' },
+							{ value: 'old', label: 'Oldest first' },
 						]}
 						w={220}
 					/>
@@ -128,12 +142,12 @@ export default function MyPlaylistsPage() {
 									</Text>
 									{pl.isPinned && (
 										<Box style={{ position: 'absolute', top: 8, right: 8 }}>
-											<IconPin size={20} color={'red'} />
+											<IconPin size={20} color="red" />
 										</Box>
 									)}
 								</Group>
 
-								<Box flex={'1'} />
+								<Box flex="1" />
 
 								{firstFive.length === 0 ? (
 									<Text size="sm" c="dimmed">
@@ -142,8 +156,8 @@ export default function MyPlaylistsPage() {
 								) : (
 									<Stack gap={2}>
 										{firstFive.map((s) => (
-											<Box>
-												<Text key={s.id} size="sm" c="dimmed" truncate>
+											<Box key={s.id}>
+												<Text size="sm" c="dimmed" truncate>
 													{s.name}
 												</Text>
 												<Divider />
