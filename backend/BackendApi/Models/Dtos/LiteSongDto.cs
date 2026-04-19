@@ -8,4 +8,5 @@ public class LiteSongDto
     public string? SourceUrl { get; set; }
     public string? RootNote { get; set; }
     public int? Order { get; set; }
+    public List<string> Tags { get; set; } = new();
 }

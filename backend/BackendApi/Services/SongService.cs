@@ -41,6 +41,7 @@ public class SongService : ISongService
             Artist = dto.Artist,
             Description = dto.Description,
             RootNote = dto.RootNote,
+            Tags = NormalizeTags(dto.Tags),
             AuthorId = authorId,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -67,8 +68,23 @@ public class SongService : ISongService
         entity.Description = dto.Description;
         entity.RootNote = dto.RootNote;
 
+        // Null means "don't touch tags"; anything else replaces the whole set
+        // after trimming + deduping so the DB never holds empty or duplicate
+        // entries that would confuse the distinct-tags query on the frontend.
+        if (dto.Tags != null) entity.Tags = NormalizeTags(dto.Tags);
+
         entity.UpdatedAt = DateTime.UtcNow;
         await _context.SaveChangesAsync();
+    }
+
+    private static List<string> NormalizeTags(IEnumerable<string>? raw)
+    {
+        if (raw == null) return new List<string>();
+        return raw
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Select(t => t.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     public async Task DeleteAsync(int id, string userId)
@@ -159,7 +175,8 @@ public class SongService : ISongService
                 Name = s.Name,
                 Artist = s.Artist,
                 SourceUrl = s.SourceUrl,
-                RootNote = s.RootNote
+                RootNote = s.RootNote,
+                Tags = s.Tags
             });
 
         return await query.ToListAsync();
@@ -176,7 +193,8 @@ public class SongService : ISongService
                 Name = s.Name,
                 Artist = s.Artist,
                 SourceUrl = s.SourceUrl,
-                RootNote = s.RootNote
+                RootNote = s.RootNote,
+                Tags = s.Tags
             });
 
         return await query.ToListAsync();

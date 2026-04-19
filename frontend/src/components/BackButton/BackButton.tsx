@@ -1,7 +1,6 @@
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@mantine/core';
 import { IconArrowLeft } from '@tabler/icons-react';
-import { useSourceContext } from '../../contexts/SourceContext';
 
 interface BackButtonProps {
     label?: string;
@@ -10,6 +9,15 @@ interface BackButtonProps {
     className?: string;
 }
 
+/**
+ * Back button that prefers the explicit `?source=` URL param (set by
+ * `createNavigationUrl`) and falls back to the browser history.
+ *
+ * Used to live in tandem with a `SourceContext` that remembered the last
+ * song-page source across navigations. That context was redundant — the
+ * source travels with the URL, and `navigate(-1)` is a safe fallback for
+ * any case where the param wasn't threaded through.
+ */
 export function BackButton({
     label = 'Back',
     variant = '',
@@ -18,19 +26,13 @@ export function BackButton({
 }: BackButtonProps) {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { lastSongPageSource } = useSourceContext();
 
     const source = searchParams.get('source');
 
     const handleBack = () => {
         if (source) {
-            // Use the source from URL parameters first
             navigate(source);
-        } else if (lastSongPageSource) {
-            // Fall back to the last song page source from context
-            navigate(lastSongPageSource);
         } else {
-            // Final fallback - go back in browser history
             navigate(-1);
         }
     };

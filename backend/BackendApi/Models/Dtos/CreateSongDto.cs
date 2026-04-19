@@ -7,4 +7,5 @@ public class CreateSongDto
     public string? Description { get; set; }
     public string Content { get; set; } = string.Empty;
     public string? RootNote { get; set; }
+    public List<string> Tags { get; set; } = new();
 }

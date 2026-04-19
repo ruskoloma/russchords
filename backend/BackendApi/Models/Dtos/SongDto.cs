@@ -12,4 +12,5 @@ public class SongDto
     public string? SourceUrl { get; set; }
     public string AuthorId { get; set; }
     public string? RootNote { get; set; }
+    public List<string> Tags { get; set; } = new();
 }

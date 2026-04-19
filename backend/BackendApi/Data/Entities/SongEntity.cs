@@ -15,6 +15,13 @@ public class SongEntity
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }
 
+    /// <summary>
+    /// Free-form user-assigned tags for filtering and grouping. Stored as a
+    /// Postgres text[] column for efficient containment queries. Defaults to
+    /// an empty list so legacy rows don't require a NULL fallback.
+    /// </summary>
+    public List<string> Tags { get; set; } = new();
+
     public ICollection<SongStarEntity>? Stars { get; set; }
     public ICollection<PlaylistSongEntity>? PlaylistSongs { get; set; }
 }

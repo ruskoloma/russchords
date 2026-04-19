@@ -1,3 +1,3 @@
 export * from './SearchPage';
-export { parserDomain } from '../../constants/search.ts';
-export { PAGE_SIZE } from '../../constants/search.ts';
+export { parserDomain } from '../../features/search/constants/search.ts';
+export { PAGE_SIZE } from '../../features/search/constants/search.ts';

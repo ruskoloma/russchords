@@ -20,5 +20,13 @@ public class SongConfiguration : IEntityTypeConfiguration<SongEntity>
         builder.Property(x => x.Description).HasMaxLength(1000);
         builder.Property(x => x.SourceUrl).HasMaxLength(500);
         builder.Property(x => x.RootNote).HasMaxLength(20);
+
+        // Free-form user-assigned tags. Stored as a Postgres text[] array so
+        // filter queries can use the `@>` / `&&` containment operators
+        // efficiently once we start hitting the column from SQL directly.
+        builder.Property(x => x.Tags)
+            .HasColumnType("text[]")
+            .IsRequired()
+            .HasDefaultValueSql("'{}'::text[]");
     }
 }

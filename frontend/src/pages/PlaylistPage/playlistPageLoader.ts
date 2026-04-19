@@ -1,6 +1,6 @@
 import { type LoaderFunction, redirect } from 'react-router-dom';
 import axios from 'axios';
-import { myFetch } from '../../helpers/api';
+import { myFetch } from '../../lib/api';
 import type { MyPlaylistDto } from '../../types';
 
 export const playlistPageLoader: LoaderFunction = async ({ params }) => {
