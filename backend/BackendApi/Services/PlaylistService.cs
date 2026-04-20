@@ -139,7 +139,6 @@ public class PlaylistService : IPlaylistService
                 CreatedAt = p.CreatedAt,
                 IsPinned = m.IsPinned,
                 MemberRecordId = m.Id,
-                CreatedAt = p.CreatedAt,
                 UpdatedAt = p.UpdatedAt,
                 Songs = (
                     from ps in _context.PlaylistSongs
@@ -243,7 +242,6 @@ public class PlaylistService : IPlaylistService
             IsPinned = isPinned,
             Songs = songs,
             MemberRecordId = memberRecordId,
-            CreatedAt = playlist.CreatedAt,
             UpdatedAt = playlist.UpdatedAt,
         };
     }
