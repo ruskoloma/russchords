@@ -1,11 +1,12 @@
 import { useMemo } from 'react';
 import { SimpleGrid, Stack, Text } from '@mantine/core';
-import { type Line, getChordRoot } from '../helpers/songParser';
+import { type ChordToken, type Line, getChordRoot } from '../helpers/songParser';
 import { lookupChordShape } from '../helpers/chordShapes';
 import { ChordDiagram } from './ChordDiagram';
 
 interface ChordDiagramsPanelProps {
 	content: Line[];
+	transposeChord?: (token: ChordToken) => ChordToken;
 }
 
 /**
@@ -17,21 +18,22 @@ interface ChordDiagramsPanelProps {
  * overflow menu. Lets a guitarist glance at the full fingering set for
  * a song before starting to play.
  */
-export function ChordDiagramsPanel({ content }: ChordDiagramsPanelProps) {
+export function ChordDiagramsPanel({ content, transposeChord }: ChordDiagramsPanelProps) {
 	const uniqueChords = useMemo(() => {
 		const seen = new Set<string>();
 		for (const line of content) {
 			if (line.type !== 'chords') continue;
 			for (const token of line.tokens) {
-				if (!token.chord) continue;
+				const chord = transposeChord?.(token).chord ?? token.chord;
+				if (!chord) continue;
 				// Chord tokens may contain slashes for bass notes; normalize on
 				// the main chord only so we don't show "G" and "G/B" as distinct.
-				const main = token.chord.split('/')[0] ?? token.chord;
+				const main = chord.split('/')[0] ?? chord;
 				if (getChordRoot(main)) seen.add(main);
 			}
 		}
 		return [...seen];
-	}, [content]);
+	}, [content, transposeChord]);
 
 	const withShapes = uniqueChords
 		.map((name) => ({ name, shape: lookupChordShape(name) }))

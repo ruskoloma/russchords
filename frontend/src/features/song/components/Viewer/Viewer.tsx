@@ -1,4 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+	Children,
+	cloneElement,
+	isValidElement,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+	type FC,
+	type MouseEvent,
+	type ReactElement,
+	type ReactNode,
+} from 'react';
+import { flushSync } from 'react-dom';
 import { useLocalStorage, useMediaQuery } from '@mantine/hooks';
 import {
 	ALL_ACTUAL_KEYS,
@@ -35,12 +48,15 @@ import { ChordDiagramsPanel } from '../ChordDiagramsPanel';
 interface ViewerProps {
 	musicText: string;
 	defaultKey?: string;
-	menuItems?: Array<React.ReactNode>;
+	menuItems?: Array<ReactNode>;
 }
 
-export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems }) => {
+type MenuActionElement = ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>;
+
+export const Viewer: FC<ViewerProps> = ({ musicText, defaultKey, menuItems }) => {
 	const [hideChords, setHideChords] = useState(false);
 	const [hideControls, setHideControls] = useState(false);
+	const [menuOpened, setMenuOpened] = useState(false);
 	const isTablet = useMediaQuery('(min-width: 48em)');
 	const [layoutMode, setLayoutMode] = useLocalStorage<ViewerLayoutMode>({
 		key: 'russchords-viewer-layout-mode',
@@ -108,9 +124,24 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 		modals.open({
 			title: 'Chord diagrams',
 			size: 'lg',
-			children: <ChordDiagramsPanel content={parsed} />,
+			children: <ChordDiagramsPanel content={parsed} transposeChord={handleTransposeChord} />,
 		});
-	}, [parsed]);
+	}, [parsed, handleTransposeChord]);
+	const wrappedMenuItems = useMemo(
+		() =>
+			Children.toArray(menuItems).map((item) => {
+				if (!isValidElement(item)) return item;
+				const menuItem = item as MenuActionElement;
+				const originalOnClick = menuItem.props.onClick;
+				return cloneElement(menuItem, {
+					onClick: (event: MouseEvent<HTMLElement>) => {
+						flushSync(() => setMenuOpened(false));
+						originalOnClick?.(event);
+					},
+				});
+			}),
+		[menuItems],
+	);
 	const layoutLabel =
 		layoutMode === 'single' ? 'Layout: Mobile' : layoutMode === 'columns-song' ? 'Layout: 2 Columns' : 'Layout: Section Split';
 	const layoutColor = layoutMode === 'single' ? 'gray' : layoutMode === 'columns-song' ? 'blue' : 'teal';
@@ -153,7 +184,7 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 					</Group>
 				)}
 				{!hideControls && (
-					<Menu shadow="md" width={220}>
+					<Menu shadow="md" width={220} opened={menuOpened} onChange={setMenuOpened} transitionProps={{ duration: 0 }}>
 						<Menu.Target>
 							<ActionIcon aria-label="Options" size="sm">
 								<IconDotsVertical size={18} />
@@ -170,11 +201,11 @@ export const Viewer: React.FC<ViewerProps> = ({ musicText, defaultKey, menuItems
 									{layoutLabel}
 								</Menu.Item>
 							)}
-							{menuItems && menuItems.length > 0 && (
+							{wrappedMenuItems.length > 0 && (
 								<>
 									<Menu.Divider />
 									<Menu.Label>Song</Menu.Label>
-									{menuItems}
+									{wrappedMenuItems}
 								</>
 							)}
 						</Menu.Dropdown>

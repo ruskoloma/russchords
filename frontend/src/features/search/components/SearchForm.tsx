@@ -17,6 +17,10 @@ export function SearchForm({ value, onChange, onSubmit }: SearchFormProps) {
 		<form
 			onSubmit={(e) => {
 				e.preventDefault();
+				e.currentTarget.querySelector('input')?.blur();
+				if (document.activeElement instanceof HTMLElement) {
+					document.activeElement.blur();
+				}
 				onSubmit();
 			}}
 		>

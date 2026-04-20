@@ -14,7 +14,7 @@ import {
 	useMyPlaylistsWithDetails,
 	useRemoveSongFromPlaylist,
 } from '../../features/playlist/hooks/playlists';
-import { IconCopy, IconStar, IconStarFilled } from '@tabler/icons-react';
+import { IconStar, IconStarFilled } from '@tabler/icons-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 const CREATE_PREFIX = '__create__:';
@@ -33,6 +33,16 @@ export function SongPage() {
 
 	const handleDeleteSong = () => deleteSongs([songDto.id]);
 	const handleEditSong = () => navigate(`/song/edit/${songDto.id}`);
+	const handlePrintSong = () => {
+		window.setTimeout(() => {
+			window.requestAnimationFrame(() => {
+				const cleanup = () => document.body.classList.remove('song-print-mode');
+				document.body.classList.add('song-print-mode');
+				window.addEventListener('afterprint', cleanup, { once: true });
+				window.print();
+			});
+		}, 0);
+	};
 
 	const { playlists: myPlaylists } = useMyPlaylistsWithDetails(isAuthenticated);
 	const ownedPlaylists = useMemo(() => myPlaylists.filter((p) => p.ownerId === me), [myPlaylists, me]);
@@ -95,9 +105,9 @@ export function SongPage() {
 	);
 
 	return (
-		<>
+		<Box className="song-page">
 			<Group justify="space-between" wrap="wrap">
-				<Box style={{ flex: '1 1 260px', minWidth: 0 }}>
+				<Box style={{ flex: '1 1 0', minWidth: 0 }}>
 					<Text size="xl" fw={700} truncate>
 						{songDto.name}
 					</Text>
@@ -105,7 +115,7 @@ export function SongPage() {
 						{songDto.artist}
 					</Text>
 				</Box>
-				<Group wrap="nowrap" gap="xs">
+				<Group wrap="nowrap" gap="xs" className="song-page-actions">
 					{isAuthenticated && (
 						<ActionIcon
 							variant="subtle"
@@ -127,10 +137,9 @@ export function SongPage() {
 							searchable
 							searchValue={searchQuery}
 							onSearchChange={setSearchQuery}
-							w={{ base: 180, xs: 220, sm: 280 }}
 							disabled={isAdding || isRemoving}
 							placeholder="Add to playlists..."
-							className="hide-multiselect-tags"
+							className="hide-multiselect-tags song-page-playlist-select"
 							nothingFoundMessage="Type to create a new playlist"
 						/>
 					)}
@@ -156,7 +165,6 @@ export function SongPage() {
 				menuItems={[
 					<Menu.Item
 						key="share"
-						leftSection={<IconCopy size={16} />}
 						onClick={async () => {
 							await navigator.clipboard.writeText(window.location.href);
 							showNotification({
@@ -168,6 +176,9 @@ export function SongPage() {
 						}}
 					>
 						Share
+					</Menu.Item>,
+					<Menu.Item key="print" onClick={handlePrintSong}>
+						Print
 					</Menu.Item>,
 					isAuthenticated && (
 						<Menu.Item key="clone" disabled={isCloning} onClick={() => cloneSong(songDto.id)}>
@@ -198,7 +209,11 @@ export function SongPage() {
 
 			<Divider />
 
-			{songDto.sourceUrl && <CardHC url={songDto.sourceUrl} name={songDto.name} artist={songDto.artist} />}
-		</>
+			{songDto.sourceUrl && (
+				<Box className="song-page-source-card">
+					<CardHC url={songDto.sourceUrl} name={songDto.name} artist={songDto.artist} />
+				</Box>
+			)}
+		</Box>
 	);
 }

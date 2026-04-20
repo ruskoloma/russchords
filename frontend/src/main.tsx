@@ -121,14 +121,6 @@ const router = createBrowserRouter([
 				handle: { immersiveMode: true },
 			},
 			{
-				path: 'playlist/:id/print',
-				handle: { maxWidth: 900 },
-				lazy: async () => {
-					const mod = await import('./pages/PlaylistPrintPage');
-					return { Component: mod.PlaylistPrintPage, loader: mod.playlistPrintPageLoader };
-				},
-			},
-			{
 				path: '/search',
 				handle: { maxWidth: 900 },
 				lazy: async () => {
