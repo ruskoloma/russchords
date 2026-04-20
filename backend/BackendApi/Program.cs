@@ -86,7 +86,6 @@ builder.Services.AddAuthentication("Bearer")
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = authority,
             ValidateAudience = true,
             ValidAudience = clientId,
             ValidateLifetime = true
