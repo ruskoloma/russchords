@@ -2,6 +2,59 @@
     display: none;
 }
 
+.song-page-actions {
+    flex: 0 0 100%;
+    width: 100%;
+    min-width: 0;
+}
+
+.song-page-actions .mantine-ActionIcon-root,
+.song-page-actions .mantine-Button-root {
+    flex: 0 0 auto;
+}
+
+.song-page-playlist-select {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+@media (min-width: 48em) {
+    .song-page-actions {
+        flex-basis: 50%;
+        width: 50%;
+    }
+}
+
+@media print {
+    body.song-print-mode .mantine-AppShell-header,
+    body.song-print-mode .mantine-AppShell-navbar,
+    body.song-print-mode .mantine-Notification-root,
+    body.song-print-mode .mantine-Menu-dropdown,
+    body.song-print-mode .mantine-Popover-dropdown,
+    body.song-print-mode .song-page-actions,
+    body.song-print-mode .song-page > .mantine-Divider-root:last-of-type,
+    body.song-print-mode .song-page-source-card,
+    body.song-print-mode .song-page .mantine-Menu-root,
+    body.song-print-mode .song-page .mantine-Menu-dropdown,
+    body.song-print-mode .song-page .mantine-ActionIcon-root,
+    body.song-print-mode .song-page .mantine-Select-root {
+        display: none !important;
+    }
+
+    body.song-print-mode .mantine-AppShell-main {
+        padding: 0 !important;
+    }
+
+    body.song-print-mode .song-page {
+        color: #000;
+    }
+
+    body.song-print-mode .song-page pre {
+        overflow: visible !important;
+        white-space: pre-wrap;
+    }
+}
+
 /* Chord color: blue in light mode, teal in dark mode for contrast */
 :root, [data-mantine-color-scheme="light"] {
     --chord-color: #1971c2;

@@ -1,6 +1,6 @@
-import { ActionIcon, Button, Card, Group, Stack, Text, Textarea, TextInput, Tooltip } from '@mantine/core';
-import { IconPencil, IconPin, IconPinFilled, IconPlayerPlay, IconPrinter } from '@tabler/icons-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Button, Card, Group, Stack, Text, Textarea, TextInput } from '@mantine/core';
+import { IconPencil, IconPin, IconPinFilled, IconPlayerPlay } from '@tabler/icons-react';
+import { Link } from 'react-router-dom';
 
 interface PlaylistMetaCardProps {
 	title: string;
@@ -34,10 +34,6 @@ export function PlaylistMetaCard({
 	onEnterEdit,
 	onTogglePin,
 }: PlaylistMetaCardProps) {
-	// Navigate imperatively instead of `component={Link}` because Mantine's
-	// Tooltip + floating-ui ref merging goes into an infinite setReference
-	// loop when the target is a polymorphic ActionIcon rendered as <a>.
-	const navigate = useNavigate();
 	return (
 		<Card withBorder shadow="sm" p={0}>
 			{editing && isOwner ? (
@@ -65,23 +61,11 @@ export function PlaylistMetaCard({
 							</Text>
 						)}
 					</Stack>
-					<Group gap="xs">
+					<Group gap="xs" wrap="nowrap" style={{ flex: '0 0 auto' }}>
 						{hasSongs && (
 							<Button leftSection={<IconPlayerPlay size={16} />} component={Link} to="play">
 								Play
 							</Button>
-						)}
-						{hasSongs && (
-							<Tooltip label="Print / Save as PDF" withArrow>
-								<ActionIcon
-									variant="default"
-									size="lg"
-									onClick={() => navigate('print')}
-									aria-label="Print playlist"
-								>
-									<IconPrinter size={18} />
-								</ActionIcon>
-							</Tooltip>
 						)}
 						{isOwner && (
 							<>
