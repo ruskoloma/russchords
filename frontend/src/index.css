@@ -18,6 +18,32 @@
     min-width: 0;
 }
 
+.playlist-meta-actions {
+    flex: 0 0 auto;
+    max-width: 100%;
+    min-width: 0;
+}
+
+.playlist-meta-actions .mantine-Button-root {
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+@media (max-width: 30em) {
+    .playlist-meta-actions {
+        width: 100%;
+        justify-content: flex-end;
+    }
+
+    .playlist-meta-actions .mantine-Button-root {
+        padding-inline: 6px;
+    }
+
+    .playlist-meta-actions .mantine-Button-section {
+        display: none;
+    }
+}
+
 @media (min-width: 48em) {
     .song-page-actions {
         flex-basis: 50%;
