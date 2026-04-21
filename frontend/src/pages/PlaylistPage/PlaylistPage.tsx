@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { Link, useLoaderData, useNavigate, useLocation } from 'react-router-dom';
 import { ActionIcon, Button, Group, MultiSelect, Stack, Text, Tooltip } from '@mantine/core';
 import { IconArrowLeft, IconChecks, IconCopy, IconTrash, IconX, IconPin, IconPinFilled } from '@tabler/icons-react';
+import { showNotification } from '@mantine/notifications';
 import { useAuth } from 'react-oidc-context';
 import type { MyPlaylistDto } from '../../types';
 import { usePlaylistEditor } from '../../features/playlist/hooks/usePlaylistEditor';
@@ -24,6 +25,15 @@ export const PlaylistPage: React.FC = () => {
 	const editor = usePlaylistEditor(initial, isAuthenticated, () => navigate('/my-playlists'));
 	const membership = usePlaylistMembership(initial.playlistId, initial.ownerId, isAuthenticated);
 	const hasSongs = useMemo(() => editor.songs.length > 0, [editor.songs.length]);
+	const onSharePlaylist = useCallback(async () => {
+		await navigator.clipboard.writeText(window.location.href);
+		showNotification({
+			title: 'Copied',
+			message: 'Playlist link copied to clipboard',
+			color: 'green',
+			autoClose: 500,
+		});
+	}, []);
 
 	return (
 		<Stack gap="md">
@@ -75,6 +85,7 @@ export const PlaylistPage: React.FC = () => {
 				onDescriptionChange={editor.setDescription}
 				onEnterEdit={editor.onEnterEdit}
 				onTogglePin={editor.togglePin}
+				onShare={onSharePlaylist}
 			/>
 
 			<Stack gap="xs">

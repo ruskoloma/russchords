@@ -1,5 +1,5 @@
 import { Button, Card, Group, Stack, Text, Textarea, TextInput } from '@mantine/core';
-import { IconPencil, IconPin, IconPinFilled, IconPlayerPlay } from '@tabler/icons-react';
+import { IconPencil, IconPin, IconPinFilled, IconPlayerPlay, IconShare } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 
 interface PlaylistMetaCardProps {
@@ -14,6 +14,7 @@ interface PlaylistMetaCardProps {
 	onDescriptionChange: (next: string) => void;
 	onEnterEdit: () => void;
 	onTogglePin: () => void;
+	onShare: () => void;
 }
 
 /**
@@ -33,6 +34,7 @@ export function PlaylistMetaCard({
 	onDescriptionChange,
 	onEnterEdit,
 	onTogglePin,
+	onShare,
 }: PlaylistMetaCardProps) {
 	return (
 		<Card withBorder shadow="sm" p={0}>
@@ -61,18 +63,22 @@ export function PlaylistMetaCard({
 							</Text>
 						)}
 					</Stack>
-					<Group gap="xs" wrap="nowrap" style={{ flex: '0 0 auto' }}>
+					<Group gap={6} wrap="nowrap" className="playlist-meta-actions">
 						{hasSongs && (
-							<Button leftSection={<IconPlayerPlay size={16} />} component={Link} to="play">
+							<Button size="xs" leftSection={<IconPlayerPlay size={16} />} component={Link} to="play">
 								Play
 							</Button>
 						)}
+						<Button size="xs" variant="default" leftSection={<IconShare size={16} />} onClick={onShare}>
+							Share
+						</Button>
 						{isOwner && (
 							<>
-								<Button leftSection={<IconPencil size={16} />} onClick={onEnterEdit}>
+								<Button size="xs" leftSection={<IconPencil size={16} />} onClick={onEnterEdit}>
 									Edit
 								</Button>
 								<Button
+									size="xs"
 									variant="default"
 									onClick={onTogglePin}
 									loading={isPinning}
