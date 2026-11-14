@@ -13,6 +13,7 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 import { useLocalStorage, useMediaQuery } from '@mantine/hooks';
+import { VIEWER_LAYOUT_MEDIA_QUERY } from './layoutBreakpoint';
 import {
 	ALL_ACTUAL_KEYS,
 	ALL_KEYS,
@@ -57,7 +58,7 @@ export const Viewer: FC<ViewerProps> = ({ musicText, defaultKey, menuItems }) =>
 	const [hideChords, setHideChords] = useState(false);
 	const [hideControls, setHideControls] = useState(false);
 	const [menuOpened, setMenuOpened] = useState(false);
-	const isTablet = useMediaQuery('(min-width: 48em)');
+	const isTablet = useMediaQuery(VIEWER_LAYOUT_MEDIA_QUERY);
 	const [layoutMode, setLayoutMode] = useLocalStorage<ViewerLayoutMode>({
 		key: 'russchords-viewer-layout-mode',
 		defaultValue: 'single',
