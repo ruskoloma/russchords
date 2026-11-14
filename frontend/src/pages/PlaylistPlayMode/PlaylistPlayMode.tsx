@@ -3,6 +3,7 @@ import axios from 'axios';
 import { type LoaderFunction, redirect, useLoaderData, useNavigate, useRevalidator } from 'react-router-dom';
 import { Box, Button, Stack, Text } from '@mantine/core';
 import { useMediaQuery } from '@mantine/hooks';
+import { VIEWER_LAYOUT_MEDIA_QUERY } from '../../features/song/components/Viewer/layoutBreakpoint';
 import { IconRefresh } from '@tabler/icons-react';
 import { type ViewerLayoutMode, ViewerBase } from '../../features/song/components/Viewer/ViewerBase';
 import { myFetch } from '../../lib/api';
@@ -59,7 +60,7 @@ export const PlaylistPlayMode: React.FC = () => {
 	const { playlist, songs } = useLoaderData() as PlayModeData;
 	const navigate = useNavigate();
 	const revalidator = useRevalidator();
-	const isTablet = useMediaQuery('(min-width: 48em)');
+	const isTablet = useMediaQuery(VIEWER_LAYOUT_MEDIA_QUERY);
 
 	const nav = usePlayModeNavigation({ total: songs.length });
 	const {
