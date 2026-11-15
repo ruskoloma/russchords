@@ -9,7 +9,9 @@ export default defineConfig({
 	plugins: [
 		react(),
 		VitePWA({
-			registerType: 'autoUpdate',
+			// Keep each open tab on its current app + precache version. Activating
+			// a new worker mid-session removes chunks that old lazy routes still use.
+			registerType: 'prompt',
 			includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon-32x32.png', 'favicon-16x16.png'],
 			manifest: {
 				name: 'russchords',
@@ -30,6 +32,9 @@ export default defineConfig({
 				],
 			},
 			workbox: {
+				skipWaiting: false,
+				clientsClaim: false,
+				navigateFallbackDenylist: [/^\/assets(?:\/|$)/],
 				// Runtime caching rules for the backend API. Play-mode loads are the
 				// most expensive first paint — cache song + playlist GETs so repeat
 				// visits (or offline reload) return instantly from the SW cache.
