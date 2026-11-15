@@ -26,6 +26,7 @@ import '@mantine/notifications/styles.css';
 import { ModalsProvider } from '@mantine/modals';
 import TagManager from 'react-gtm-module';
 import { colorSchemeManager, theme } from './theme';
+import { registerChunkRecovery } from './registerChunkRecovery';
 
 // Initialize Google Tag Manager
 const gtmId = import.meta.env.VITE_GTM_ID;
@@ -139,6 +140,11 @@ const router = createBrowserRouter([
 		],
 	},
 ]);
+
+registerChunkRecovery(() => {
+	const location = router.state.navigation.location ?? router.state.location;
+	return location.pathname + location.search + location.hash;
+});
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
