@@ -1,7 +1,7 @@
 import { usePersistentState } from '../../../lib/storage';
 import { clampFont, type SheetLayout } from '../../song/hooks/useViewerPrefs';
 
-export interface PlaySettings {
+export interface StageSettings {
 	fontSize: number;
 	fitWidth: boolean;
 	hideChords: boolean;
@@ -10,26 +10,26 @@ export interface PlaySettings {
 	autoScrollSpeed: number;
 	/** Start scrolling automatically when a song opens. */
 	autoScrollEnabled: boolean;
-	/** High-contrast dark theme regardless of the app theme. */
-	stageMode: boolean;
+	/** Dark screen regardless of the app theme (for dim rooms). */
+	darkScreen: boolean;
 }
 
-export const DEFAULT_PLAY_SETTINGS: PlaySettings = {
+export const DEFAULT_STAGE_SETTINGS: StageSettings = {
 	fontSize: 20,
 	fitWidth: true,
 	hideChords: false,
 	layout: 'single',
 	autoScrollSpeed: 25,
 	autoScrollEnabled: false,
-	stageMode: false,
+	darkScreen: false,
 };
 
 export const SCROLL_MIN = 5;
 export const SCROLL_MAX = 120;
 
-function sanitize(raw: unknown): PlaySettings {
+function sanitize(raw: unknown): StageSettings {
 	const r = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
-	const d = DEFAULT_PLAY_SETTINGS;
+	const d = DEFAULT_STAGE_SETTINGS;
 	const bool = (v: unknown, fallback: boolean) => (typeof v === 'boolean' ? v : fallback);
 	// `layoutMode` is the field name used by earlier versions.
 	const layout = (r.layout ?? r.layoutMode) as SheetLayout;
@@ -43,20 +43,22 @@ function sanitize(raw: unknown): PlaySettings {
 				? Math.min(SCROLL_MAX, Math.max(SCROLL_MIN, r.autoScrollSpeed))
 				: d.autoScrollSpeed,
 		autoScrollEnabled: bool(r.autoScrollEnabled, d.autoScrollEnabled),
-		stageMode: bool(r.stageMode, d.stageMode),
+		// `stageMode` is the name used before play mode became Stage.
+		darkScreen: bool(r.darkScreen ?? r.stageMode, d.darkScreen),
 	};
 }
 
-/** Play-mode preferences, remembered on this device. */
-export function usePlaySettings() {
-	const [settings, setSettings] = usePersistentState<PlaySettings>(
+/** Stage preferences, remembered on this device. */
+export function useStageSettings() {
+	const [settings, setSettings] = usePersistentState<StageSettings>(
+		// Storage key kept from the play-mode era so saved preferences survive.
 		'russchords-playmode-settings',
-		DEFAULT_PLAY_SETTINGS,
+		DEFAULT_STAGE_SETTINGS,
 		{
 			sanitize,
 		},
 	);
-	const update = (patch: Partial<PlaySettings>) => setSettings((prev) => ({ ...prev, ...patch }));
-	const reset = () => setSettings(DEFAULT_PLAY_SETTINGS);
+	const update = (patch: Partial<StageSettings>) => setSettings((prev) => ({ ...prev, ...patch }));
+	const reset = () => setSettings(DEFAULT_STAGE_SETTINGS);
 	return { settings, update, reset };
 }

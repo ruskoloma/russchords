@@ -126,7 +126,7 @@ export function PlaylistsPage() {
 				<EmptyState
 					icon={<IconPlaylist size={28} />}
 					title="No playlists yet"
-					description="Create a set list for your next service, then open it in play mode on stage."
+					description="Create a set list for your next service, then open it on Stage for a distraction-free view."
 					action={
 						<Button leftSection={<IconPlus size={18} />} onClick={createModal.open}>
 							New playlist

@@ -1,33 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQueries } from '@tanstack/react-query';
-import {
-	ActionIcon,
-	Box,
-	Button,
-	Card,
-	Group,
-	Menu,
-	ScrollArea,
-	Text,
-	Title,
-	Tooltip,
-	UnstyledButton,
-} from '@mantine/core';
+import { ActionIcon, Box, Button, Card, Group, Menu, ScrollArea, Text, Title, UnstyledButton } from '@mantine/core';
 import { useDisclosure, useMediaQuery } from '@mantine/hooks';
 import {
+	IconAdjustments,
 	IconCheck,
 	IconChevronDown,
 	IconChevronLeft,
 	IconChevronRight,
-	IconMinus,
 	IconPlayerPauseFilled,
 	IconPlayerPlayFilled,
 	IconPlayerTrackNext,
-	IconPlus,
-	IconSettings,
-	IconTextDecrease,
-	IconTextIncrease,
 	IconX,
 } from '@tabler/icons-react';
 import { usePlaylist } from '../api/playlists';
@@ -40,13 +24,13 @@ import { SongSkeleton } from '../components/ListSkeleton';
 import { SongSheet } from '../features/song/components/SongSheet';
 import { parseSongText } from '../features/song/helpers/songParser';
 import { useTransposition } from '../features/song/hooks/useTransposition';
-import { clampFont, FONT_MAX, FONT_MIN, type SheetLayout } from '../features/song/hooks/useViewerPrefs';
-import { usePlaySettings } from '../features/playmode/hooks/usePlaySettings';
-import { useAutoScroll } from '../features/playmode/hooks/useAutoScroll';
-import { useExitBlocker } from '../features/playmode/hooks/useExitBlocker';
-import { useWakeLock } from '../features/playmode/hooks/useWakeLock';
-import { useSwipeNavigation } from '../features/playmode/hooks/useSwipeNavigation';
-import { PlaySettingsDrawer } from '../features/playmode/components/PlaySettingsDrawer';
+import { COLUMNS_MEDIA_QUERY, type SheetLayout } from '../features/song/hooks/useViewerPrefs';
+import { useStageSettings } from '../features/stage/hooks/useStageSettings';
+import { useAutoScroll } from '../features/stage/hooks/useAutoScroll';
+import { useExitBlocker } from '../features/stage/hooks/useExitBlocker';
+import { useWakeLock } from '../features/stage/hooks/useWakeLock';
+import { useSwipeNavigation } from '../features/stage/hooks/useSwipeNavigation';
+import { StageSettingsDrawer } from '../features/stage/components/StageSettingsDrawer';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { usePersistentState } from '../lib/storage';
 
@@ -55,8 +39,11 @@ const isTypingTarget = (target: EventTarget | null) => {
 	return Boolean(el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.isContentEditable));
 };
 
+/** Taps on these never toggle the controls. */
+const INTERACTIVE = 'button, a, input, textarea, select, label, [role="button"], [role="menuitem"]';
+
 /** Forces the dark color scheme while mounted (without changing the saved preference). */
-function useStageMode(enabled: boolean) {
+function useDarkScreen(enabled: boolean) {
 	useEffect(() => {
 		if (!enabled) return;
 		const root = document.documentElement;
@@ -69,19 +56,54 @@ function useStageMode(enabled: boolean) {
 }
 
 /**
- * Full-screen performance view of a playlist: one song at a time, big
- * thumb-reachable controls, per-song transpose, auto-scroll, swipe and
- * keyboard / page-turner pedal navigation. The current song is remembered,
- * so an accidental reload or exit resumes in the same place.
+ * Hides the Stage controls while the performer reads: once auto-scroll starts
+ * or the page is scrolled down. A tap on the song brings them back; they also
+ * come back at the very top of the page.
  */
-export function PlayModePage() {
+function useControlsVisibility(pinned: boolean) {
+	const [visible, setVisible] = useState(true);
+	const anchor = useRef(0);
+
+	useEffect(() => {
+		// Distance is measured from the highest point since the last change, so
+		// reading back up a little never brings the bars back by itself.
+		anchor.current = window.scrollY;
+		const onScroll = () => {
+			const y = window.scrollY;
+			if (y <= 8) {
+				setVisible(true);
+				anchor.current = y;
+			} else if (y < anchor.current) {
+				anchor.current = y;
+			} else if (y - anchor.current > 48) {
+				setVisible(false);
+				anchor.current = y;
+			}
+		};
+		window.addEventListener('scroll', onScroll, { passive: true });
+		return () => window.removeEventListener('scroll', onScroll);
+	}, []);
+
+	return { visible: visible || pinned, setVisible };
+}
+
+/**
+ * Stage: full-screen performance view of a playlist, one song at a time.
+ *
+ * Built for focus and for not changing anything by accident: the screen shows
+ * only the song, controls slide away while reading (tap to bring them back),
+ * and the only things one tap can do are previous / next song and auto-scroll.
+ * Key, text size and layout live in the settings panel. The current song is
+ * remembered, so an accidental reload or exit resumes in the same place.
+ */
+export function StagePage() {
 	const id = Number(useParams().id);
 	const navigate = useNavigate();
 	const { data: playlist, isPending, error, refetch } = usePlaylist(id);
 	const entries = useMemo(() => playlist?.songs ?? [], [playlist]);
 	const songQueries = useQueries({ queries: entries.map((s) => songQuery(s.id)) });
 
-	const [storedIndex, setStoredIndex] = usePersistentState(`russchords:play:${id}`, 0, {
+	const [storedIndex, setStoredIndex] = usePersistentState(`russchords:stage:${id}`, 0, {
 		kind: 'session',
 		sanitize: (raw) => (typeof raw === 'number' && raw >= 0 ? Math.floor(raw) : 0),
 	});
@@ -91,13 +113,15 @@ export function PlayModePage() {
 	const song = songState?.data;
 	const nextEntry = entries[index + 1];
 
-	const { settings, update, reset } = usePlaySettings();
+	const { settings, update, reset } = useStageSettings();
 	const [settingsOpened, settingsDrawer] = useDisclosure(false);
+	const [songMenuOpened, setSongMenuOpened] = useState(false);
 	const [scrolling, setScrolling] = useState(settings.autoScrollEnabled);
 	const [effectiveFont, setEffectiveFont] = useState(settings.fontSize);
-	const isWide = useMediaQuery('(min-width: 48em)', true, { getInitialValueInEffect: false });
+	const isWide = useMediaQuery(COLUMNS_MEDIA_QUERY, true, { getInitialValueInEffect: false });
 	const hasKeyboard = useMediaQuery('(pointer: fine)', true, { getInitialValueInEffect: false });
 	const layout: SheetLayout = isWide ? settings.layout : 'single';
+	const controls = useControlsVisibility(settingsOpened || songMenuOpened);
 
 	const lines = useMemo(() => parseSongText(song?.content ?? ''), [song?.content]);
 	const hasChords = useMemo(() => lines.some((l) => l.type === 'chords'), [lines]);
@@ -105,7 +129,7 @@ export function PlayModePage() {
 
 	usePageTitle(entry ? `${entry.name} · ${playlist?.title ?? ''}` : playlist?.title);
 	useWakeLock(true);
-	useStageMode(settings.stageMode);
+	useDarkScreen(settings.darkScreen);
 	const { markExplicitExit } = useExitBlocker();
 
 	const goTo = useCallback(
@@ -126,27 +150,26 @@ export function PlayModePage() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [index, id]);
 
+	const { setVisible: setControlsVisible } = controls;
+	const toggleScrolling = useCallback(() => {
+		if (!scrolling) setControlsVisible(false); // started: get out of the way
+		setScrolling(!scrolling);
+	}, [scrolling, setControlsVisible]);
+
 	useAutoScroll({
 		running: scrolling && Boolean(song),
 		speed: settings.autoScrollSpeed,
-		onEnd: () => setScrolling(false),
+		onEnd: () => {
+			setScrolling(false);
+			setControlsVisible(true); // end of the song: show Next
+		},
 	});
-	useSwipeNavigation({ onSwipeLeft: next, onSwipeRight: prev, enabled: !settingsOpened });
+	useSwipeNavigation({ onSwipeLeft: next, onSwipeRight: prev, enabled: !settingsOpened && !songMenuOpened });
 
-	const smaller = useCallback(
-		() => update({ fontSize: clampFont(Math.min(settings.fontSize, effectiveFont) - 1) }),
-		[update, settings.fontSize, effectiveFont],
-	);
-	const larger = useCallback(() => {
-		if (effectiveFont < settings.fontSize)
-			update({ fitWidth: false, fontSize: clampFont(Math.floor(effectiveFont) + 1) });
-		else update({ fontSize: clampFont(settings.fontSize + 1) });
-	}, [update, settings.fontSize, effectiveFont]);
-
-	// Keyboard + Bluetooth page-turner pedals.
+	// Keyboard + Bluetooth page-turner pedals. Nothing here changes the song.
 	useEffect(() => {
 		const onKey = (e: KeyboardEvent) => {
-			if (isTypingTarget(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
+			if (settingsOpened || isTypingTarget(e.target) || e.metaKey || e.ctrlKey || e.altKey) return;
 			const page = () => window.innerHeight * 0.8;
 			switch (e.key) {
 				case 'ArrowRight':
@@ -166,22 +189,22 @@ export function PlayModePage() {
 					e.preventDefault();
 					window.scrollBy({ top: -page(), behavior: 'smooth' });
 					break;
-				case '+':
-				case '=':
-					larger();
-					break;
-				case '-':
-					smaller();
-					break;
 				case 'a':
 				case 'A':
-					setScrolling((s) => !s);
+					toggleScrolling();
 					break;
 			}
 		};
 		window.addEventListener('keydown', onKey);
 		return () => window.removeEventListener('keydown', onKey);
-	}, [next, prev, larger, smaller]);
+	}, [next, prev, toggleScrolling, settingsOpened]);
+
+	const onContentClick = (e: MouseEvent<HTMLElement>) => {
+		const target = e.target as Element;
+		if (target.closest(INTERACTIVE)) return;
+		if (window.getSelection()?.toString()) return;
+		setControlsVisible(!controls.visible);
+	};
 
 	const exit = () => {
 		markExplicitExit();
@@ -213,19 +236,18 @@ export function PlayModePage() {
 	}
 
 	const bigButton = 52;
+	const hidden = !controls.visible;
 
 	return (
-		<Box>
+		<Box className="stage" data-controls={hidden ? 'hidden' : 'visible'}>
 			{/* ---------------- top bar ---------------- */}
-			<div className="play-topbar">
+			<div className="stage-bar stage-bar--top" inert={hidden} aria-hidden={hidden || undefined}>
 				<Group h={56} px="xs" gap={4} wrap="nowrap">
-					<Tooltip label="Exit play mode">
-						<ActionIcon size="xl" onClick={exit} aria-label="Exit play mode">
-							<IconX size={22} />
-						</ActionIcon>
-					</Tooltip>
+					<ActionIcon size="xl" onClick={exit} aria-label="Exit Stage">
+						<IconX size={22} />
+					</ActionIcon>
 
-					<Menu position="bottom" width={320} shadow="lg">
+					<Menu position="bottom" width={320} shadow="lg" opened={songMenuOpened} onChange={setSongMenuOpened}>
 						<Menu.Target>
 							<UnstyledButton
 								aria-label="Choose song"
@@ -268,27 +290,19 @@ export function PlayModePage() {
 						</Menu.Dropdown>
 					</Menu>
 
-					<Group gap={2} wrap="nowrap">
-						<ActionIcon size="xl" onClick={smaller} disabled={effectiveFont <= FONT_MIN} aria-label="Smaller text">
-							<IconTextDecrease size={20} />
-						</ActionIcon>
-						<ActionIcon size="xl" onClick={larger} disabled={effectiveFont >= FONT_MAX} aria-label="Larger text">
-							<IconTextIncrease size={20} />
-						</ActionIcon>
-						<ActionIcon size="xl" onClick={settingsDrawer.open} aria-label="Play settings">
-							<IconSettings size={20} />
-						</ActionIcon>
-					</Group>
+					<ActionIcon size="xl" onClick={settingsDrawer.open} aria-label="Stage settings">
+						<IconAdjustments size={22} />
+					</ActionIcon>
 				</Group>
 			</div>
 
 			{/* ---------------- song ---------------- */}
 			<Box
+				className="stage-content"
 				px={{ base: 'md', sm: 'xl' }}
-				pt="md"
 				maw={layout === 'single' ? 960 : 1440}
 				mx="auto"
-				style={{ paddingBottom: 'calc(110px + env(safe-area-inset-bottom))' }}
+				onClick={onContentClick}
 			>
 				<Group justify="space-between" align="flex-start" wrap="nowrap" mb="sm">
 					<div style={{ minWidth: 0 }}>
@@ -298,9 +312,16 @@ export function PlayModePage() {
 						{(song?.artist ?? entry?.artist) && <Text c="dimmed">{song?.artist ?? entry?.artist}</Text>}
 					</div>
 					{hasChords && (
-						<Text fw={700} ff="monospace" size="lg" c="var(--chord-color)" style={{ flexShrink: 0 }}>
-							{t.key}
-						</Text>
+						<div style={{ flexShrink: 0, textAlign: 'right' }}>
+							<Text fw={700} ff="monospace" size="lg" c="var(--chord-color)" lh={1.2}>
+								{t.key}
+							</Text>
+							{t.isTransposed && (
+								<Text size="xs" c="dimmed">
+									from {t.baseKey}
+								</Text>
+							)}
+						</div>
 					)}
 				</Group>
 
@@ -364,8 +385,14 @@ export function PlayModePage() {
 				)}
 			</Box>
 
+			{/* Where am I in the set — visible only while the controls are hidden. */}
+			<div className="stage-position" aria-hidden="true">
+				{index + 1} / {entries.length}
+				{scrolling && ' · auto'}
+			</div>
+
 			{/* ---------------- bottom bar ---------------- */}
-			<div className="play-bottombar">
+			<div className="stage-bar stage-bar--bottom" inert={hidden} aria-hidden={hidden || undefined}>
 				<Group h={72} px="sm" justify="space-between" wrap="nowrap" maw={720} mx="auto" gap="xs">
 					{isWide ? (
 						<Button
@@ -389,44 +416,17 @@ export function PlayModePage() {
 						</ActionIcon>
 					)}
 
-					<Group gap={6} wrap="nowrap">
-						{hasChords && (
-							<Group gap={2} wrap="nowrap">
-								<ActionIcon size="xl" variant="default" onClick={t.down} aria-label="Transpose down">
-									<IconMinus size={18} />
-								</ActionIcon>
-								<UnstyledButton
-									onClick={t.isTransposed ? t.reset : undefined}
-									aria-label={t.isTransposed ? `Key ${t.key}, tap to reset to ${t.baseKey}` : `Key ${t.key}`}
-									w={44}
-									ta="center"
-								>
-									<Text fw={800} ff="monospace" lh={1.1}>
-										{t.key}
-									</Text>
-									<Text size="10px" c="dimmed" lh={1.1}>
-										{t.isTransposed ? `from ${t.baseKey}` : 'key'}
-									</Text>
-								</UnstyledButton>
-								<ActionIcon size="xl" variant="default" onClick={t.up} aria-label="Transpose up">
-									<IconPlus size={18} />
-								</ActionIcon>
-							</Group>
-						)}
-						<Tooltip label={scrolling ? 'Pause auto-scroll' : 'Start auto-scroll'}>
-							<ActionIcon
-								size={bigButton}
-								radius="xl"
-								variant={scrolling ? 'filled' : 'light'}
-								color="brand"
-								onClick={() => setScrolling((s) => !s)}
-								aria-label={scrolling ? 'Pause auto-scroll' : 'Start auto-scroll'}
-								aria-pressed={scrolling}
-							>
-								{scrolling ? <IconPlayerPauseFilled size={22} /> : <IconPlayerPlayFilled size={22} />}
-							</ActionIcon>
-						</Tooltip>
-					</Group>
+					<ActionIcon
+						size={bigButton}
+						radius="xl"
+						variant={scrolling ? 'filled' : 'light'}
+						color="brand"
+						onClick={toggleScrolling}
+						aria-label={scrolling ? 'Pause auto-scroll' : 'Start auto-scroll'}
+						aria-pressed={scrolling}
+					>
+						{scrolling ? <IconPlayerPauseFilled size={22} /> : <IconPlayerPlayFilled size={22} />}
+					</ActionIcon>
 
 					{isWide ? (
 						<Button
@@ -453,7 +453,7 @@ export function PlayModePage() {
 				</Group>
 			</div>
 
-			<PlaySettingsDrawer
+			<StageSettingsDrawer
 				opened={settingsOpened}
 				onClose={settingsDrawer.close}
 				settings={settings}
@@ -463,6 +463,9 @@ export function PlayModePage() {
 					void refetch();
 					songQueries.forEach((q) => void q.refetch());
 				}}
+				songKey={hasChords && song ? t : null}
+				songName={song?.name}
+				effectiveFontSize={effectiveFont}
 				canUseColumns={Boolean(isWide)}
 				showShortcuts={Boolean(hasKeyboard)}
 			/>

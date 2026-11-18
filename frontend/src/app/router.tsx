@@ -1,4 +1,4 @@
-import { createBrowserRouter, type LoaderFunctionArgs } from 'react-router-dom';
+import { createBrowserRouter, redirect, type LoaderFunctionArgs } from 'react-router-dom';
 import { AppLayout } from '../components/layout/AppLayout';
 import { RouteError } from '../components/RouteError';
 import { NotFound } from '../components/NotFound';
@@ -98,10 +98,15 @@ export const router = createBrowserRouter([
 						lazy: async () => ({ Component: (await import('../pages/PlaylistPage')).PlaylistPage }),
 					},
 					{
-						path: 'playlist/:id/play',
+						path: 'playlist/:id/stage',
 						handle: { immersive: true },
 						loader: prefetch((a) => queryClient.prefetchQuery(playlistQuery(idParam(a)))),
-						lazy: async () => ({ Component: (await import('../pages/PlayModePage')).PlayModePage }),
+						lazy: async () => ({ Component: (await import('../pages/StagePage')).StagePage }),
+					},
+					{
+						// Old "play mode" URL (bookmarks, home-screen shortcuts).
+						path: 'playlist/:id/play',
+						loader: ({ params }) => redirect(`/playlist/${params.id}/stage`),
 					},
 					{ path: '*', element: <NotFound /> },
 				],

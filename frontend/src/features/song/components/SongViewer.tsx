@@ -20,7 +20,14 @@ import {
 } from '@tabler/icons-react';
 import { ALL_KEYS, parseSongText } from '../helpers/songParser';
 import { computeCapoHint } from '../helpers/capoHint';
-import { clampFont, FONT_MAX, FONT_MIN, type SheetLayout, useViewerPrefs } from '../hooks/useViewerPrefs';
+import {
+	clampFont,
+	COLUMNS_MEDIA_QUERY,
+	FONT_MAX,
+	FONT_MIN,
+	type SheetLayout,
+	useViewerPrefs,
+} from '../hooks/useViewerPrefs';
 import { useTransposition } from '../hooks/useTransposition';
 import { SongSheet } from './SongSheet';
 import { ChordDiagramsPanel } from './ChordDiagramsPanel';
@@ -50,7 +57,7 @@ export function SongViewer({ content, writtenKey, storageKey }: SongViewerProps)
 	const t = useTransposition(lines, writtenKey, storageKey ? `russchords:key:${storageKey}` : undefined);
 	const [prefs, setPrefs] = useViewerPrefs();
 	const [effectiveFont, setEffectiveFont] = useState(prefs.fontSize);
-	const canUseColumns = useMediaQuery('(min-width: 48em)', false, { getInitialValueInEffect: false });
+	const canUseColumns = useMediaQuery(COLUMNS_MEDIA_QUERY, false, { getInitialValueInEffect: false });
 	const layout: SheetLayout = canUseColumns ? prefs.layout : 'single';
 	const capo = computeCapoHint(t.key);
 	const hasChords = useMemo(() => lines.some((l) => l.type === 'chords'), [lines]);

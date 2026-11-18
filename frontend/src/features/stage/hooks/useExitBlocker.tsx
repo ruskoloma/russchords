@@ -3,7 +3,7 @@ import { useBlocker } from 'react-router-dom';
 import { confirmAction } from '../../../components/confirm';
 
 /**
- * Asks before leaving play mode through in-app navigation (e.g. the phone's
+ * Asks before leaving Stage through in-app navigation (e.g. the phone's
  * back gesture mid-song). Reloading is harmless — the position is restored —
  * so there is no beforeunload prompt. `markExplicitExit` skips the question
  * when the user pressed the exit button.
@@ -19,7 +19,7 @@ export function useExitBlocker() {
 	useEffect(() => {
 		if (blocker.state !== 'blocked') return;
 		void confirmAction({
-			title: 'Leave play mode?',
+			title: 'Leave Stage?',
 			message: 'You can come back to the same song later.',
 			confirmLabel: 'Leave',
 		}).then((ok) => {

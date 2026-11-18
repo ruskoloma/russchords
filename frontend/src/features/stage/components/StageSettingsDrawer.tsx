@@ -1,16 +1,42 @@
-import { Button, Divider, Drawer, Group, Kbd, SegmentedControl, Slider, Stack, Switch, Text } from '@mantine/core';
-import { IconRefresh, IconRotate } from '@tabler/icons-react';
+import {
+	ActionIcon,
+	Button,
+	Divider,
+	Drawer,
+	Group,
+	Kbd,
+	SegmentedControl,
+	Slider,
+	Stack,
+	Switch,
+	Text,
+} from '@mantine/core';
+import { IconMinus, IconPlus, IconRefresh, IconRotate } from '@tabler/icons-react';
 import type { SheetLayout } from '../../song/hooks/useViewerPrefs';
 import { FONT_MAX, FONT_MIN } from '../../song/hooks/useViewerPrefs';
-import { SCROLL_MAX, SCROLL_MIN, type PlaySettings } from '../hooks/usePlaySettings';
+import { SCROLL_MAX, SCROLL_MIN, type StageSettings } from '../hooks/useStageSettings';
 
-interface PlaySettingsDrawerProps {
+export interface StageKeyControls {
+	key: string;
+	baseKey: string;
+	isTransposed: boolean;
+	up: () => void;
+	down: () => void;
+	reset: () => void;
+}
+
+interface StageSettingsDrawerProps {
 	opened: boolean;
 	onClose: () => void;
-	settings: PlaySettings;
-	onChange: (patch: Partial<PlaySettings>) => void;
+	settings: StageSettings;
+	onChange: (patch: Partial<StageSettings>) => void;
 	onReset: () => void;
 	onReload: () => void;
+	/** Key of the current song; null when the song has no chords. */
+	songKey: StageKeyControls | null;
+	songName?: string;
+	/** Actual text size after fit-to-width shrinking. */
+	effectiveFontSize: number;
 	canUseColumns: boolean;
 	showShortcuts: boolean;
 }
@@ -20,23 +46,70 @@ const SHORTCUTS: Array<[string[], string]> = [
 	[['←'], 'Previous song'],
 	[['PgDn', 'Space'], 'Scroll down (page-turn pedals)'],
 	[['PgUp'], 'Scroll up'],
-	[['+', '−'], 'Text size'],
 	[['A'], 'Start / pause auto-scroll'],
 ];
 
-export function PlaySettingsDrawer({
+/**
+ * Everything that changes how a song looks lives here, behind a deliberate
+ * tap, so nothing can be changed by accident mid-song on the Stage screen.
+ */
+export function StageSettingsDrawer({
 	opened,
 	onClose,
 	settings,
 	onChange,
 	onReset,
 	onReload,
+	songKey,
+	songName,
+	effectiveFontSize,
 	canUseColumns,
 	showShortcuts,
-}: PlaySettingsDrawerProps) {
+}: StageSettingsDrawerProps) {
+	const shrunk = settings.fitWidth && effectiveFontSize < settings.fontSize;
+
 	return (
-		<Drawer opened={opened} onClose={onClose} title="Play settings" position="right" size="sm" zIndex={300}>
+		<Drawer opened={opened} onClose={onClose} title="Stage settings" position="right" size="sm" zIndex={300}>
 			<Stack gap="lg">
+				{songKey && (
+					<>
+						<Stack gap="sm">
+							<div>
+								<Text fw={700} size="sm">
+									Key
+								</Text>
+								{songName && (
+									<Text size="xs" c="dimmed" truncate>
+										{songName} · remembered for this song
+									</Text>
+								)}
+							</div>
+							<Group justify="space-between" wrap="nowrap">
+								<ActionIcon size="xl" variant="default" onClick={songKey.down} aria-label="Transpose down">
+									<IconMinus size={18} />
+								</ActionIcon>
+								<div style={{ textAlign: 'center' }}>
+									<Text fw={800} ff="monospace" size="xl" lh={1.1} aria-live="polite">
+										{songKey.key}
+									</Text>
+									<Text size="xs" c="dimmed">
+										{songKey.isTransposed ? `original ${songKey.baseKey}` : 'original key'}
+									</Text>
+								</div>
+								<ActionIcon size="xl" variant="default" onClick={songKey.up} aria-label="Transpose up">
+									<IconPlus size={18} />
+								</ActionIcon>
+							</Group>
+							{songKey.isTransposed && (
+								<Button variant="subtle" size="compact-sm" onClick={songKey.reset}>
+									Back to {songKey.baseKey}
+								</Button>
+							)}
+						</Stack>
+						<Divider />
+					</>
+				)}
+
 				<Stack gap="sm">
 					<Text fw={700} size="sm">
 						Text
@@ -45,7 +118,7 @@ export function PlaySettingsDrawer({
 						<Group justify="space-between" mb={4}>
 							<Text size="sm">Size</Text>
 							<Text size="sm" c="dimmed">
-								{settings.fontSize}px
+								{settings.fontSize}px{shrunk ? ` · fits as ${Math.round(effectiveFontSize)}px` : ''}
 							</Text>
 						</Group>
 						<Slider
@@ -122,10 +195,10 @@ export function PlaySettingsDrawer({
 				<Divider />
 
 				<Switch
-					label="Stage mode"
+					label="Dark screen"
 					description="Dark, high-contrast screen for dim rooms"
-					checked={settings.stageMode}
-					onChange={(e) => onChange({ stageMode: e.currentTarget.checked })}
+					checked={settings.darkScreen}
+					onChange={(e) => onChange({ darkScreen: e.currentTarget.checked })}
 				/>
 
 				<Group grow>

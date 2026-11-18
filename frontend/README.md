@@ -19,7 +19,7 @@ src/
   auth/        user manager, session renewal, sign-in/out, useSession()
   api/         fetch client + one module per resource (queries & mutations)
   components/  app shell (sidebar / bottom tabs) and shared UI
-  features/    song (viewer, editor, list), playlist, playmode
+  features/    song (viewer, editor, list), playlist, stage
   pages/       one file per route (lazy-loaded)
   lib/         storage, text, navigation and notification helpers
 ```
@@ -37,6 +37,18 @@ src/
   dropped on sign-out or when another user signs in.
 - The service worker does **not** cache API responses (it used to, which
   showed stale songs after editing and mixed users' data).
+
+## Stage
+
+`/playlist/:id/stage` (formerly "play mode"; `/play` redirects) is the
+performance view. It is built so nothing changes by accident mid-song:
+
+- One tap can only go to the previous / next song or toggle auto-scroll.
+  Key, text size, layout and the rest live in the settings panel.
+- The bars slide away while reading (scrolling down or auto-scroll) and come
+  back on a tap on the song or at the top of the page.
+- Swipes, arrow keys and page-turner pedals move between songs and pages.
+- The current song (per tab) and each song's key are remembered.
 
 ## Sessions
 

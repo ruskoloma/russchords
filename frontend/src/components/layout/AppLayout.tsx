@@ -11,7 +11,7 @@ import { Logo } from './Logo';
 import { UserMenu } from './UserMenu';
 
 export interface RouteHandle {
-	/** Full-screen page without navigation chrome (play mode). */
+	/** Full-screen page without navigation chrome (Stage). */
 	immersive?: boolean;
 	/** Max content width in px. Reading pages stay narrow, lists go wider. */
 	maxWidth?: number;

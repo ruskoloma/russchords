@@ -23,7 +23,7 @@ import {
 	IconLogin,
 	IconMusic,
 	IconPinFilled,
-	IconPlayerPlayFilled,
+	IconPresentation,
 	IconPlaylist,
 	IconPlus,
 	IconSearch,
@@ -183,14 +183,14 @@ function Dashboard() {
 									{p.songs.length > 0 && (
 										<ActionIcon
 											component={Link}
-											to={`/playlist/${p.playlistId}/play`}
+											to={`/playlist/${p.playlistId}/stage`}
 											size={44}
 											radius="xl"
 											variant="light"
 											color="brand"
-											aria-label={`Play ${p.title}`}
+											aria-label={`Open ${p.title} on Stage`}
 										>
-											<IconPlayerPlayFilled size={18} />
+											<IconPresentation size={18} />
 										</ActionIcon>
 									)}
 								</Group>
@@ -269,7 +269,7 @@ function Welcome() {
 					Welcome to russchords
 				</Title>
 				<Text size="lg" c="dimmed" maw={620}>
-					Chords and lyrics for worship teams — search, transpose, build set lists and play them on stage.
+					Chords and lyrics for worship teams — search, transpose, build set lists and lead from them on Stage.
 				</Text>
 				<QuickSearch />
 				<Group gap="sm">

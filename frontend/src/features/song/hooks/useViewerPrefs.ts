@@ -16,6 +16,9 @@ export const FONT_MAX = 40;
 const DEFAULT_PREFS: ViewerPrefs = { fontSize: 16, hideChords: false, layout: 'single', fitWidth: true };
 const LAYOUTS: SheetLayout[] = ['single', 'columns-song', 'columns-sections'];
 
+/** Column layouts need room: tablets and up (iPad mini portrait is 744px wide). */
+export const COLUMNS_MEDIA_QUERY = '(min-width: 744px)';
+
 export const clampFont = (n: number) => Math.min(FONT_MAX, Math.max(FONT_MIN, Math.round(n)));
 
 function sanitize(raw: unknown): ViewerPrefs {

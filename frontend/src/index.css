@@ -287,27 +287,77 @@ button.list-row:hover,
 }
 
 /* ------------------------------------------------------------------ */
-/* Play mode                                                          */
+/* Stage                                                              */
 /* ------------------------------------------------------------------ */
 
-.play-topbar {
-	position: sticky;
-	top: 0;
-	z-index: 50;
-	padding-top: env(safe-area-inset-top);
-	background: var(--mantine-color-body);
-	border-bottom: 1px solid var(--mantine-color-default-border);
-}
-
-.play-bottombar {
+.stage-bar {
 	position: fixed;
 	left: 0;
 	right: 0;
-	bottom: 0;
 	z-index: 50;
-	padding-bottom: env(safe-area-inset-bottom);
 	background: var(--mantine-color-body);
+	transition:
+		transform 220ms ease,
+		opacity 220ms ease;
+}
+
+.stage-bar--top {
+	top: 0;
+	padding-top: env(safe-area-inset-top);
+	border-bottom: 1px solid var(--mantine-color-default-border);
+}
+
+.stage-bar--bottom {
+	bottom: 0;
+	padding-bottom: env(safe-area-inset-bottom);
 	border-top: 1px solid var(--mantine-color-default-border);
+}
+
+.stage[data-controls='hidden'] .stage-bar--top {
+	transform: translateY(-100%);
+	opacity: 0;
+}
+
+.stage[data-controls='hidden'] .stage-bar--bottom {
+	transform: translateY(100%);
+	opacity: 0;
+}
+
+.stage-content {
+	padding-top: calc(56px + env(safe-area-inset-top) + var(--mantine-spacing-md));
+	padding-bottom: calc(110px + env(safe-area-inset-bottom));
+	/* Taps on the song toggle the controls; keep double-tap from zooming. */
+	touch-action: manipulation;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.stage-position {
+	position: fixed;
+	right: max(12px, env(safe-area-inset-right));
+	bottom: calc(12px + env(safe-area-inset-bottom));
+	z-index: 40;
+	padding: 2px 10px;
+	border-radius: 999px;
+	font-size: var(--mantine-font-size-xs);
+	font-weight: 600;
+	font-variant-numeric: tabular-nums;
+	color: var(--mantine-color-dimmed);
+	background: var(--mantine-color-body);
+	border: 1px solid var(--mantine-color-default-border);
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 220ms ease;
+}
+
+.stage[data-controls='hidden'] .stage-position {
+	opacity: 0.85;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.stage-bar,
+	.stage-position {
+		transition: none;
+	}
 }
 
 /* ------------------------------------------------------------------ */

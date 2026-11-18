@@ -31,7 +31,7 @@ function startsInExcludedArea(target: EventTarget | null): boolean {
  *
  * Writing this by hand keeps the bundle clean of an extra dep
  * (`react-swipeable` is ~4KB) and lets us tune the thresholds to the
- * play-mode use case — a performer glancing away mid-song shouldn't
+ * Stage use case — a performer glancing away mid-song shouldn't
  * accidentally advance to the next one, so the defaults are deliberately
  * conservative (80px horizontal, max 60px vertical).
  */

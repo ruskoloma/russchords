@@ -23,7 +23,7 @@ import {
 	IconPencil,
 	IconPin,
 	IconPinFilled,
-	IconPlayerPlayFilled,
+	IconPresentation,
 	IconPlaylistAdd,
 	IconPlaylistX,
 	IconPlus,
@@ -326,8 +326,8 @@ export function PlaylistPage() {
 				</Group>
 				<Group gap="xs" wrap="wrap">
 					{songs.length > 0 && (
-						<Button component={Link} to="play" leftSection={<IconPlayerPlayFilled size={18} />}>
-							Play
+						<Button component={Link} to="stage" leftSection={<IconPresentation size={18} />}>
+							Stage
 						</Button>
 					)}
 					{isOwner && (
