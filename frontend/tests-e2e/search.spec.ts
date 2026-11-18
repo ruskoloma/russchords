@@ -26,9 +26,9 @@ test.describe('Search page', () => {
 		await page.getByLabel('Search input').fill('amazing');
 		await page.getByRole('button', { name: 'Search' }).click();
 
-		// Each result renders in its own Mantine Card with title + snippet.
+		// Each result renders as a card with title + snippet.
 		await expect(page.getByText('Amazing Grace (mocked)')).toBeVisible();
 		await expect(page.getByText('How Great Thou Art (mocked)')).toBeVisible();
-		await expect(page.getByText(/Found ~\d+ results/i)).toBeVisible();
+		await expect(page.getByText(/About \d+ results/i)).toBeVisible();
 	});
 });

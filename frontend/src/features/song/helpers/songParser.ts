@@ -69,7 +69,7 @@ export const KEYS: Key[] = [
 
 // Regex for chords
 export const CHORD_REGEX =
-	/^[A-H][b#]?(2|5|6|7|9|11|13|\+|\+2|\+4|\+5|\+6|\+7|\+9|\+11|\+13|6\/9|7\-5|7\-9|7#5|#5|7#9|#9|7\+3|7\+5|7\+9|7b5|7b9|7sus2|7sus4|sus4|add2|add4|add6|add9|aug|dim|dim7|m\/maj7|m6|m7|m7b5|m9|m11|m13|maj|maj7|maj9|maj11|maj13|mb5|m|sus|sus2|sus4|m7add11|add11|b5|-5|4)*(\/[A-H][b#]*)*$/;
+	/^[A-H][b#]?(2|5|6|7|9|11|13|\+|\+2|\+4|\+5|\+6|\+7|\+9|\+11|\+13|6\/9|7-5|7-9|7#5|#5|7#9|#9|7\+3|7\+5|7\+9|7b5|7b9|7sus2|7sus4|sus4|add2|add4|add6|add9|aug|dim|dim7|m\/maj7|m6|m7|m7b5|m9|m11|m13|maj|maj7|maj9|maj11|maj13|mb5|m|sus|sus2|sus4|m7add11|add11|b5|-5|4)*(\/[A-H][b#]*)*$/;
 
 // List of anchors to detect headers
 export const HEADER_ANCHORS: string[] = [
@@ -363,8 +363,7 @@ export function transposeChord(chord: string, delta: number, targetKey: Key): st
 	// If there's no transposition, keep original spelling exactly as typed.
 	if (delta === 0) return chord;
 
-	if(!CHORD_REGEX.test(chord)) return chord
-	
+	if (!CHORD_REGEX.test(chord)) return chord;
 
 	const parts = chord.split('/');
 	if (parts.length === 0) return chord;
@@ -392,7 +391,14 @@ export function transposeChord(chord: string, delta: number, targetKey: Key): st
 
 // Transposes chord token
 export function transposeChordToken(token: ChordToken, delta: number, targetKey: Key): ChordToken {
-	const newChord = transposeChord(token.chord, delta, targetKey);
+	let newChord: string;
+	try {
+		newChord = transposeChord(token.chord, delta, targetKey);
+	} catch {
+		// Unusual spellings (e.g. "Hb", "E#") — keep the chord as written
+		// rather than crashing the whole song view.
+		newChord = token.chord;
+	}
 	const spaceDiff = token.chord.length - newChord.length;
 	return {
 		chord: newChord,
@@ -404,22 +410,27 @@ export function transposeChordToken(token: ChordToken, delta: number, targetKey:
 // Renders chord line to string
 export function renderChordLine(tokens: ChordToken[]): string {
 	try {
-		return tokens
-			.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces))
-			.join('');
+		return tokens.map((t) => ' '.repeat(t.leading) + t.chord + ' '.repeat(t.spaces)).join('');
 	} catch {
 		return tokens.join('');
 	}
 }
 
 export function getOriginalKey(parsedLines: Line[]): string | undefined {
-	for (let i = 0; i < parsedLines.length; i++) {
-		const line = parsedLines[i];
-		if (line.type === 'chords' && line.tokens.length > 0) {
-			const firstChord = line.tokens.filter((el) => ALL_KEYS.includes(getChordRoot(el.chord)))[0].chord;
-			return getChordRoot(firstChord);
-		}
+	for (const line of parsedLines) {
+		if (line.type !== 'chords') continue;
+		// Skip chord lines without a recognizable root (e.g. "NC", "| x2").
+		const first = line.tokens.find((el) => ALL_KEYS.includes(getChordRoot(el.chord)));
+		if (first) return getChordRoot(first.chord);
 	}
+	return undefined;
+}
+
+/** Canonical key name from `ALL_KEYS` (e.g. "B" → "H", "Am" → "A"), or null if unknown. */
+export function normalizeKeyName(name: string | null | undefined): string | null {
+	if (!name) return null;
+	const key = getKeyByName(name.trim());
+	return key ? key.name : null;
 }
 
 export function fillMissingChords(raw: string): string {

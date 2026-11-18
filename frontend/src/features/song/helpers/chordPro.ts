@@ -158,7 +158,7 @@ export function parseChordPro(raw: string, filename?: string): ParsedChordPro {
 	const derivedName = (() => {
 		if (name && name.trim()) return name;
 		if (!filename) return undefined;
-		const only = filename.replace(/^.*[\\\/]/, '');
+		const only = filename.replace(/^.*[\\/]/, '');
 		const base = only.replace(/\.[^.]+$/, '');
 		return base || undefined;
 	})();

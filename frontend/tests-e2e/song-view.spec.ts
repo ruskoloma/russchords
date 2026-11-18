@@ -11,51 +11,41 @@ test.describe('Song page — view & transpose', () => {
 
 		await page.goto('/song/42');
 
-		// Song title and artist should render in the header.
-		await expect(page.getByText('Amazing Grace (Test)')).toBeVisible();
+		await expect(page.getByRole('heading', { level: 1, name: 'Amazing Grace (Test)' })).toBeVisible();
 		await expect(page.getByText('Traditional')).toBeVisible();
 
-		// The key selector is a Mantine `Select` with a placeholder of "Select key".
-		// Its current value starts as the song's rootNote ('C').
-		const keySelect = page.getByPlaceholder('Select key');
+		// The key picker starts at the song's root note.
+		const keySelect = page.getByRole('textbox', { name: 'Key' });
 		await expect(keySelect).toHaveValue('C');
-
-		// The lyric line under the first chord line must render — this is the
-		// single most important regression gate for the Viewer memoization refactor.
 		await expect(page.getByText('Amazing grace how sweet the sound')).toBeVisible();
 
-		// Click "Up" to transpose a semitone. The button has an aria-label="Up".
-		await page.getByRole('button', { name: 'Up', exact: true }).click();
-
-		// C → C# or Db. The Select value should update to one of those two.
-		const newValue = await keySelect.inputValue();
-		expect(['C#', 'Db']).toContain(newValue);
-
-		// Lyrics should still be present after the state change — a regression
-		// that loses Viewer content on transpose would be immediately caught here.
+		await page.getByRole('button', { name: 'Transpose up' }).click();
+		expect(['C#', 'Db']).toContain(await keySelect.inputValue());
 		await expect(page.getByText('Amazing grace how sweet the sound')).toBeVisible();
 
-		// Click "Down" to transpose back; original key should be restored.
-		await page.getByRole('button', { name: 'Down', exact: true }).click();
+		await page.getByRole('button', { name: 'Transpose down' }).click();
 		await expect(keySelect).toHaveValue('C');
 	});
 
-	test('increases font size when the Larger font button is clicked', async ({ page }) => {
+	test('increases font size when the Larger text button is clicked', async ({ page }) => {
 		await mockSongApi(page);
 
 		await page.goto('/song/42');
 
-		// Capture a reference to the chord viewer's `<pre>` element. ViewerBase
-		// renders chord content inside a Mantine `<Text component="pre">` — we
-		// read its computed font-size before and after.
-		const chordBlock = page.locator('pre').first();
-		await expect(chordBlock).toBeVisible();
+		const sheet = page.locator('pre.song-sheet').first();
+		await expect(sheet).toBeVisible();
+		const sizeBefore = await sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
 
-		const sizeBefore = await chordBlock.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+		await page.getByRole('button', { name: 'Larger text' }).click();
 
-		await page.getByRole('button', { name: 'Larger font' }).click();
+		await expect
+			.poll(() => sheet.evaluate((el) => parseFloat(getComputedStyle(el).fontSize)))
+			.toBeGreaterThan(sizeBefore);
+	});
 
-		const sizeAfter = await chordBlock.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
-		expect(sizeAfter).toBeGreaterThan(sizeBefore);
+	test('shows a not-found message for a missing song', async ({ page }) => {
+		await page.route(/\/mock-api\/song\/\d+$/, (route) => route.fulfill({ status: 404, body: '{}' }));
+		await page.goto('/song/999');
+		await expect(page.getByRole('heading', { level: 1, name: 'Song not found' })).toBeVisible();
 	});
 });

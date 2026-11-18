@@ -9,13 +9,20 @@ export default defineConfig({
 	plugins: [
 		react(),
 		VitePWA({
-			registerType: 'autoUpdate',
+			// A new version waits until the user accepts the "Update available"
+			// prompt (see src/app/UpdatePrompt.tsx), so open tabs never lose the
+			// chunks their lazy routes still need.
+			registerType: 'prompt',
+			injectRegister: false,
 			includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'favicon-32x32.png', 'favicon-16x16.png'],
 			manifest: {
 				name: 'russchords',
 				short_name: 'russchords',
 				description: 'Your chords and lyrics manager',
-				theme_color: '#ffffff',
+				theme_color: '#f6f4f0',
+				background_color: '#f6f4f0',
+				display: 'standalone',
+				start_url: '/',
 				icons: [
 					{
 						src: 'android-chrome-192x192.png',
@@ -30,31 +37,25 @@ export default defineConfig({
 				],
 			},
 			workbox: {
-				// Runtime caching rules for the backend API. Play-mode loads are the
-				// most expensive first paint — cache song + playlist GETs so repeat
-				// visits (or offline reload) return instantly from the SW cache.
+				skipWaiting: false,
+				clientsClaim: false,
+				cleanupOutdatedCaches: true,
+				navigateFallbackDenylist: [/^\/assets(?:\/|$)/],
+				// API responses are deliberately NOT cached by the service worker:
+				// a stale-while-revalidate cache here used to show outdated songs and
+				// playlists right after editing them, and ignored which user was
+				// signed in. Offline data lives in the TanStack Query cache instead
+				// (IndexedDB, per user, invalidated after every change).
 				runtimeCaching: [
 					{
-						urlPattern: /\/(song|playlist|starred)(\/|$)/,
-						handler: 'StaleWhileRevalidate',
-						options: {
-							cacheName: 'russchords-api-cache',
-							expiration: {
-								maxEntries: 200,
-								maxAgeSeconds: 60 * 60 * 24, // 1 day
-							},
-							cacheableResponse: { statuses: [0, 200] },
-						},
-					},
-					{
-						// JetBrains Mono + Inter font files served by our own bundle.
+						// Font files (only the subsets a page actually uses are fetched).
 						urlPattern: /\.(woff2?|ttf|otf)$/,
 						handler: 'CacheFirst',
 						options: {
 							cacheName: 'russchords-fonts',
 							expiration: {
-								maxEntries: 20,
-								maxAgeSeconds: 60 * 60 * 24 * 365, // 1 year
+								maxEntries: 40,
+								maxAgeSeconds: 60 * 60 * 24 * 365,
 							},
 						},
 					},

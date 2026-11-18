@@ -1,66 +1,48 @@
 import type { MantineColorsTuple } from '@mantine/core';
 
 /**
- * Brand palettes for russchords — "printed hymnal" direction.
- *
- * Away from saturated indigo + rounded corporate aesthetic. These tuples
- * lean into warm neutrals and earthy accents so the app feels more like
- * a worn paper songbook than a productivity dashboard. Still 10-stop
- * Mantine tuples (index 0 = lightest, 9 = darkest).
- *
- *  - `brand`   — muted warm ink (charcoal-with-a-hint-of-brown). Primary
- *                surfaces, focused controls, default buttons.
- *  - `accent`  — burnt terracotta for starred / pinned / active items.
- *                Reads as a warm highlight against the neutral brand.
- *  - `chord`   — subdued olive ink for chord lines above lyrics. Reads
- *                clearly on both cream and slate backgrounds without
- *                screaming "link" the way pure blue does.
+ * Palette — "songbook": warm paper neutrals with a clay accent.
+ * 10-stop Mantine tuples (0 = lightest, 9 = darkest).
  */
 
-// Warm ink — main brand color. Nearly neutral; shade 7 is almost-black
-// with a whisper of warmth so filled buttons feel tactile, not digital.
+/** Clay — primary actions, active navigation, focus. */
 export const brandColor: MantineColorsTuple = [
-	'#f5f3f0',
-	'#e4e0d9',
-	'#c5c0b5',
-	'#a69e90',
-	'#8a806f',
-	'#6e6454',
-	'#544b3d',
-	'#3a3327',
-	'#22201a',
-	'#12110e',
+	'#fdf1ec',
+	'#f8ddd2',
+	'#f0b9a4',
+	'#e79373',
+	'#df744b',
+	'#da6131',
+	'#d85624',
+	'#c04618',
+	'#ab3d13',
+	'#95320c',
 ];
 
-// Burnt terracotta — accent for stars, pins, badges, "now playing".
-// Warm, earthy, readable on cream AND on dark slate.
-export const accentColor: MantineColorsTuple = [
-	'#fbeee7',
-	'#f4d8c9',
-	'#eab79d',
-	'#de9371',
-	'#d37551',
-	'#cc603f',
-	'#c85333',
-	'#a94125',
-	'#8b331b',
-	'#6b2712',
+/** Warm grays — borders, muted text, light surfaces. */
+export const grayColor: MantineColorsTuple = [
+	'#faf9f7',
+	'#f2f0ed',
+	'#e7e4df',
+	'#d9d5ce',
+	'#bdb7ae',
+	'#9a948a',
+	'#79736a',
+	'#5e5850',
+	'#46413b',
+	'#2e2a26',
 ];
 
-// Chord lines — needs good contrast on BOTH light and dark backgrounds.
-// Light mode uses shade 7 (dark teal-green on cream) via primaryShade.
-// Dark mode uses shade 4 (bright teal on slate) via primaryShade.
-// Shifted from the old muted olive to a more saturated teal-green so
-// chords pop against lyrics in both schemes without fatiguing the eye.
-export const chordColor: MantineColorsTuple = [
-	'#e8f5f0',
-	'#c8e6da',
-	'#93ccb4',
-	'#5fb08e',
-	'#3a9973',
-	'#2d8562',
-	'#267555',
-	'#1e6146',
-	'#175239',
-	'#10412d',
+/** Warm charcoal — dark-mode surfaces (index 7 is the dark body). */
+export const darkColor: MantineColorsTuple = [
+	'#d6d2cc',
+	'#b8b3ab',
+	'#948e85',
+	'#6f6a62',
+	'#4c4842',
+	'#3a3733',
+	'#2d2b28',
+	'#222120',
+	'#1a1918',
+	'#121110',
 ];

@@ -1,24 +1,15 @@
 import { createTheme, localStorageColorSchemeManager } from '@mantine/core';
-import { accentColor, brandColor, chordColor } from './colors';
+import { brandColor, darkColor, grayColor } from './colors';
 import { components } from './components';
 import { fontFamily, fontFamilyMonospace, headings } from './typography';
 
-/**
- * The russchords Mantine theme.
- *
- * Design direction: "printed hymnal" — warm neutrals, sharp corners,
- * minimal shadows. Intentionally moves away from the saturated indigo +
- * rounded-everything aesthetic; closer to a worn paper songbook than a
- * productivity dashboard.
- */
 export const theme = createTheme({
 	primaryColor: 'brand',
-	primaryShade: { light: 7, dark: 4 },
+	primaryShade: { light: 7, dark: 6 },
 	autoContrast: true,
-	// Sharper corners everywhere. `sm` is the new default (4px) with a
-	// tighter overall scale — see `radius` below.
-	defaultRadius: 'sm',
+	defaultRadius: 'md',
 	cursorType: 'pointer',
+	focusRing: 'auto',
 
 	fontFamily,
 	fontFamilyMonospace,
@@ -26,43 +17,38 @@ export const theme = createTheme({
 
 	colors: {
 		brand: brandColor,
-		accent: accentColor,
-		chord: chordColor,
+		gray: grayColor,
+		dark: darkColor,
 	},
 
 	radius: {
-		xs: '2px',
-		sm: '4px',
-		md: '6px',
-		lg: '8px',
-		xl: '12px',
+		xs: '4px',
+		sm: '6px',
+		md: '8px',
+		lg: '12px',
+		xl: '16px',
 	},
 
-	// Very restrained shadow scale — the hymnal direction avoids the
-	// "floating card" look. `sm` is a 1px hairline; `xs` is almost nothing.
 	shadows: {
-		xs: '0 0 0 1px rgba(0, 0, 0, 0.04)',
-		sm: '0 1px 0 rgba(0, 0, 0, 0.06)',
-		md: '0 1px 2px rgba(0, 0, 0, 0.08)',
-		lg: '0 2px 4px rgba(0, 0, 0, 0.08)',
-		xl: '0 4px 8px rgba(0, 0, 0, 0.08)',
+		xs: '0 1px 2px rgba(30, 24, 18, 0.06)',
+		sm: '0 1px 3px rgba(30, 24, 18, 0.08), 0 1px 2px rgba(30, 24, 18, 0.04)',
+		md: '0 4px 12px rgba(30, 24, 18, 0.10), 0 1px 3px rgba(30, 24, 18, 0.06)',
+		lg: '0 10px 24px rgba(30, 24, 18, 0.12), 0 2px 6px rgba(30, 24, 18, 0.06)',
+		xl: '0 18px 40px rgba(30, 24, 18, 0.16)',
 	},
 
 	breakpoints: {
-		xs: '36em', // 576px  — small phones
-		sm: '48em', // 768px  — tablets
-		md: '62em', // 992px  — small laptops
-		lg: '75em', // 1200px — desktops
-		xl: '88em', // 1408px — large desktops
+		xs: '36em',
+		sm: '48em',
+		md: '62em',
+		lg: '75em',
+		xl: '88em',
 	},
 
 	components,
 });
 
-/**
- * Color-scheme manager persists the user's light/dark/auto choice in
- * localStorage. Consumed by <MantineProvider /> in main.tsx.
- */
+/** Persists the light/dark/auto choice. Key must match the script in index.html. */
 export const colorSchemeManager = localStorageColorSchemeManager({
 	key: 'russchords-color-scheme',
 });

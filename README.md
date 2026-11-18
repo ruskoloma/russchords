@@ -42,8 +42,9 @@ This project is built with a modern, cloud-native technology stack. The key tech
 * **React 19** with TypeScript  
 * **Vite** for a fast development experience  
 * **Mantine UI** for the component library  
-* **SWR** for data fetching and caching  
-* **OpenID Connect (OIDC)** for authentication
+* **TanStack Query** for data fetching, caching and an offline cache (IndexedDB)  
+* **OpenID Connect (OIDC)** for authentication (Cognito, refresh-token sessions)
+* **PWA** — installable, works offline
 
 ### **Backend**
 

@@ -1,58 +1,19 @@
-import { ActionIcon, Button, Card, Modal, Paper, Select, TextInput, Textarea } from '@mantine/core';
+import { ActionIcon, Badge, Button, Card, Menu, Modal, Notification, Paper } from '@mantine/core';
 
 /**
- * Component defaults for the "printed hymnal" theme direction.
- *
- * All radius defaults are `sm` (4px) instead of the previous `md` (6px)
- * so Buttons, Cards, Inputs, etc. feel sharper and more tactile. Cards
- * drop their shadow entirely and rely only on a 1px border so the page
- * reads flat, like printed paper.
+ * Component defaults. Only components that are already part of the app
+ * shell are extended here — extending e.g. Select or TagsInput would pull
+ * them into the initial bundle. Inputs get their radius from `defaultRadius`.
  */
 export const components = {
-	Button: Button.extend({
-		defaultProps: {
-			radius: 'sm',
-		},
-	}),
-	ActionIcon: ActionIcon.extend({
-		defaultProps: {
-			variant: 'subtle',
-			radius: 'sm',
-		},
-	}),
-	Card: Card.extend({
-		defaultProps: {
-			radius: 'sm',
-			shadow: undefined,
-			withBorder: true,
-			padding: 'lg',
-		},
-	}),
-	Paper: Paper.extend({
-		defaultProps: {
-			radius: 'sm',
-		},
-	}),
+	Button: Button.extend({ defaultProps: { radius: 'md' } }),
+	ActionIcon: ActionIcon.extend({ defaultProps: { variant: 'subtle', color: 'gray', radius: 'md' } }),
+	Badge: Badge.extend({ defaultProps: { radius: 'sm', tt: 'none' } }),
+	Card: Card.extend({ defaultProps: { radius: 'lg', withBorder: true, padding: 'md' } }),
+	Paper: Paper.extend({ defaultProps: { radius: 'lg' } }),
 	Modal: Modal.extend({
-		defaultProps: {
-			radius: 'md',
-			centered: true,
-			overlayProps: { blur: 0 },
-		},
+		defaultProps: { radius: 'lg', overlayProps: { backgroundOpacity: 0.45, blur: 2 } },
 	}),
-	TextInput: TextInput.extend({
-		defaultProps: {
-			radius: 'sm',
-		},
-	}),
-	Textarea: Textarea.extend({
-		defaultProps: {
-			radius: 'sm',
-		},
-	}),
-	Select: Select.extend({
-		defaultProps: {
-			radius: 'sm',
-		},
-	}),
+	Menu: Menu.extend({ defaultProps: { radius: 'md', shadow: 'md' } }),
+	Notification: Notification.extend({ defaultProps: { radius: 'md' } }),
 };

@@ -12,14 +12,13 @@ test.describe('Navigation (unauthenticated)', () => {
 		// Wait for the shell to mount.
 		await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome', { timeout: 15_000 });
 
-		// On desktop the navbar is visible by default (md breakpoint, 1280x720 viewport).
-		// Use `getByRole('navigation')` to scope assertions to the AppShell nav.
-		const nav = page.getByRole('navigation').first();
+		// Desktop viewport: the sidebar navigation is visible.
+		const nav = page.getByRole('navigation', { name: 'Main' });
 		await expect(nav.getByRole('link', { name: 'Home' })).toBeVisible();
 		await expect(nav.getByRole('link', { name: 'Search', exact: true })).toBeVisible();
 
 		// Authenticated-only links must NOT be present for anonymous users.
-		await expect(nav.getByRole('link', { name: 'My Songs' })).toHaveCount(0);
+		await expect(nav.getByRole('link', { name: 'My songs' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Starred' })).toHaveCount(0);
 		await expect(nav.getByRole('link', { name: 'Playlists' })).toHaveCount(0);
 	});
@@ -28,10 +27,8 @@ test.describe('Navigation (unauthenticated)', () => {
 		await page.goto('/', { waitUntil: 'domcontentloaded' });
 		await expect(page.getByRole('heading', { level: 1 })).toContainText('Welcome', { timeout: 15_000 });
 
-		// Click the Search link in the nav — scoped to the AppShell navigation
-		// because the home hero also renders a "Search songs" button which would
-		// collide with a plain {name: 'Search'} locator.
-		const nav = page.getByRole('navigation').first();
+		// Scoped to the navigation: the home page also has search controls.
+		const nav = page.getByRole('navigation', { name: 'Main' });
 		await nav.getByRole('link', { name: 'Search', exact: true }).click();
 
 		await expect(page).toHaveURL(/\/search$/, { timeout: 15_000 });

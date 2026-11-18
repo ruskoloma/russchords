@@ -7,6 +7,21 @@ interface Options {
 	threshold?: number;
 	/** Maximum vertical distance — beyond this, treat as a scroll rather than a swipe. */
 	verticalTolerance?: number;
+	enabled?: boolean;
+}
+
+/** Touches inside dialogs, menus or sideways-scrollable content are not swipes. */
+function startsInExcludedArea(target: EventTarget | null): boolean {
+	let el = target instanceof Element ? target : null;
+	while (el && el !== document.body) {
+		if (el.matches('[role="dialog"], [role="menu"], .mantine-Slider-root, input, textarea')) return true;
+		if (el instanceof HTMLElement && el.scrollWidth > el.clientWidth + 1) {
+			const overflowX = getComputedStyle(el).overflowX;
+			if (overflowX === 'auto' || overflowX === 'scroll') return true;
+		}
+		el = el.parentElement;
+	}
+	return false;
 }
 
 /**
@@ -25,13 +40,18 @@ export function useSwipeNavigation({
 	onSwipeRight,
 	threshold = 80,
 	verticalTolerance = 60,
+	enabled = true,
 }: Options) {
 	const startRef = useRef<{ x: number; y: number; time: number } | null>(null);
 
 	useEffect(() => {
+		if (!enabled) return;
 		const onTouchStart = (e: TouchEvent) => {
 			const t = e.touches[0];
-			if (!t) return;
+			if (!t || e.touches.length > 1 || startsInExcludedArea(e.target)) {
+				startRef.current = null;
+				return;
+			}
 			startRef.current = { x: t.clientX, y: t.clientY, time: Date.now() };
 		};
 
@@ -66,5 +86,5 @@ export function useSwipeNavigation({
 			window.removeEventListener('touchstart', onTouchStart);
 			window.removeEventListener('touchend', onTouchEnd);
 		};
-	}, [onSwipeLeft, onSwipeRight, threshold, verticalTolerance]);
+	}, [onSwipeLeft, onSwipeRight, threshold, verticalTolerance, enabled]);
 }

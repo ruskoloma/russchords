@@ -1,6 +1,12 @@
 import { HttpError } from './classes.js';
 import * as cheerio from 'cheerio';
 
+function cleanSongText(text) {
+	return text
+		.replace(/(?:\*\*)?мы\s+запрещаем\s+что\s+либо\s+копировать\s+с\s+нашего\s+сайта(?:\*\*)?/gi, '')
+		.trim();
+}
+
 export function jsonResp(statusCode, obj) {
 	return {
 		statusCode,
@@ -23,9 +29,9 @@ export async function getSongFromPage(url) {
 	const html = await res.text();
 	const $ = cheerio.load(html);
 
-	const name = $('h2').text().trim() || 'Untitled';
-	const artist = $('h2 + h5').text().trim() || 'Unknown';
-	const content = $('#music_text').text().trim();
+	const name = cleanSongText($('h2').text()) || 'Untitled';
+	const artist = cleanSongText($('h2 + h5').text()) || 'Unknown';
+	const content = cleanSongText($('#music_text').text());
 
 	if (!content) return null;
 
